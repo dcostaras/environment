@@ -2,7 +2,9 @@ all: \
 	.targets/hosts \
 	.targets/brew-commands \
 	.targets/brew-apps \
-	.targets/spacemacs
+	.targets/spacemacs \
+	.targets/bash \
+	.targets/java8
 
 .targets/c-headers:
 	sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
@@ -17,7 +19,7 @@ all: \
 	cd ~/.emacs.d && git checkout develop
 	touch $@
 
-.targets/emacs-app: .targets/brew-commands .targets/c-headers
+.targets/emacs-app: | .targets/brew-commands .targets/c-headers
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$$PATH"' >> ~/.bash_profile
 	git clone git://git.savannah.gnu.org/emacs.git ~/src/emacs
 	cd ~/src/emacs && make configure
@@ -37,6 +39,16 @@ all: \
 
 .targets/brew-commands: brew-commands.dat | .targets
 	xargs brew install <$<
+	touch $@
+
+.targets/bash: | .targets/brew-commands
+	echo '/usr/local/bin/bash' | sudo tee -a /etc/shells > /dev/null
+	chsh -s /usr/local/bin/bash
+	touch $@
+
+.targets/java8:
+	brew tap caskroom/versions
+	brew cask install java8
 	touch $@
 
 .targets/brew-apps: brew-apps.dat | .targets

@@ -3,6 +3,7 @@ aspell
 autoconf
 automake
 awscli
+bash
 bash-completion
 boot-clj
 clojure
