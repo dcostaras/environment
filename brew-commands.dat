@@ -12,6 +12,7 @@ flac
 gnupg
 gnutls
 graphviz
+leiningen
 makefile2graph
 nmap
 node
