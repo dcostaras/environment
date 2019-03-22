@@ -38,6 +38,8 @@ all: \
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$PATH"' >> ~/.bash_profile
 
 .targets/brew-commands: brew-commands.dat | .targets
+	brew update || brew update
+	brew upgrade
 	xargs brew install <$<
 	touch $@
 
