@@ -1,28 +1,49 @@
+define to-file
+	printf '%b\n' "$$(cat $1)" > $2
+endef
+
 all: \
 	.targets/hosts \
 	.targets/brew-commands \
 	.targets/brew-apps \
+	.targets/git \
 	.targets/spacemacs \
 	.targets/bash \
 	.targets/java8 \
-	.targets/wireguard
+	.targets/wireguard \
+	| .targets
 
 .targets/c-headers:
 	sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
 	touch $@
 
-.targets/fonts:
-	brew tap caskroom/fonts && brew cask install font-source-code-pro
+# TODO: install brew rule
+
+.targets/casks/fonts:
+	brew tap caskroom/fonts
 	touch $@
 
-.targets/spacemacs: .targets/emacs-app .targets/fonts
+.targets/fonts: fonts/cask.dat .targets/casks/fonts
+	xargs brew cask install <$<
+	touch $@
+
+.targets/git: git/
+	$(call to-file,git/config,~/.gitconfig)
+	touch $@
+
+.targets/spacemacs-src:
 	git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+
+.targets/spacemacs: .targets/spacemacs-src .targets/emacs-app .targets/fonts
 	cd ~/.emacs.d && git checkout develop
+	touch $@
+
+.targets/emacs-src:
+	git clone git://git.savannah.gnu.org/emacs.git ~/src/emacs
 	touch $@
 
 .targets/emacs-app: | .targets/brew-commands .targets/c-headers
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$$PATH"' >> ~/.bash_profile
-	git clone git://git.savannah.gnu.org/emacs.git ~/src/emacs
 	cd ~/src/emacs && make configure
 	cd ~/src/emacs && ./configure --with-ns
 	cd ~/src/emacs && make install
@@ -64,5 +85,5 @@ all: \
 	cd ~/.config/wireguard && sudo chmod -R og-rwx ~/.config/wireguard/*
 	touch $@
 
-.targets:
-	mkdir .targets
+.targets: targets
+	xargs mkdir -p <$<
