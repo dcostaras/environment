@@ -4,7 +4,8 @@ all: \
 	.targets/brew-apps \
 	.targets/spacemacs \
 	.targets/bash \
-	.targets/java8
+	.targets/java8 \
+	.targets/wireguard
 
 .targets/c-headers:
 	sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
@@ -55,6 +56,12 @@ all: \
 
 .targets/brew-apps: brew-apps.dat | .targets
 	xargs brew cask install <$<
+	touch $@
+
+.targets/wireguard: | .targets/brew-commands
+	mkdir -p ~/.config/wireguard
+	cd ~/.config/wireguard && wg genkey | tee privatekey | wg pubkey > publickey
+	cd ~/.config/wireguard && sudo chmod -R og-rwx ~/.config/wireguard/*
 	touch $@
 
 .targets:
