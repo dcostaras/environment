@@ -1,3 +1,5 @@
 [user]
 	name = Donavan-Ross Costaras
 	email = d.costaras@gmail.com
+[protocol "keybase"]
+	allow = always
