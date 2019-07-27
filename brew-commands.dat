@@ -1,11 +1,14 @@
 adr-tools
+angband
 aspell
 autoconf
 automake
+avanor
 awscli
 bash
 bash-completion
 boot-clj
+cataclysm
 clojure
 ffmpeg
 flac
@@ -27,5 +30,6 @@ siege
 texinfo
 the_silver_searcher
 trash
+unnethack
 wireguard-tools
 youtube-dl
