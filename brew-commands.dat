@@ -15,6 +15,7 @@ flac
 gnupg
 gnutls
 graphviz
+htop
 leiningen
 makefile2graph
 nmap
@@ -23,6 +24,7 @@ pass
 pinentry
 pinentry-mac
 pkg-config
+postgres
 pwgen
 python3
 rlwrap
@@ -31,5 +33,9 @@ texinfo
 the_silver_searcher
 trash
 unnethack
+watch
+wget
+wine
+winetricks
 wireguard-tools
 youtube-dl
