@@ -11,6 +11,7 @@ all: \
 	.targets/bash \
 	.targets/java8 \
 	.targets/wireguard \
+	gitconfig \
 	| .targets
 
 .targets/c-headers:
@@ -19,30 +20,31 @@ all: \
 
 # TODO: install brew rule
 
-.targets/casks/fonts:
-	brew tap caskroom/fonts
+.targets/cask: brew/taps.dat
+	xargs brew tap <$<
 	touch $@
 
-.targets/fonts: fonts/cask.dat .targets/casks/fonts
+.targets/fonts: fonts/cask.dat | .targets/cask
 	xargs brew cask install <$<
 	touch $@
 
-.targets/git: git/
+gitconfig: ~/.gitconfig
+~/.gitconfig: git/config
 	$(call to-file,git/config,~/.gitconfig)
-	touch $@
 
 .targets/spacemacs-src:
 	git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+	touch $@
 
-.targets/spacemacs: .targets/spacemacs-src .targets/emacs-app .targets/fonts
-	cd ~/.emacs.d && git checkout develop
+.targets/spacemacs: .targets/spacemacs-src .targets/emacs-app | .targets/fonts
+	cd ~/.emacs.d.spacemacs && git checkout develop
 	touch $@
 
 .targets/emacs-src:
 	git clone git://git.savannah.gnu.org/emacs.git ~/src/emacs
 	touch $@
 
-.targets/emacs-app: | .targets/brew-commands .targets/c-headers
+.targets/emacs-app: | .targets/brew/commands .targets/c-headers
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$$PATH"' >> ~/.bash_profile
 	cd ~/src/emacs && make configure
 	cd ~/src/emacs && ./configure --with-ns
@@ -50,7 +52,7 @@ all: \
 	cp -R ~/src/emacs/nextstep/Emacs.app /Applications/Emacs.app
 	touch $@
 
-.targets/hosts: | .targets/brew-commands
+.targets/hosts: | .targets/brew/commands
 	git clone git@github.com:StevenBlack/hosts.git ~/src/hosts
 	pip3 install lxml bs4
 	cd ~/src/hosts && python3 updateHostsFile.py --auto --replace --extensions gambling porn fakenews social
@@ -59,23 +61,22 @@ all: \
 .targets/cellar-cask:
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$PATH"' >> ~/.bash_profile
 
-.targets/brew-commands: brew-commands.dat | .targets
+.targets/brew/commands: brew/commands.dat | .targets
 	brew update || brew update
 	brew upgrade
 	xargs brew install <$<
 	touch $@
 
-.targets/bash: | .targets/brew-commands
+.targets/bash: | .targets/brew/commands
 	echo '/usr/local/bin/bash' | sudo tee -a /etc/shells > /dev/null
 	chsh -s /usr/local/bin/bash
 	touch $@
 
-.targets/java8:
-	brew tap caskroom/versions
+.targets/java8: .targets/cask
 	brew cask install java8
 	touch $@
 
-.targets/brew-apps: brew-apps.dat | .targets
+.targets/brew/apps: brew/apps.dat | .targets/cask
 	xargs brew cask install <$<
 	touch $@
 
