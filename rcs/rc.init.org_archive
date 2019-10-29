@@ -1,0 +1,652 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* fun pass()
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+#+name: pass
+#+begin_src emacs-lisp :var p=""
+(password-store-get p)
+#+end_src
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* fun colour()
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+
+#+name: colours
+| cool-fg       | #ffffff |
+| cool-bg       | #18191B |
+| cool-green-0  | #95ff94 |
+| cool-green-1  | #25492D |
+| cool-yellow-0 | #f9fe8a |
+| cool-yellow-1 | #fec952 |
+| cool-red-0    | #f5666d |
+| cool-pink-0   | #F74D97 |
+| cool-pink-1   | #FA519A |
+| cool-pink-2   | #FD8DBD |
+| cool-purple-0 | #a8799c |
+| cool-blue-0   | #a3beff |
+| cool-blue-1   | #9cd4fc |
+| cool-blue-2   | #8ca0fd |
+| cool-blue-3   | #acb3eF |
+#+name: colour
+#+begin_src emacs-lisp :var c="" data=colours
+(cadr (assoc-string c data))
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* mbsync
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+
+#+begin_src conf
+IMAPAccount work
+Host outlook.office365.com
+User donavan@arcinteractive.co
+PassCmd "pass arc/microsoft/mbsync"
+# Pass <<pass("arc/microsoft/mbsync")>>
+SSLType IMAPS
+AuthMechs LOGIN
+CertificateFile /usr/local/etc/openssl/cert.pem
+
+IMAPStore work-remote
+Account work
+
+MaildirStore work-local
+Path ~/mail/work/
+Inbox ~/mail/work/Inbox
+
+Channel work
+Master :work-remote:
+Slave :work-local:
+# Include everything
+Patterns "INBOX" "*"
+# Automatically create missing mailboxes, both locally and on the server
+Create Both
+Sync All
+# Save the synchronization state files in the relevant directory
+SyncState *
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* Dovecot
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+
+#+begin_src conf
+protocols = imap
+
+listen = *, ::
+log_path = /var/log/dovecot.log
+info_log_path = /var/log/dovecot-info.log
+
+ssl = no
+disable_plaintext_auth = no
+
+auth_verbose = yes
+auth_mechanisms = plain
+
+passdb {
+       driver = passwd-file
+       args = /etc/dovecot/passwd
+}
+
+userdb {
+       driver = static
+       args = uid=eric gid=users home=/home/eric/.mail/%d/%n
+       default_fields = mail=maildir:/home/eric/.mail/%d/%n/mail
+}
+
+mail_plugins = $mail_plugins fts fts_lucene
+
+plugin {
+       fts = lucene
+       fts_lucene = whitespace_chars=@.
+       fts_autoindex = yes
+}
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* offlineimaprc
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+** general
+
+#+begin_src conf
+[general]
+# accounts = gmail, hupu
+accounts = arc
+# maxsyncaccounts = 3
+socktimeout = 60
+postsynchook = mu index --maildir ~/Maildir
+#+end_src
+
+** arc
+
+#+begin_src conf
+[Account arc]
+localrepository = arc-local
+remoterepository = arc-remote
+maxage = 1000
+
+[Repository arc-local]
+type = Maildir
+localfolders = ~/Mail/arc/
+
+[Repository arc-remote]
+type = IMAP
+remoteuser = donavan@arcinteractive.co
+remotepass = <<pass("arc/microsoft")>>
+remotehost = outlook.office365.com
+ssl = yes
+
+folderfilter = lambda foldername: foldername not in [
+    'Calendar',
+    'Calendar/Birthdays',
+    'Calendar/Sub Folder 1',
+    'Calendar/Sub Folder 2',
+    'Calendar/United States holidays',
+    'Contacts',
+    'Contacts/Sub Folder 1',
+    'Contacts/Sub Folder 2',
+    'Contacts/Skype for Business Contacts',
+    'Deleted Items',
+    'Drafts',
+    'Journal',
+    'Junk Email',
+    'Notes',
+    'Outbox',
+    'Sync Issues',
+    'Sync Issues/Conflicts',
+    'Sync Issues/Local Failures',
+    'Sync Issues/Server Failures',
+    'Tasks',
+    'Tasks/Sub Folder 1',
+    'Tasks/Sub Folder 2'
+    ]
+
+
+# Necessary as of OfflineIMAP 6.5.4
+sslcacertfile = /usr/local/etc/openssl/cert.pem
+# /usr/local/opt/curl-ca-bundle/share/ca-bundle.crt
+#+end_src
+
+** gmail
+
+#+begin_src conf
+[Account gmail]
+localrepository = gmail-local
+remoterepository = gmail-remote
+maxage = 1000
+
+[Repository gmail-local]
+type = Maildir
+localfolders = ~/Mail/gmail/
+
+[Repository gmail-remote]
+type = Gmail
+remoteuser = d.costaras@gmail.com
+remotepass = <<pass("personal/google/imap")>>
+
+folderfilter = lambda foldername: foldername not in [
+    'drafts',
+    'sent'
+    ]
+
+# Necessary as of OfflineIMAP 6.5.4
+sslcacertfile = /usr/local/opt/curl-ca-bundle/share/ca-bundle.crt
+#+end_src
+
+** hupu
+
+#+begin_src conf
+[Account hupu]
+localrepository = hupu-local
+remoterepository = hupu-remote
+maxage = 1000
+
+[Repository hupu-local]
+type = Maildir
+localfolders = ~/Mail/hupu/
+
+[Repository hupu-remote]
+type = Gmail
+remoteuser = donavan@hupu-labs.biz
+remotepass = <<pass("hupu/google/imap")>>
+
+folderfilter = lambda foldername: foldername not in [
+    'drafts',
+    'sent'
+    ]
+
+# Necessary as of OfflineIMAP 6.5.4
+sslcacertfile = /usr/local/opt/curl-ca-bundle/share/ca-bundle.crt
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* mpdconf
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+
+#+begin_src conf
+music_directory         "/Volumes/Seagate\ Backup\ Plus\ Drive/music"
+playlist_directory      "~/.mpd/playlists"
+db_file                 "~/.mpd/database"
+pid_file                "~/.mpd/pid"
+state_file              "~/.mpd/state"
+sticker_file            "~/.mpd/sticker.sql"
+port                    "6600"
+auto_update             "yes"
+follow_outside_symlinks "yes"
+follow_inside_symlinks  "yes"
+audio_output {
+        type            "osx"
+        name            "My Mac Device"
+        mixer_type      "software"
+}
+#+end_src
+
+** Files
+
+These resources need to be available
+
+#+begin_src sh :results none
+rm -rf ~/.mpd
+mkdir ~/.mpd
+mkdir ~/.mpd/playlists
+touch ~/.mpd/database
+touch ~/.mpd/pid
+touch ~/.mpd/state
+touch ~/.mpd/sticker.sql
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* emacs rc files
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+** gnus
+
+#+begin_src emacs-lisp
+#+end_src
+
+** gcal
+
+#+begin_src emacs-lisp
+(setq org-gcal-client-id (password-store-get "personal/google/org-cal/client-id")
+      org-gcal-client-secret (password-store-get "personal/google/org-cal/secret")
+      org-gcal-file-alist '(("d.costaras@gmail.com" .  "~/schedule.org")))
+#+end_src
+
+** org
+
+#+begin_src emacs-lisp
+(setq org-agenda-files
+      '(
+        "~/src/ganet/emacs-init/emacs.init.org"
+        "~/src/org/rc.init.org"
+        "~/src/org/web-work.org"
+        "~/src/org/award.org"
+        "~/src/ganet/planning/donavan-award.org"
+        "~/src/org/contacts.org"
+
+        "~/org/management/habits.org"
+        ))
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* authinfo
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+
+#+begin_src fundamental
+machine imap.gmail.com login d.costaras@gmail.com password <<pass(p="personal/google/imap")>> port 993
+machine smtp.gmail.com login d.costaras@gmail.com password <<pass(p="personal/google/imap")>> port 587
+
+machine imap.gmail.com login donavan@hupu-labs.biz password <<pass(p="hupu/google/imap")>> port 993
+machine smtp.gmail.com login donavan@hupu-labs.biz password <<pass(p="hupu/google/imap")>> port 587
+
+machine jira.hupu-labs.biz login donavan@hupu-labs.biz password <<pass(p="hupu/atlassian")>> port 80
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* nethackrc
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+#+begin_src conf
+
+OPTIONS=autodig
+OPTIONS=noautopickup
+OPTIONS=autoquiver
+OPTIONS=checkpoint
+OPTIONS=nocmdassist
+OPTIONS=color
+OPTIONS=confirm
+# OPTIONS=DECgraphics
+OPTIONS=noeight_bit_tty
+OPTIONS=extmenu
+OPTIONS=fixinv
+OPTIONS=help
+#OPTIONS=hp_monitor
+OPTIONS=hilite_pet
+OPTIONS=noignintr
+OPTIONS=lit_corridor
+OPTIONS=lootabc
+OPTIONS=mail
+OPTIONS=null
+#OPTIONS=noparanoid_hit
+#OPTIONS=noparanoid_quit
+#OPTIONS=paranoid_remove
+OPTIONS=prayconfirm
+OPTIONS=pushweapon
+OPTIONS=norest_on_space
+OPTIONS=safe_pet
+#OPTIONS=showborn
+#OPTIONS=noshowbuc
+OPTIONS=showexp
+OPTIONS=showrace
+OPTIONS=showscore
+OPTIONS=silent
+OPTIONS=sortpack
+OPTIONS=sound
+OPTIONS=sparkle
+OPTIONS=nostandout
+OPTIONS=time
+OPTIONS=travel
+#OPTIONS=use_darkgray
+OPTIONS=nouse_inverse
+OPTIONS=verbose
+#OPTIONS=win_edge
+# OPTIONS=catname:Maurice
+# OPTIONS=dogname:Oskar
+OPTIONS=msghistory:20
+OPTIONS=boulder:0
+OPTIONS=disclose:+i +a +v +g +c
+OPTIONS=fruit:snozberry
+OPTIONS=menustyle:full
+OPTIONS=menu_headings:inverse
+OPTIONS=msg_window:reversed
+OPTIONS=number_pad:0
+OPTIONS=pickup_burden:stressed
+OPTIONS=runmode:walk
+#OPTIONS=sortloot:full
+OPTIONS=suppress_alert:3.4.3
+
+#+end_src
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* ssh
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+** config
+
+#+begin_src conf
+    Host github github.com
+        User git
+        Hostname github.com
+        identityfile ~/.ssh/donavan
+        IdentitiesOnly yes
+
+    Host bitbucket bitbucket.org
+        User git
+        Hostname bitbucket.org
+        identityfile ~/.ssh/bitbucket
+        IdentitiesOnly yes
+
+    Host hupu-git
+        User gitolite
+        Hostname hupu-labs.linode
+        Identityfile ~/.ssh/donavan
+        IdentitiesOnly yes
+
+    Host ganet
+        Hostname hupu-labs.linode
+        identityfile ~/.ssh/id_rsa_old
+        # IdentitiesOnly yes
+
+    Host shdb-dev
+        User ubuntu
+        Host 52.51.42.137
+        identityfile ~/.ssh/award-shdb-ssh
+
+    Host shdb
+        User ubuntu
+        Host 52.30.90.160
+        identityfile ~/.ssh/award-shdb-ssh
+
+    host dev
+        hostname development
+        identityfile ~/.ssh/development
+        # IdentitiesOnly yes
+
+    host choma choma.co.za
+         hostname choma.co.za
+         user chomakxhsb
+         identityfile ~/.ssh/donavan
+         IdentitiesOnly yes
+
+  host alllife alllife.co.za
+       hostname alllife.co.za
+       user alllif
+       identityfile ~/.ssh/donavan
+       IdentitiesOnly yes
+
+  host arcinteractive arcinteractive.co
+       hostname arcinteractive.co
+       user arcinytzsd
+       identityfile ~/.ssh/donavan
+       IdentitiesOnly yes
+    host arc arcinteractive.co
+         hostname arcinteractive.co
+         user arcinytzsd
+         identityfile ~/.ssh/donavan
+         IdentitiesOnly yes
+
+  Host entresto
+      User entreugneq
+      Hostname entrestolaunch.co.za
+      identityfile ~/.ssh/donavan
+      IdentitiesOnly yes
+
+    host ultibro ultibrorsvp.co.za
+         hostname ultibrorsvp.co.za
+         user ultibuhxkx
+         identityfile ~/.ssh/donavan
+         IdentitiesOnly yes
+
+    host masterclass masterclassrsvp.co.za
+         hostname masterclassrsvp.co.za
+         user mastekkkax
+         identityfile ~/.ssh/donavan
+         IdentitiesOnly yes
+
+    Host *
+        User donavan
+        # ForwardAgents no
+        ServerAliveInterval 60
+
+        TCPKeepAlive no
+
+        ControlMaster auto
+        ControlPath ~/.ssh/%r@%h:%p
+        ControlPersist 4h
+
+        Compression yes
+        Port 22
+        EscapeChar ^y
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* gnupg
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+** gpg-agent for ssh
+
+#+begin_src conf
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+  <plist version="1.0">
+  <dict>
+  <key>Label</key>
+  <string>setenv.FOO</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/launchctl</string>
+    <string>setenv</string>
+    <string>SSH_AUTH_SOCK</string>
+    <string>.gnupg/S.gpg-agent.ssh</string>
+  </array>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>ServiceIPC</key>
+  <false/>
+</dict>
+</plist>
+#+end_src
+
+** gpg.conf
+
+#+begin_src conf
+# when outputting certificates, view user IDs distinctly from keys:
+fixed-list-mode
+
+# long keyids are more collision-resistant than short keyids (it's trivial to make a key with any desired short keyid)
+keyid-format 0xlong
+
+# If you use a graphical environment (and even if you don't) you should be using an agent:
+# (similar arguments as  https://www.debian-administration.org/users/dkg/weblog/64)
+use-agent
+
+# You should always know at a glance which User IDs gpg thinks are legitimately bound to the keys in your keyring:
+verify-options show-uid-validity
+list-options show-uid-validity
+
+# include an unambiguous indicator of which key made a signature:
+# (see http://thread.gmane.org/gmane.mail.notmuch.general/3721/focus=7234)
+sig-notation issuer-fpr@notations.openpgp.fifthhorseman.net=%g
+#+end_src
+
+** gpg-agent.conf
+
+#+begin_src conf
+pinentry-program /usr/local/bin/pinentry-mac
+enable-ssh-support
+write-env-file
+use-standard-socket
+default-cache-ttl 1200
+#+end_src
+
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* latexmkrc
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+
+$pdflatex = 'pdflatex -interaction=nonstopmode -synctex=1 %O %S';
+$clean_ext = 'bbl rel %R-blx.bib %R.synctex.gz';
+
+#+begin_src perl
+$pdf_previewer = 'open -a preview';
+
+$pdf_mode = 1;
+$pdflatex = 'pdflatex --shell-escape %O %S -file-line-error -synctex=1';
+
+$clean_ext = "bbl fls tex";
+
+# Glossaries
+add_cus_dep('glo', 'gls', 0, 'run_makeglossaries');
+add_cus_dep('acn', 'acr', 0, 'run_makeglossaries');
+
+sub run_makeglossaries {
+  if ( $silent ) {
+    system "makeglossaries -q '$_[0]'";
+  }
+  else {
+    system "makeglossaries '$_[0]'";
+  };
+}
+
+push @generated_exts, 'glo', 'gls', 'glg';
+push @generated_exts, 'acn', 'acr', 'alg';
+$clean_ext .= ' %R.ist %R.xdy';
+#+end_src
+
+Archived entries from file /Users/donavan/src/rcs/rcs/rc.init.org
+
+
+* Plumbing
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-10-03 Thu 09:55
+  :ARCHIVE_FILE: ~/src/rcs/rcs/rc.init.org
+  :ARCHIVE_CATEGORY: rc.init
+  :END:
+#+OPTIONS: ^:nil

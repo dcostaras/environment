@@ -1,0 +1,3837 @@
+#    -*- mode: org -*-
+
+
+Archived entries from file /Users/donavan/src/rcs/emacs-init/emacs.init.org
+
+
+* no tanlge
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-09-12 Thu 10:07
+  :ARCHIVE_FILE: ~/src/rcs/emacs-init/emacs.init.org
+  :ARCHIVE_CATEGORY: emacs.init
+  :END:
+** Autocomplete
+#+begin_src emacs-lisp
+;;
+(message "Autocomplete:::: %.2fs" (- (float-time) shit-load-time-start))
+
+(use-package auto-complete
+  :config
+  (progn
+    (require 'popup)
+    (require 'fuzzy)
+    (require 'auto-complete)
+    (require 'auto-complete-config)
+    (ac-config-default)
+    (ac-flyspell-workaround)
+    ;;(add-to-list 'ac-dictionary-directories (concat (live-pack-lib-dir) "auto-complete/dict"))
+    (setq ac-comphist-file (concat user-var-directory "ac-comphist.dat"))
+
+    (global-auto-complete-mode t)
+    (setq ac-auto-show-menu t
+          ac-dwim t
+          ac-use-menu-map t
+          ac-quick-help-delay 1
+          ac-quick-help-height 60
+          ac-disable-inline t
+          ac-show-menu-immediately-on-auto-complete t
+          ac-auto-start 2
+          ac-candidate-menu-min 0
+          )
+
+    (set-default 'ac-sources
+                 '(ac-source-dictionary
+                   ac-source-words-in-buffer
+                   ac-source-words-in-same-mode-buffers
+                   ac-source-semantic
+                   ac-source-yasnippet))
+
+    (dolist (mode '( ;;magit-log-edit-mode
+                    ;;log-edit-mode
+                    org-mode text-mode haml-mode
+                             sass-mode yaml-mode csv-mode espresso-mode haskell-mode
+                             html-mode nxml-mode sh-mode smarty-mode clojure-mode
+                             lisp-mode textile-mode markdown-mode tuareg-mode))
+      (add-to-list 'ac-modes mode))
+
+    (define-key ac-completing-map (kbd "C-j") 'ac-next)
+    (define-key ac-completing-map (kbd "C-k") 'ac-previous)
+    (define-key ac-completing-map (kbd "C-;") 'ac-complete)
+    (define-key ac-completing-map (kbd "M-RET") 'ac-help)
+    (define-key ac-completing-map "\r" 'nil)
+
+
+    )    )
+
+#+end_src
+
+** windmove
+
+#+begin_src emacs-lisp
+(message "---Start windmove:::: %.2fs" (- (float-time) shit-load-time-start))
+
+(global-set-key (kbd "C-M-l") 'windmove-right)
+(global-set-key (kbd "C-M-h") 'windmove-left)
+(global-set-key (kbd "C-M-j") 'windmove-down)
+(global-set-key (kbd "C-M-k") 'windmove-up)
+
+
+(defun define-movement-keys (hook &rest hooks)
+  (interactive)
+  (while hook
+    (add-hook hook (lambda ()
+                     (local-set-key (kbd "C-M-l") 'windmove-right)
+                     (local-set-key (kbd "C-M-h") 'windmove-left)
+                     (local-set-key (kbd "C-M-j") 'windmove-down)
+                     (local-set-key (kbd "C-M-k") 'windmove-up))
+              (setq hook (pop hooks)))))
+
+(define-movement-keys
+  'esh-mode-hook
+  'coffee-mode-hook
+  'org-mode-hook)
+#+end_src
+
+** smartparens
+
+#+begin_src emacs-lisp
+(message "Start smartparens:::: %.2fs" (- (float-time) shit-load-time-start))
+(use-package smartparens
+  :ensure t
+  :config
+  (progn
+    (use-package smartparens-config)
+    (show-smartparens-global-mode t)
+    (smartparens-global-strict-mode t)
+    (add-hook 'minibuffer-setup-hook 'turn-on-smartparens-strict-mode)
+    ))
+#+end_src
+
+** jabber
+
+#+begin_src emacs-lisp
+(message "Jabber:::: %.2fs" (- (float-time) shit-load-time-start))
+
+  (setq jabber-username "username")
+  (setq jabber-password "password")
+  (setq jabber-nickname "nick")
+  (setq jabber-connection-type (quote ssl))
+  (setq jabber-network-server "talk.google.com")
+  (setq jabber-server "gmail.com")
+#+end_src
+
+** smart mode line (no tangle)
+
+#+begin_src emacs-lisp
+  (message "Start smart mode line:::: %.2fs" (- (float-time) shit-load-time-start))
+
+  (use-package smart-mode-line
+  :ensure t
+    :init
+    (progn
+
+    (setq-default
+     mode-line-format
+     '("%e"
+       ;; mode-line-front-space
+       ;; mode-line-mule-info
+       ;; mode-line-client
+       ;; mode-line-modified
+       ;; mode-line-remote
+       ;; mode-line-frame-identification
+       ;; mode-line-buffer-identification
+       "   "
+       mode-line-position
+       (vc-mode vc-mode)
+       "  "
+       mode-line-modes
+       mode-line-misc-info
+       mode-line-end-spaces))
+
+  (sml/setup)
+  (sml/apply-theme 'automatic)
+  ))
+
+#+end_src
+
+Archived entries from file /Users/donavan/src/rcs/emacs-init/emacs.init.org
+
+
+* Unused
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-09-12 Thu 10:07
+  :ARCHIVE_FILE: ~/src/rcs/emacs-init/emacs.init.org
+  :ARCHIVE_CATEGORY: emacs.init
+  :END:
+** Eshell
+*** main
+
+ #+begin_src emacs-lisp
+ (setq eshell-directory-name (concat user-var-directory "eshell/"))
+ (defun eshell-here ()
+   "Opens up a new shell in the directory associated with the current buffer's file."
+   (interactive)
+   (let* ((parent (if (buffer-file-name)
+                      (file-name-directory (buffer-file-name))
+                    default-directory))
+          (name (car (last (split-string parent "/" t)))))
+     (split-window-vertically)
+     (other-window 1)
+     (eshell "new")
+     (rename-buffer (concat "*eshell: " name "*"))
+
+     (insert (concat "ls"))
+     (eshell-send-input)))
+
+ ;(use-package helm-eshell
+ ; :ensure t)
+
+ (add-hook 'eshell-mode-hook
+           #'(lambda ()
+               (define-key eshell-mode-map (kbd "C-c C-l")  'helm-eshell-history)))
+
+ (defun delete-single-window (&optional window)
+   "Remove WINDOW from the display.  Default is `selected-window'.
+ If WINDOW is the only one in its frame, then `delete-frame' too."
+   (interactive)
+   (save-current-buffer
+     (setq window (or window (selected-window)))
+     (select-window window)
+     (kill-buffer)
+     (if (one-window-p t)
+         (delete-frame)
+       (delete-window (selected-window)))))
+
+ (add-hook 'eshell-mode-hook 'my-eshell-mode-hook)
+ (defun my-eshell-mode-hook ()
+   (key-chord-define eshell-mode-map "fd" 'delete-single-window)
+   ;; (local-set-key (kbd "M-s") 'other-window)
+
+   (local-set-key (kbd "C-c C-h") 'eshell-list-history)
+
+
+   (local-set-key (kbd "C-c h")
+                  (lambda ()
+                    (interactive)
+                    (insert
+                     (ido-completing-read "Eshell history: "
+                                          (delete-dups
+                                           (ring-elements eshell-history-ring)))))))
+
+ (after 'evil
+   (define-leader-keys 'leader-shell-mode-map "s"
+     "e" 'eshell-here
+     "d" 'delete-single-window
+     "p" 'prodigy
+     )
+   (local-set-key (kbd "C-M-l") 'evil-window-right))
+ #+end_src
+
+*** prompt
+ #+begin_src emacs-lisp
+ (message "Start eshell/prompt:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (defmacro with-face (str &rest properties)
+   `(propertize ,str 'face (list ,@properties)))
+
+ ;; (defun tilde-user-dir (dir)
+ ;;   (s-replace "/Users/donavan" "~" dir))
+
+ (defun curr-dir-git-branch-string (pwd)
+   "Returns current git branch as a string, or the empty string if
+ PWD is not in a git repo (or the git command is not found)."
+   (interactive)
+   (when (and (eshell-search-path "git")
+              (locate-dominating-file pwd ".git"))
+     (let ((git-output (shell-command-to-string (concat "cd " pwd " && git branch | grep '\\*' | sed -e 's/^\\* //'"))))
+       (concat "["
+               (if (> (length git-output) 0)
+                   (substring git-output 0 -1)
+                 "(no branch)")
+               "]"))))
+
+ (defun shk-eshell-prompt ()
+   (let* ((header-bg "#000")
+          (pwd (eshell/pwd))
+          (display-prompt (concat (s-replace "/Users/donavan" "~" pwd) " "))
+          (time (format-time-string "(%Y-%m-%d %H:%M) " (current-time)))
+          (git-status (or (curr-dir-git-branch-string pwd) "nil")))
+     (concat
+      (with-face display-prompt :background "black" :foreground cool-blue-0)
+      (with-face time :background "black" :foreground cool-yellow-1)
+      (with-face git-status :background "black" :foreground cool-purple-0)
+      (with-face "\n" :background "black")
+      (if (= (user-uid) 0)
+          (with-face "#" :foreground cool-red-0)
+        (with-face "$" :foreground cool-blue-2))
+      " ")))
+
+ (setq eshell-prompt-function 'shk-eshell-prompt)
+ (setq eshell-highlight-prompt nil)
+ #+end_src
+** Line commands
+ #+begin_src emacs-lisp
+ (message "Line commands:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (defun open-line-below ()
+   (interactive)
+   (end-of-line)
+   (newline)
+   (indent-for-tab-command))
+
+ (defun open-line-above ()
+   (interactive)
+   (beginning-of-line)
+   (newline)
+   (forward-line -1)
+   (indent-for-tab-command))
+
+ (defun move-line-down ()
+   (interactive)
+   (let ((col (current-column)))
+     (save-excursion
+       (forward-line)
+       (transpose-lines 1))
+     (forward-line)
+     (move-to-column col)))
+
+ (defun move-line-up ()
+   (interactive)
+   (let ((col (current-column)))
+     (save-excursion
+       (forward-line)
+       (transpose-lines -1))
+     (move-to-column col)))
+
+ (global-set-key (kbd "<C-S-down>") 'move-line-down)
+ (global-set-key (kbd "<C-S-up>") 'move-line-up)
+
+
+ #+end_src
+** Movement keys null
+ #+begin_src emacs-lisp
+ (global-set-key (kbd "C-M-l") nil)
+ (global-set-key (kbd "C-M-h") nil)
+ (global-set-key (kbd "C-M-j") nil)
+ (global-set-key (kbd "C-M-k") nil)
+ #+end_src
+** Fringe
+ #+begin_src emacs-lisp
+ ;;
+ (when (window-system)
+   (require 'git-gutter-fringe+))
+
+ (global-git-gutter+-mode +1)
+ (require 'smart-mode-line)
+ (if after-init-time (sml/setup)
+   (add-hook 'after-init-hook 'sml/setup))
+ #+end_src
+** autopair
+
+ #+begin_src emacs-lisp
+ (message "autopair:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package autopair
+   :diminish (autopair-mode . "a")
+   :init
+   (progn
+     (autopair-global-mode)
+     (setq autopair-skip-whitespace t)
+
+     (defun my-autopair-padding-hook ()
+       (setq autopair-dont-pad '(:comment :string))
+       (setq autopair-handle-action-fns
+             (list #'autopair-default-handle-action
+                   #'autopair-padding-handler))
+       (autopair-mode 1))
+     (hook-into-modes 'my-autopair-padding-hook '(php-mode ruby-mode))))
+ #+end_src
+
+*** autopair-padding
+ #+begin_src emacs-lisp
+ ;;; autopair-padding.el --- add space padded pairs to autopair
+
+ ;; this file is not part of Emacs
+
+ ;; Copyright (C) 2011 Le Wang
+ ;; Author: Le Wang
+ ;; Maintainer: Le Wang
+ ;; Description: pad autopair delimiters with
+ ;; Author: Le Wang
+ ;; Maintainer: Le Wang
+
+ ;; Created: Fri Sep 16 19:26:30 2011 (+0800)
+ ;; Version: 0.1
+ ;; Last-Updated: Sun Oct 16 19:39:48 2011 (+0800)
+ ;;           By: Le Wang
+ ;;     Update #: 8
+ ;;          URL: https://github.com/lewang/le_emacs_libs/blob/master/autopair-padding.el
+ ;;
+ ;; Keywords:
+ ;; Compatibility: Emacs 23+
+
+ ;;; Installation:
+
+ ;;
+ ;;    (add-hook 'ruby-mode-hook
+ ;;          (lambda ()
+ ;;            (require 'autopair-padding)
+ ;;            (setq autopair-dont-pad '(:comment :string))
+ ;;            (setq autopair-handle-action-fns
+ ;;                  (list #'autopair-default-handle-action
+ ;;                        #'autopair-padding-handler))
+ ;;            (autopair-mode 1)))
+ ;;
+
+ ;;; Commentary:
+
+ ;; Padding delimiters with a space is common in some languages for clarity,
+ ;; this package integrates paddded delimiters into autopair.
+ ;;
+ ;;
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;;
+ ;; This program is free software; you can redistribute it and/or
+ ;; modify it under the terms of the GNU General Public License as
+ ;; published by the Free Software Foundation; either version 3, or
+ ;; (at your option) any later version.
+ ;;
+ ;; This program is distributed in the hope that it will be useful,
+ ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ ;; General Public License for more details.
+ ;;
+ ;; You should have received a copy of the GNU General Public License
+ ;; along with this program; see the file COPYING.  If not, write to
+ ;; the Free Software Foundation, Inc., 51 Franklin Street, Fifth
+ ;; Floor, Boston, MA 02110-1301, USA.
+ ;;
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+ ;;; Code:
+
+ ;; (eval-when-compile (require 'cl))
+
+ ;; (require 'autopair)
+
+ ;; (provide 'autopair-padding)
+
+
+ (defvar autopair-dont-pad-contexts nil
+   "list of contexts where padding should not occur
+ e.g. (setq autopair-dont-pad-contexts'(:comment :string))
+
+ see `autopair-extra-pairs' for valid keywords")
+
+ (defvar autopair-dont-pad nil
+   "list of chars for which padding should not happen")
+
+ (defun autopair-padding-handler (action pair pos-before)
+   "handler for space padded delimiters
+
+ When opening, insert \"( | )\" instead of \"()\".
+
+ When backspacing, deleting original opening delimiter deletes
+ entire delimited region if it's only one space.  So you can
+ backspace twice undo insertion.
+
+ When closing, if the delimited string unchanged, padding spaces
+ are removed.
+
+ Note: you should set `autopair-skip-whitespace' to skip the
+ closing padded delimiter properly."
+   (let (
+         (where-sym (second (autopair--syntax-ppss)))
+         touched)
+     (unless (or (eq :everywhere where-sym)
+                 (memq where-sym autopair-dont-pad-contexts)
+                 (memq pair autopair-dont-pad))
+       (cond ((and (eq 'opening action)
+                   (eq pair (char-after)))
+              (insert "  ")
+              (backward-char 1))
+             ((and (eq 'backspace action)
+                   (equal (format " %c" pair)
+                          (buffer-substring-no-properties (point) (+ 2 (point)))))
+              (delete-region (point) (+ 2 (point))))
+             ((eq 'closing action)
+              (let* ((open-delim pair)
+                     (close-delim (autopair--calculate-inserted))
+                     (match-regex (if autopair-skip-whitespace
+                                      (format "%c\\(  \\)%c" open-delim close-delim)
+                                    (format "%c\\( %c \\)%c" open-delim close-delim close-delim))))
+                (save-excursion
+                  (skip-chars-backward (format "^%c" open-delim) (point-at-bol))
+                  (backward-char 1)
+                  (when (looking-at match-regex)
+                    (replace-match "" nil nil nil 1)
+                    (setq touched t)))
+                ;; move past close-delim
+                (when (and touched
+                           (not autopair-skip-whitespace))
+                  (forward-char))))))))
+
+
+
+
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ ;; autopair-padding.el ends here
+
+ #+end_src
+** Smartscan
+ #+begin_src emacs-lisp
+ (message "smart scan:::: %.2fs" (- (float-time) shit-load-time-start))
+   (use-package smartscan
+     :bind (("M-p" . smartscan-symbol-go-backward)
+            ("M-n" . smartscan-symbol-go-forward)))
+ #+end_src
+** lentic
+
+ #+begin_src emacs-lisp
+ (message "Start lentic:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package lentic
+   :ensure t)
+ #+end_src
+
+** Uniquify
+ #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el2
+ (message "Uniquify:::: %.2fs" (- (float-time) shit-load-time-start))
+ (require 'uniquify)
+ (setq uniquify-buffer-name-style 'reverse)
+ (setq
+  uniquify-buffer-name-style 'post-forward
+  uniquify-separator ":"
+  uniquify-after-kill-buffer-p t
+  uniquify-ignore-buffers-re "^\\*")
+
+ #+end_src
+
+** pos tip
+ #+begin_src emacs-lisp
+ (message "pos tip:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (require 'pos-tip)
+ (defun my-describe-function (function)
+    "Display the full documentation of FUNCTION (a symbol) in tooltip."
+    (interactive (list (function-called-at-point)))
+    (if (null function)
+        (pos-tip-show
+         "** You didn't specify a function! **" '("red"))
+      (pos-tip-show
+       (with-temp-buffer
+         (let ((standard-output (current-buffer))
+               (help-xref-following t))
+           (prin1 function)
+           (princ " is ")
+           (describe-function-1 function)
+           (buffer-string)))
+       nil nil nil 0)))
+
+ (require 'popup-pos-tip)
+  (defadvice popup-tip
+    (around popup-pos-tip-wrapper (string &rest args) activate)
+    (if (eq window-system 'x)
+        (apply 'popup-pos-tip string args)
+      ad-do-it))
+
+ #+end_src
+*** pos tip popup library
+ #+begin_src emacs-lisp
+
+ ;;; popup-pos-tip.el -- pos-tip.el wrapper library for programs using popup.el
+
+ ;; Copyright (C) 2010  S. Irie
+
+ ;; Author: S. Irie
+ ;; Maintainer: S. Irie
+ ;; Keywords: Tooltip
+
+ (defconst popup-pos-tip-version "0.1.2")
+
+ ;; This program is free software; you can redistribute it and/or modify
+ ;; it under the terms of the GNU General Public License as published by
+ ;; the Free Software Foundation, either version 3 of the License, or
+ ;; (at your option) any later version.
+
+ ;; This program is distributed in the hope that it will be useful,
+ ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ;; GNU General Public License for more details.
+
+ ;; You should have received a copy of the GNU General Public License
+ ;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ ;;; Commentary:
+
+ ;; This program provides some functions which are compatible with the
+ ;; ones provided by popup.el. User can easily replace popup.el's tooltip
+ ;; functions by defining advice (see below).
+
+ ;; Settings:
+ ;;
+ ;; Save this file as popup-pos-tip.el in a directory which is listed
+ ;; in load-path, and add the following in your .emacs file:
+ ;;
+ ;; (require 'popup-pos-tip)
+ ;; (defadvice popup-tip
+ ;;   (around popup-pos-tip-wrapper (string &rest args) activate)
+ ;;   (if (eq window-system 'x)
+ ;;       (apply 'popup-pos-tip string args)
+ ;;     ad-do-it))
+
+ ;; History:
+ ;; 2010-04-29  S. Irie
+ ;;         * Changed `popup-pos-tip' to hide tooltip after waiting key event
+ ;;         * Fixed incorrect tooltip width for multibyte character string
+ ;;         * Added constant `popup-pos-tip-version'
+ ;;         * Version 0.1.2
+ ;;
+ ;; 2010-04-16  S. Irie
+ ;;         * Changed `popup-pos-tip' not to fill paragraph unless exceeding :width
+ ;;         * Version 0.1.1
+ ;;
+ ;; 2010-03-29  S. Irie
+ ;;         * First release
+ ;;         * Version 0.1.0
+
+ ;;; Code:
+
+ (eval-when-compile
+   (require 'cl))
+
+ (require 'popup)
+ (require 'pos-tip)
+
+ (defun* popup-pos-tip (string
+                        &key
+                        point
+                        (around t)
+                        width
+                        (height 15) ; dummy
+                        min-height  ; dummy
+                        truncate    ; dummy
+                        margin
+                        margin-left
+                        margin-right
+                        scroll-bar  ; dummy
+                        parent
+                        parent-offset
+                        nowait
+                        prompt
+                        &aux rows)
+   (if (bufferp string)
+       (setq string (with-current-buffer string (buffer-string))))
+
+   (or width (setq width popup-tip-max-width))
+   (and (eq margin t) (setq margin 1))
+   (or margin-left (setq margin-left (or margin 0)))
+   (or margin-right (setq margin-right (or margin 0)))
+   (and (null point) parent
+        (setq point (popup-child-point parent parent-offset)))
+
+   (setq rows (pos-tip-split-string string
+                                    (+ margin-left width)
+                                    margin-left
+                                    (and (> (car (pos-tip-string-width-height string))
+                                            width)
+                                         'none))
+         string (let ((rmargin-str (make-string margin-right ?\s)))
+                  (propertize (concat (mapconcat 'identity
+                                                 rows
+                                                 (concat rmargin-str "\n"))
+                                      rmargin-str)
+                              'face 'pos-tip-temp))
+         width (+ (apply 'max (mapcar 'string-width rows))
+                  margin-right)
+         height (length rows))
+
+   (face-spec-reset-face 'pos-tip-temp)
+   (set-face-font 'pos-tip-temp (frame-parameter nil 'font))
+
+   (pos-tip-show-no-propertize string
+                               'popup-tip-face
+                               point nil 0
+                               (pos-tip-tooltip-width width
+                                                      (frame-char-width))
+                               (pos-tip-tooltip-height height
+                                                       (frame-char-height))
+                               nil
+                               (- (* margin-left (frame-char-width)))
+                               (and (not around) 0))
+
+   (unless nowait
+     (clear-this-command-keys)
+     (unwind-protect
+         (push (read-event prompt) unread-command-events)
+       (pos-tip-hide))
+     t))
+
+ (defun popup-pos-tip-show-quick-help (menu &optional item &rest args)
+   (let* ((point (plist-get args :point))
+          (around nil)
+          (parent-offset (popup-offset menu))
+          (doc (popup-menu-documentation menu item)))
+     (when (stringp doc)
+       (if (popup-hidden-p menu)
+           (setq around t
+                 menu nil
+                 parent-offset nil)
+         (setq point nil))
+       (apply 'popup-pos-tip
+              doc
+              :point point
+              :around around
+              :parent menu
+              :parent-offset parent-offset
+              args))))
+
+ (provide 'popup-pos-tip)
+
+ ;;;
+ ;;; popup-pos-tip.el ends Here
+
+ #+end_src
+** help-fns+
+ #+begin_src emacs-lisp
+ (message "help-fns+:::: %.2fs" (- (float-time) shit-load-time-start))
+ (require 'help-fns+)
+ #+end_src
+** popwin
+ #+begin_src emacs-lisp
+ (message "popwin:::: %.2fs" (- (float-time) shit-load-time-start))
+ (require 'popwin)
+ (popwin-mode 1)
+ (setq display-buffer-function 'popwin:display-buffer)
+ (push '("^\*helm .+\*$" :regexp t) popwin:special-display-config)
+ (push '("^\*helm-.+\*$" :regexp t) popwin:special-display-config)
+ #+end_src
+** Dash
+ #+begin_src emacs-lisp
+ (message "dash:::: %.2fs" (- (float-time) shit-load-time-start))
+ (setq helm-dash-docsets-path "~/Library/Application Support/Dash/DocSets/")
+ #+end_src
+** anzu
+
+ #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el2
+ (message "anzu:::: %.2fs" (- (float-time) shit-load-time-start))
+ (use-package anzu
+   :ensure t
+   :init
+   (progn
+     (global-anzu-mode +1)
+     (set-face-attribute 'anzu-mode-line nil :foreground cool-yellow-0)
+     (global-set-key [remap query-replace] 'anzu-query-replace)
+     (global-set-key [remap query-replace-regexp] 'anzu-query-replace-regexp)
+     (setq
+      anzu-mode-lighter ""
+      anzu-deactivate-region t
+      anzu-search-threshold 1000
+      anzu-replace-to-string-separator " => ")))
+ #+end_src
+
+** Mu4e
+
+ #+begin_src emacs-lisp
+   (message "mu4e:::: %.2fs" (- (float-time) shit-load-time-start))
+
+   (add-to-list 'load-path "/usr/local/share/emacs/site-lisp/mu4e")
+   (setq mu4e-mu-binary "/usr/local/bin/mu")
+
+   (require 'mu4e)
+   (require 'org-mu4e)
+   (require 'mu4e-contrib)
+
+   (setq org-mu4e-link-query-in-headers-mode nil)
+   (after 'evil
+     (add-hook 'mu4e-view-mode-hook
+               (lambda ()
+                 (define-key mu4e-view-mode-map " " my-leader-map)))
+     (add-hook 'mu4e-main-mode-hook
+               (lambda ()
+                 (define-key mu4e-main-mode-map " " my-leader-map)))
+     (add-hook 'mu4e-compose-mode-hook
+               (lambda ()
+                 (evil-define-key 'normal mu4e-compose-mode-map " " my-leader-map)))
+     (add-hook 'mu4e-headers-mode-hook
+               (lambda ()
+                 (define-key mu4e-headers-mode-map " " my-leader-map))))
+
+   (setq mu4e-maildir-shortcuts
+         '(
+           ;; ("/gmail/INBOX" . ?g)
+           ;; ("/hupu/INBOX" . ?h)
+           ;; ("/gmail/[Gmail].Starred" . ?s)
+           ;; ("/hupu/[Gmail].All Mail" . ?a)
+           ("/work/Inbox" . ?i)
+           ("/work/Archive" . ?a)
+           ))
+
+   (add-to-list 'mu4e-bookmarks
+                '("size:5M..500M"       "Big messages"     ?b))
+
+   (setq
+    mu4e-maildir "~/Mail"
+    ;; mu4e-sent-messages-behavior 'delete
+    mu4e-attachment-dir "~/Downloads"
+    smtpmail-smtp-service 587
+    smtpmail-stream-type 'starttls
+    message-send-mail-function 'smtpmail-send-it
+    message-kill-buffer-on-exit t
+    mu4e-get-mail-command "mbsync -a"
+    starttls-extra-arguments nil
+    mu4e-html2text-command 'mu4e-shr2text
+    mu4e-update-interval 600
+
+    ;; (add-hook 'mu4e-compose-mode-hook
+    ;;           (defun my-setup-epa-hook ()
+    ;;             (mml-secure-sign)))
+
+    )
+
+   (setq mu4e-contexts
+         `( ,(make-mu4e-context
+              :name "Private"
+              :enter-func (lambda () (mu4e-message "Entering Private context"))
+              :leave-func (lambda () (mu4e-message "Leaving Private context"))
+              ;; we match based on the contact-fields of the message
+              :match-func (lambda (msg)
+                            (when msg
+                              (mu4e-message-contact-field-matches msg
+                                                                  :to "aliced@home.example.com")))
+              :vars '( ( user-mail-address      . "aliced@home.example.com"  )
+                       ( user-full-name         . "Alice Derleth" )
+                       ( mu4e-compose-signature .
+                                                (concat
+                                                 "Alice Derleth\n"
+                                                 "Lauttasaari, Finland\n"))))
+            ,(make-mu4e-context
+              :name "Work"
+              :enter-func (lambda () (mu4e-message "Switch to the Work context"))
+              ;; no leave-func
+              ;; we match based on the contact-fields of the message
+              :match-func (lambda (msg)
+                            (when msg
+                              (mu4e-message-contact-field-matches msg
+                                                                  :to "donavan@arcinteractive.co")))
+              :vars '((user-mail-address      . "donavan@arcinteractive.co")
+                      (user-full-name         . "Donavan Costaras")
+                      (smtpmail-smtp-user     . "donavan@arcinteractive.co")
+                      (user-mail-address      . "donavan@arcinteractive.co")
+                      (mu4e-drafts-folder     . "/work/Drafts")
+                      (mu4e-sent-folder       . "/work/Sent Items")
+                      (mu4e-trash-folder      . "/work/Deleted Items")
+                      (mu4e-refile-folder     . "/work/Archive")
+                      (smtpmail-smtp-server   . "smtp.office365.com")
+                      (mu4e-compose-signature . (concat
+                                                 "Regards,\n"
+                                                 "Donavan\n\n"))
+                      ))
+
+            ))
+
+
+   (add-to-list 'load-path "~/.emacs.d/elisp/gnus-outlook-style")
+   (setq outlook-style-format-helper-location "~/bin/format_quoted_mail")
+   (require 'outlook-style)
+
+   (defvar my-mu4e-account-alist
+     '(("gmail"
+        (smtpmail-smtp-user "d.costaras@gmail.com")
+        (user-mail-address "d.costaras@gmail.com")
+        (mu4e-drafts-folder "/gmail/drafts")
+        ;; (mu4e-sent-folder   "/gmail/[Gmail].Sent Mail")
+        (mu4e-trash-folder  "/gmail/[Gmail].Trash")
+        (mu4e-refile-folder "/gmail/[Gmail].All Mail")
+
+        (mu4e-compose-signature (concat
+                                 "Cheers,\n"
+                                 "Donavan\n\n"
+                                 "This message is digitally signed, I consider this good practice.\n"
+                                 "Mail me for more information or to get my pubkey.\n"
+                                 "Also you could read this: http://www.phildev.net/pgp/gpgwhy.html\n")))
+       ("work"
+        (smtpmail-smtp-user "donavan@arcinteractive.co")
+        (user-mail-address "donavan@arcinteractive.co")
+        (mu4e-drafts-folder "/work/Drafts")
+        (mu4e-sent-folder   "/work/Sent Items")
+        (mu4e-trash-folder  "/hupu/Deleted Items")
+        (mu4e-refile-folder "/hupu/Archive")
+        (smtpmail-smtp-server "smtp.office365.com")
+
+        (mu4e-compose-signature (concat
+                                 "Regards,\n"
+                                 "Donavan\n\n")))
+       ("hupu"
+        (smtpmail-smtp-user "donavan@hupu-labs.biz")
+        (user-mail-address "donavan@hupu-labs.biz")
+        (mu4e-drafts-folder "/hupu/drafts")
+        ;; (mu4e-sent-folder   "/hupu/[Gmail].Sent Mail")
+        (mu4e-trash-folder  "/hupu/[Gmail].Trash")
+        (mu4e-refile-folder "/hupu/[Gmail].All Mail")
+
+        (mu4e-compose-signature (concat
+                                 "Regards,\n"
+                                 "Donavan\n\n")))))
+
+   ;; (defun my-mu4e-set-account ()
+   ;;   "Set the account for composing a message."
+   ;;   (let* ((account
+   ;;           (if mu4e-compose-parent-message
+   ;;               (let ((maildir (mu4e-message-field mu4e-compose-parent-message :maildir)))
+   ;;                 (string-match "/\\(.*?\\)/" maildir)
+   ;;                 (match-string 1 maildir))
+   ;;             (completing-read (format "Compose with account: (%s) "
+   ;;                                      (mapconcat #'(lambda (var) (car var))
+   ;;                                                 my-mu4e-account-alist "/"))
+   ;;                              (mapcar #'(lambda (var) (car var)) my-mu4e-account-alist)
+   ;;                              nil t nil nil (caar my-mu4e-account-alist))))
+   ;;          (account-vars (cdr (assoc account my-mu4e-account-alist))))
+   ;;     (if account-vars
+   ;;         (mapc #'(lambda (var)
+   ;;                   (set (car var) (cadr var)))
+   ;;               account-vars)
+   ;;       (message account)
+   ;;       )))
+
+   ;; (add-hook 'mu4e-compose-pre-hook 'my-mu4e-set-account)
+
+
+   ;; (defun mu4e-view (msg headersbuf)
+   ;;   "Display the message MSG in a new buffer, and keep in sync with HDRSBUF.
+   ;; 'In sync' here means that moving to the next/previous message in
+   ;; the the message view affects HDRSBUF, as does marking etc.
+
+   ;; As a side-effect, a message that is being viewed loses its 'unread'
+   ;; marking if it still had that."
+   ;;   (let* ((embedded ;; is it as an embedded msg (ie. message/rfc822 att)?
+   ;;            (when (gethash (mu4e-message-field msg :path)
+   ;;                    mu4e~path-parent-docid-map) t))
+   ;;           (buf
+   ;;             (if embedded
+   ;;               (mu4e~view-embedded-winbuf)
+   ;;               (get-buffer-create mu4e~view-buffer-name))))
+   ;;     ;; note: mu4e~view-mark-as-read will pseudo-recursively call mu4e-view again
+   ;;     ;; by triggering mu4e~view again as it marks the message as read
+   ;;     (with-current-buffer buf
+   ;;       (switch-to-buffer buf)
+   ;;       (setq mu4e~view-msg msg)
+   ;;       ;;                           |
+   ;;       ;; This is the relevant line v
+   ;;       (when t ;;(or embedded (not (mu4e~view-mark-as-read msg)))
+   ;;         (let ((inhibit-read-only t))
+   ;;           (erase-buffer)
+   ;;           (mu4e~delete-all-overlays)
+   ;;           (insert (mu4e-view-message-text msg))
+   ;;           (goto-char (point-min))
+   ;;           (mu4e~fontify-cited)
+   ;;           (mu4e~fontify-signature)
+   ;;           (mu4e~view-make-urls-clickable)
+   ;;           (mu4e~view-show-images-maybe msg)
+   ;;           (setq
+   ;;             mu4e~view-buffer buf
+   ;;             mu4e~view-headers-buffer headersbuf)
+   ;;           (when embedded (local-set-key "q" 'kill-buffer-and-window))
+   ;;           (mu4e-view-mode))))))
+   ;; don't keep message buffers around
+ #+end_src
+** visible mark
+
+ #+begin_src emacs-lisp
+ (use-package visible-mark
+   :ensure t
+   :init
+   (progn
+
+     (defface visible-mark-active
+       '((((type tty) (class mono)))
+         (t (:background "magenta"))) "")
+
+     (defface visible-mark-face1
+       '((((type tty) (class mono)))
+         (t (:background "blue"))) "")
+
+     (defface visible-mark-face2
+       '((((type tty) (class mono)))
+         (t (:background "green"))) "")
+
+     (defface visible-mark-face3
+       '((((type tty) (class mono)))
+         (t (:background "yellow"))) "")
+
+     (setq visible-mark-max 5)
+     (setq visible-mark-faces
+           `(visible-mark-active
+             visible-mark-face1
+             visible-mark-face2
+             visible-mark-face3
+             my-visible-mark-face2)))
+
+   :config
+   (progn
+     ;; (global-visible-mark-mode nil)
+     ))
+ #+end_src
+
+** Pass
+
+ #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el2
+ (use-package pass
+   :ensure t)
+ #+end_src
+
+** table
+
+ #+begin_src emacs-lisp
+ (message "Start table:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (after 'hydra
+   (add-hook 'table-cell-map-hook
+             (lambda ()
+               (define-key table-cell-map (kbd "C-c t")
+                 (defhydra table-hydra (:hint nil)
+                   "
+ ^Table^
+ ----------------------------------------------------------------------------
+ _<_: narrow cell           _}_: heighten cell
+ _>_: widen cell            _{_: shorten cell
+
+ _f_: forward cell          _-_: split cell vertically
+ _b_: backward cell         _|_: split cell horizontally
+
+ _r_: insert row            _j_: in cell newline and indent
+ _c_: insert column         _m_: in cell newline
+
+ _w_: fixed width mode      _d_: query dimension
+ _j_: justify               _s_: span cell
+ _g_: generate source       _q_: quit
+ "
+                   ("w" table-fixed-width-mode)
+                   ("d" table-query-dimension)
+                   ("s" table-span-cell)
+                   ("r" table-insert-row)
+                   ("c" table-insert-column)
+                   ("-" table-split-cell-vertically)
+                   ("j" table-justify)
+                   ("<" table-narrow-cell)
+                   (">" table-widen-cell)
+                   ("g" table-generate-source)
+                   ("{" table-shorten-cell)
+                   ("|" table-split-cell-horizontally)
+                   ("}" table-heighten-cell)
+                   ("n" next-line)
+                   ("p" previous-line)
+                   ("b" table-backward-cell)
+                   ("f" table-forward-cell)
+                   ("j" *table--cell-newline-and-indent)
+                   ("m" *table--cell-newline)
+                   ("q" nil "quit" :color blue))))))
+ #+end_src
+
+** Volitile highlights
+ #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el2
+ (use-package volatile-highlights
+   :ensure t
+   :config
+   (volatile-highlights-mode t))
+ #+end_src
+** swiper
+
+ #+begin_src emacs-lisp
+ (message "Start swiper:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package swiper
+   :ensure t
+   :init
+   (progn
+     (use-package swiper-helm
+       :ensure t)))
+
+ #+end_src
+
+** fancy narrow
+ #+begin_src emacs-lisp
+ (message "Start fancy narrow:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package fancy-narrow
+   :ensure t)
+
+ #+end_src
+** emms
+*** config
+ #+begin_src emacs-lisp
+
+ (message "Start emms:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package emms-setup
+
+   :defer t
+
+   :init (progn
+           <<emms-init>>
+           )
+
+   :config (progn
+             <<emms-packages>>
+             <<emms-mpd>>
+             <<emms-controls>>
+             <<emms-config>>
+             ))
+
+ #+end_src
+*** Init
+
+ #+name: emms-init
+ #+begin_src emacs-lisp :exports none :noweb yes
+
+   (setq exec-path (append exec-path '("/usr/local/bin")))
+
+   (after 'evil
+     (define-leader-keys 'leader-emms-mode-map "m"
+       "m" 'my-emms
+       "s" 'de-toggle-playing
+       "j" 'emms-next
+       "u" 'mu4e
+       ))
+
+   (defvar my-emms-initialized nil)
+
+   (defun my-emms ()
+     (interactive)
+     (unless my-emms-initialized
+       (progn
+         (message "initiate mpd and emms")
+         (shell-command "mpd")
+         (require 'emms-setup)
+         (emms-standard)
+         (emms-player-mpd-connect)
+         (emms-player-mpd-update-all-reset-cache)
+         (emms-cache-set-from-mpd-all)
+         (setq my-emms-initialized t))
+       (progn
+         (message "already initialized")
+         (call-interactively #'emms-smart-browse))))
+
+ #+end_src
+*** packages
+
+ #+name: emms-packages
+ #+begin_src emacs-lisp
+ (use-package emms-cache)
+ (use-package emms-volume)
+ (use-package emms-browser)
+ (use-package emms-info)
+ (use-package emms-info-libtag)
+ #+end_src
+
+*** players
+**** mpd
+
+ #+name: emms-mpd
+ #+begin_src emacs-lisp
+ (message "Start emms/players/mpd:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (require 'emms-player-mpd)
+ (setq emms-player-mpd-server-name "localhost")
+ (setq emms-player-mpd-server-port "6600")
+ (add-to-list 'emms-info-functions 'emms-info-mpd)
+ (add-to-list 'emms-player-list 'emms-player-mpd)
+ (setq emms-player-mpd-sync-playlist t)
+ (setq emms-info-auto-update t)
+ (setq emms-player-mpd-music-directory "~/Music")
+ #+end_src
+
+*** controls
+
+ #+name: emms-controls
+ #+begin_src emacs-lisp :exports none :noweb yes
+ (defhydra my-emms-browser-controls
+   (:pre (if (not (string= "mus"
+                           (cdr (assoc 'name (wg-current-workgroup)))))
+             (wg-switch-to-workgroup (wg-get-workgroup 'name "mus" t)))
+         :color red
+         :hint nil)
+   "
+ _a_: artist      _b_: album    _g_: genre    _q_: quit
+ _c_: composer    _y_: year
+ "
+   ("q" my-emms-controls/body :color blue)
+   ("a" emms-browser-search-by-artist)
+   ("c" emms-browser-search-by-composer)
+   ("b" emms-browser-search-by-album)
+   ("y" emms-browser-search-by-year)
+   ("g" emms-browser-search-by-genre))
+
+ (defhydra my-emms-controls (:color red :hint nil)
+   "
+ Player-------^^Playlist------^^Browser-----------------_q_: quit
+ _p_: pause     _p_: previous   _m_: smart browse
+ _h_: < seek    _n_: next       _f_: filter
+ _l_: > seek    _r_: random
+ _C_: clear     _c_: clear                  %(my-emms-show-track)
+ "
+   ("f" my-emms-browser-controls/body :color blue)
+   ("r" emms-random)
+   ("s" emms-pause)
+   ("m" emms-smart-browse)
+   ("n" emms-player-mpd-next)
+   ("p" emms-player-mpd-previous)
+   ("c" my-emms-playlist-clear)
+   ("C" emms-player-mpd-clear)
+   ("l" (lambda () (interactive) (emms-player-mpd-seek 100)))
+   ("h" (lambda () (interactive) (emms-player-mpd-seek -100)))
+   ("q" nil :color blue))
+
+ (after 'evil
+   (evil-define-key 'normal global-map " m" 'my-emms-controls/body))
+ #+end_src
+
+*** Config
+
+ #+name: emms-config
+ #+begin_src emacs-lisp :exports none :noweb yes
+   (defun my-emms-show-track ()
+     (concat
+      (emms-player-mpd-show nil (lambda (buffer desc)
+                                  (with-temp-buffer (princ desc)
+                                                    (buffer-string))))))
+
+   (defun my-emms-playlist-clear ()
+     (interactive)
+     (with-current-buffer "*EMMS Playlist*"
+       (emms-playlist-clear)))
+
+
+   ;; Fixes duplicate FLAC tags on update
+   ;; from: https://lists.gnu.org/archive/html/emms-patches/2014-01/msg00000.html
+   (defun emms-tag-editor-tag-flac (track)
+     "Commit changes to an FLAC file according to TRACK."
+     (require 'emms-info-metaflac)
+     (with-temp-buffer
+       (let ((tags '("artist" "composer" "performer" "title" "album" "tracknumber" "discnumber" "date" "genre" "note"))
+             need val)
+         (mapc (lambda (tag)
+                 (let ((info-tag (intern (concat "info-" tag))))
+                   (when (> (length (setq val (emms-track-get track info-tag))) 0)
+                     (insert (upcase tag) "=" val "\n"))))
+               tags)
+         (when (buffer-string)
+           (apply #'call-process-region (point-min) (point-max)
+                  emms-info-metaflac-program-name nil
+                  (get-buffer-create emms-tag-editor-log-buffer)
+                  nil
+                  (append
+                   (mapcar (lambda (tag)
+                             (concat "--remove-tag=" tag))
+                           tags)
+                   '("--import-tags-from=-")
+                   '("--")
+                   (list (emms-track-name track))))))))
+
+   (use-package emms-tag-editor)
+
+   (defun my-emms-edit-track-or-marked ()
+     (interactive)
+     (if (emms-mark-has-markedp)
+         (emms-tag-editor-edit-marked-tracks)
+       (emms-tag-editor-edit-track)))
+
+   (after 'evil
+     (define-key emms-browser-mode-map " " my-leader-map)
+     (define-key emms-browser-mode-map (kbd "j") 'next-line)
+     (define-key emms-browser-mode-map (kbd "k") 'previous-line)
+
+     (define-key emms-playlist-mode-map " " my-leader-map)
+     (define-key emms-playlist-mode-map (kbd "j") 'next-line)
+     (define-key emms-playlist-mode-map (kbd "k") 'previous-line)
+     (define-key emms-playlist-mode-map (kbd "h") (lambda () (interactive) (emms-player-mpd-seek 100)))
+     (define-key emms-playlist-mode-map (kbd "l") (lambda () (interactive) (emms-player-mpd-seek -100)))
+
+     (define-key emms-playlist-mode-map (kbd "q") 'emms-browser-bury-buffer)
+     (define-key emms-playlist-mode-map (kbd "<return>") (lambda () (interactive)(emms-playlist-mode-play-smart)))
+     (define-key emms-playlist-mode-map (kbd "m") (lambda () (interactive) (progn (emms-mark-track) (emms-playlist-next))))
+     (define-key emms-playlist-mode-map (kbd "U") 'emms-mark-unmark-all)
+
+
+     ;; (evil-define-key 'normal emms-playlist-mode-map (kbd "l") (lambda () (interactive) (emms-player-mpd-seek 1)))
+     ;; (evil-define-key 'normal emms-browser-mode-map (kbd "l") (lambda () (interactive) (emms-player-mpd-seek 1)))
+     ;; (evil-define-key 'normal emms-playlist-mode-map (kbd "h") (lambda () (interactive) (emms-player-mpd-seek -1)))
+     ;; (evil-define-key 'normal emms-browser-mode-map (kbd "h") (lambda () (interactive) (emms-player-mpd-seek -1)))
+
+     ;; (evil-define-key 'normal emms-playlist-mode-map (kbd "q") 'emms-browser-bury-buffer)
+     ;; (evil-define-key 'normal emms-playlist-mode-map (kbd "<return>") (lambda () (interactive)(emms-playlist-mode-play-smart)))
+     ;; (evil-define-key 'normal emms-playlist-mode-map (kbd "m") (lambda () (interactive) (progn (emms-mark-track) (emms-playlist-next))))
+     ;; (evil-define-key 'normal emms-playlist-mode-map (kbd "U") 'emms-mark-unmark-all)
+
+     (evil-define-key 'normal emms-playlist-mode-map (kbd "e") 'my-emms-edit-track-or-marked)
+
+     (evil-define-key 'normal emms-browser-mode-map (kbd "q") 'emms-browser-bury-buffer)
+     (evil-define-key 'normal emms-browser-mode-map (kbd "j") 'evil-next-line)
+     (evil-define-key 'normal emms-browser-mode-map (kbd "k") 'evil-previous-line)
+     (evil-define-key 'normal emms-browser-mode-map (kbd "<return>") 'emms-browser-add-tracks-and-play))
+
+   (setq
+    later-do-interval 0.0001
+    emms-source-file-default-directory "~/Music"
+    emms-mode-line-format " %s "
+    emms-show-format "NP: %s"
+    emms-playlist-buffer-name "*EMMS Playlist*"
+    emms-cache-file "~/.emacs.d/var/.emms-cache"
+    emms-history-file "~/.emacs.d/var/emms-history"
+    emms-playlist-buffer-name "*EMMS Playlist*"
+    emms-playlist-default-major-mode 'emms-playlist-mode
+    emms-playlist-mode-open-playlists t
+    emms-volume-change-amount 3
+    )
+
+
+
+   (add-hook 'emms-playlist-selection-changed-hook 'de-focus-on-track)
+   (add-hook 'emms-player-started-hook 'emms-show)
+
+   ;; let compilation tracks be displayed together
+                                           ; (setq emms-browser-get-track-field-function
+                                           ;      'emms-browser-get-track-field-use-directory-name)
+
+   (defun de-focus-on-track ()
+     (let ((w (get-buffer-window emms-playlist-buffer t)))
+       (when w
+         (with-selected-window w
+           (emms-playlist-mode-center-current)
+           (recenter '(4))))))
+
+   (defun de-toggle-playing ()
+     (interactive)
+     (if emms-player-playing-p
+         (emms-pause)
+       (emms-start)))
+
+   (defun de-add-dir ()
+     (interactive)
+     (call-interactively 'emms-add-directory-tree)
+     (emms-playlist-mode-go))
+
+   (defun de-search ()
+     (interactive)
+     (goto-char (point-min))
+     (call-interactively 'isearch-forward))
+
+
+
+   (defvar my-emms-info-annoying-titles
+     '("[[:blank:]]*([^(]*\\(Album\\|LP\\)\\( Version\\)?)\\([[:blank:]]\\|$\\)"
+       "[[:blank:]]*\\[Explicit\\]$")
+     "List of annoying things in titles to strip out.")
+
+
+   ;; ;;; Every time the song changes, show me its description
+   (defvar np-interval 5
+     "How often (in seconds) to check whether the current song has changed.")
+
+   ;; Internal
+   (defvar np-last nil
+     "Description for most recently-played track.")
+   (defvar np-timer nil
+     "Timer used by `np-maybe'.")
+
+   (defun np-maybe ()
+     (condition-case nil
+         (emms-player-mpd-show
+          nil
+          (lambda (buffer desc)
+            (when (and (stringp desc)
+                       (not (string= desc "")))
+              (unless (and (stringp np-last)
+                           (string= np-last desc))
+                (setq np-last desc)
+                (message "%s" desc)))))
+       (error (np-remove))))
+
+   (defun np-insinuate ()
+     (unless np-timer
+       (setq np-timer (run-with-idle-timer np-interval t #'np-maybe))))
+
+   (defun np-remove ()
+     (interactive)
+     (when np-timer
+       (emms-cancel-timer np-timer)
+       (setq np-timer nil)))
+
+
+                                           ;(add-hook 'emms-player-started-hook #'np-insinuate)
+                                           ;      (add-hook 'emms-player-stopped-hook #'np-remove)
+                                           ;     (add-hook 'emms-player-finished-hook #'np-remove)
+
+   (after 'evil
+     (define-key emms-playlist-mode-map (kbd "j") 'next-line)
+     (define-key emms-playlist-mode-map (kbd "k") 'previous-line)
+     (define-key emms-playlist-mode-map (kbd "C-j") 'evil-scroll-page-down)
+     (define-key emms-playlist-mode-map (kbd "C-k") 'evil-scroll-page-up)
+
+     (define-key emms-browser-mode-map (kbd "<tab>") 'emms-browser-expand-one-level)
+     (define-key emms-browser-mode-map (kbd "C-j") 'evil-scroll-page-down)
+     (define-key emms-browser-mode-map (kbd "C-k") 'evil-scroll-page-up))
+
+   (define-key emms-playlist-mode-map (kbd "l") 'emms-playlist-mode-play-smart)
+   (global-set-key (kbd "<kp-subtract>") 'emms-previous)
+   (global-set-key (kbd "<kp-add>") 'emms-next)
+   (global-set-key (kbd "<kp-0>") 'de-toggle-playing)
+   (global-set-key (kbd "<kp-6>") 'emms-seek-forward)
+   (global-set-key (kbd "<kp-4>") 'emms-seek-backward)
+   (global-set-key (kbd "<kp-9>") 'emms-playlist-mode-go)
+
+   (define-key dired-mode-map (kbd ".") 'emms-add-dired)
+   #+end_src
+
+*** TODO Bind emms-add-dired to a key
+*** TODO Find usable way to CRUD playlists
+** miniedit
+
+ C-M-e
+
+ #+begin_src emacs-lisp
+ (message "Start miniedit:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package miniedit
+   :ensure miniedit
+   :commands minibuffer-edit
+   :init (miniedit-install))
+
+ #+end_src
+** transpose mark
+
+ #+begin_src emacs-lisp
+ (message "Start transpose mark:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package transpose-mark
+   :ensure t
+   :config
+   (progn
+     (after 'evil
+       (after 'hydra
+
+         (define-leader-keys 'my-transpose-mark-map "t"
+           "m" 'transpose-mark
+           "q" 'transpose-mark-region-abort
+           "e" (defhydra transpose-mark-end ()
+                 "Move transpose-mark-region-end."
+                 ("l" tmr-end--forward-char "forward-char")
+                 ("h" tmr-end--backward-char "backward-char")
+                 ("C-l" tmr-end--forward-word "forward-word")
+                 ("C-h" tmr-end--backward-word "backward-word")
+                 ("q" hydra-keyboard-quit "quit" :color blue))
+           "s" (defhydra transpose-mark-start ()
+                 "Move transpose-mark-region-start."
+                 ("l" tmr-start--forward-char "forward-char")
+                 ("h" tmr-start--backward-char "backward-char")
+                 ("C-l" tmr-start--forward-word "forward-word")
+                 ("C-h" tmr-start--backward-word "backward-word")
+                 ("q" hydra-keyboard-quit "quit" :color blue)))))))
+ #+end_src
+
+** guide-key
+ #+begin_src emacs-lisp
+ (message "Start guide-key:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package guide-key
+   :diminish guide-key-mode
+   :ensure t
+   :init
+   (progn
+     (setq guide-key/guide-key-sequence '("C-x r" "C-x 4" "C-c" "C-h" "C-x 8" "SPC" "SPC t"))
+     (guide-key-mode 1)))  ; Enable guide-key-mode
+
+ #+end_src
+** undo tree
+   #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el2
+ (message "Start undo-tree:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package undo-tree
+   :ensure t
+   :diminish undo-tree-mode
+   :init (progn
+           (global-undo-tree-mode)
+           (setq undo-tree-visualizer-timestamps t)
+           ;; (after 'evil
+           ;;   (define-key undo-tree-map "j" 'undo-tree-visualize-redo)
+           ;;   (define-key undo-tree-map "k" 'undo-tree-visualize-undo)
+           ;;   (define-key undo-tree-map "h" 'undo-tree-visualize-switch-branch-left)
+           ;;   (define-key undo-tree-map "l" 'undo-tree-visualize-switch-branch-right))
+           ))
+
+   #+end_src
+** ibuffer
+ #+begin_src emacs-lisp
+ (message "Ibuffer:::: %.2fs" (- (float-time) shit-load-time-start))
+
+   (defalias 'list-buffers 'ibuffer)
+   (use-package ibuffer
+     :init
+     (progn
+       (setq ibuffer-saved-filter-groups
+             (quote (("default"
+                      ("Org" ;; all org-related buffers
+                       (mode . org-mode))
+                      ("Mail"
+                       (or  ;; mail-related buffers
+                        (mode . message-mode)
+                        (mode . mail-mode)
+                        ;; etc.; all your mail related modes
+                        ))
+                      ("MyProject1"
+                       (filename . "src/myproject1/"))
+                      ("MyProject2"
+                       (filename . "src/myproject2/"))
+                      ("Programming" ;; prog stuff not already in MyProjectX
+                       (or
+                        (mode . c-mode)
+                        (mode . perl-mode)
+                        (mode . python-mode)
+                        (mode . emacs-lisp-mode)
+                        ;; etc
+                        ))
+                      ("ERC"   (mode . erc-mode))))))
+       ))
+
+ #+end_src
+** yasnippet
+
+ #+begin_src emacs-lisp
+ (message "Start yasnippet:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package yasnippet
+   :ensure t
+   :commands (yas-minor-mode yas-expand)
+   :diminish (yas-minor-mode . "y")
+   :mode ("/\\.emacs\\.d/usr/snippets/" . snippet-mode)
+   :init
+   (progn
+
+     (defconst user-snippets-dir (concat user-usr-directory "snippets/"))
+
+     (setq yas-snippet-dirs user-snippets-dir)
+
+     )
+
+   :config
+   (progn
+     ;; use popup menu for yas-choose-value
+
+ (defun yas--mirror-update-display (mirror field snippet)
+   "Update MIRROR according to FIELD (and mirror transform)."
+
+   (let* ((mirror-parent-field (yas--mirror-parent-field mirror))
+          (reflection (and (not (and mirror-parent-field
+                                     (yas--field-modified-p mirror-parent-field)))
+                           (or (yas--apply-transform mirror field 'empty-on-nil)
+                               (yas--field-text-for-display field)))))
+     (when (and reflection
+                (not (string= reflection (buffer-substring-no-properties (yas--mirror-start mirror)
+                                                                         (yas--mirror-end mirror)))))
+       (goto-char (yas--mirror-start mirror))
+       (let ((yas--inhibit-overlay-hooks t))
+         (insert reflection))
+       (if (> (yas--mirror-end mirror) (point))
+           (delete-region (point) (yas--mirror-end mirror))
+         (set-marker (yas--mirror-end mirror) (point))
+         (yas--advance-start-maybe (yas--mirror-next mirror) (point))
+         ;; super-special advance
+         (yas--advance-end-of-parents-maybe mirror-parent-field (point)))
+       (let ((yas--inhibit-overlay-hooks t))
+         ;; (yas--indent-region (yas--mirror-start mirror)
+         ;;                     (yas--mirror-end mirror)
+         ;;                     snippet)
+         ))))
+     (yas-global-mode 1)
+     ;; (require 'popup)
+
+     ;; add some shotcuts in popup menu mode
+     ;; (define-key popup-menu-keymap (kbd "M-n") 'popup-next)
+     ;; (define-key popup-menu-keymap (kbd "M-p") 'popup-previous)
+     ;; (define-key popup-menu-keymap (kbd "<tab>") 'popup-select)
+
+
+     ;; (defun yas-popup-isearch-prompt (prompt choices &optional display-fn)
+     ;;   (when (featurep 'popup)
+     ;;     (popup-menu*
+     ;;      (mapcar
+     ;;       (lambda (choice)
+     ;;         (popup-make-item
+     ;;          (or (and display-fn (funcall display-fn choice))
+     ;;              choice)
+     ;;          :value choice))
+     ;;       choices)
+     ;;      :prompt prompt
+     ;;      ;; start isearch mode immediately
+     ;;      :isearch t)))
+
+     ;; (setq yas-prompt-functions '(yas-popup-isearch-prompt yas-ido-prompt yas-no-prompt))
+
+     ;; (yas-load-directory user-snippets-dir)
+
+     ;; (defun yas-new-snippet (&optional choose-instead-of-guess)
+     ;;   (interactive "P")
+     ;;   (let ((guessed-directories (yas--guess-snippet-directories)))
+     ;;     (switch-to-buffer "*new snippet*")
+     ;;     (erase-buffer)
+     ;;     (kill-all-local-variables)
+     ;;     (snippet-mode)
+     ;;     (set (make-local-variable 'yas-guessed-modes)
+     ;;          (mapcar #'(lambda (d)
+     ;;                      (intern (yas--table-name (car d))))
+     ;;                  guessed-directories))
+     ;;     (unless (and choose-instead-of-guess
+     ;;                  (not (y-or-n-p "Insert a snippet with useful headers? ")))
+     ;;       (yas-expand-snippet (concat "# -*- mode: snippet -*-\n"
+     ;;                                   "# name: $1\n"
+     ;;                                   "# key: $2\n"
+     ;;                                   "# --\n"
+     ;;                                   "$0")))))
+
+     ;; (define-key yas-keymap (kbd "<return>") 'yas-exit-all-snippets)
+
+     ;; ;; Inter-field navigation
+     ;; (defun yas-goto-end-of-active-field ()
+     ;;   (interactive)
+     ;;   (let* ((snippet (car (yas--snippets-at-point)))
+     ;;          (position (yas--field-end (yas--snippet-active-field snippet))))
+     ;;     (if (= (point) position)
+     ;;         (move-end-of-line 1)
+     ;;       (goto-char position))))
+
+     ;; (defun yas-goto-start-of-active-field ()
+     ;;   (interactive)
+     ;;   (let* ((snippet (car (yas--snippets-at-point)))
+     ;;          (position (yas--field-start (yas--snippet-active-field snippet))))
+     ;;     (if (= (point) position)
+     ;;         (move-beginning-of-line 1)
+     ;;       (goto-char position))))
+
+     ;; (define-key yas-keymap (kbd "C-e") 'yas-goto-end-of-active-field)
+     ;; (define-key yas-keymap (kbd "C-a") 'yas-goto-start-of-active-field)
+
+     ;; (bind-key "C-c y TAB" 'yas-expand)
+     ;; (bind-key "C-c y n" 'yas-new-snippet)
+     ;; (bind-key "C-c y f" 'yas-find-snippets)
+     ;; (bind-key "C-c y r" 'yas-reload-all)
+     ;; (bind-key "C-c y v" 'yas-visit-snippet-file)
+
+
+     )); End progn, use-package
+ #+end_src
+
+** dired
+*** main
+
+ #+begin_src emacs-lisp
+ (setq dired-listing-switches "-alh")
+ #+end_src
+
+ #+begin_src emacs-lisp
+ (message "Start dired:::: %.2fs" (- (float-time) shit-load-time-start))
+ (use-package dired
+   :commands dired
+   :defer t
+   :config
+
+   (use-package dired-narrow
+     :ensure t
+     :bind (:map dired-mode-map
+                 ("/" . dired-narrow)))
+
+   (use-package dired-avfs
+     :ensure t)
+
+   (use-package dired-filter
+     :ensure t)
+
+   (use-package dired-hacks-utils
+     :ensure t)
+
+   (use-package dired-subtree
+     :ensure t
+     :config
+     (bind-keys :map dired-mode-map
+                ("i" . dired-subtree-insert)
+                (";" . dired-subtree-remove)))
+
+   (use-package dired-open
+     :ensure t)
+
+   (use-package dired-rainbow
+     :ensure t)
+
+   (use-package dired-details
+     :ensure t)
+
+   (after 'evil
+     (vilify dired-mode-map))
+
+   (progn
+     (define-namespace my-dired-
+ <<my-dired>>
+ )
+
+     <<other-dired>>
+
+     )) ;End namespace, progn, use-package
+
+ #+end_src
+
+*** other-dired
+
+ #+name: other-dired
+ #+begin_src emacs-lisp
+
+ (define-key dired-mode-map "F" 'my-dired-find-file)
+ (defun my-dired-find-file (&optional arg)
+   "Open each of the marked files, or the file under the point, or when prefix arg, the next N files "
+   (interactive "P")
+   (let* ((fn-list (dired-get-marked-files nil arg)))
+     (mapc 'find-file fn-list)))
+
+ (defun dired-copy-filename ()
+   "push the path and filename of the file under the point to the kill ring"
+   (interactive)
+   (message "added %s to kill ring" (kill-new (dired-get-filename))))
+
+ ;; (add-hook 'server-switch-hook
+ ;;           (lambda ()
+ ;;             (when (current-local-map)
+ ;;               (use-local-map (copy-keymap (current-local-map))))
+ ;;             (when server-buffer-clients
+ ;;               (local-set-key (kbd "C-x k") 'server-edit))))
+
+ (use-package dired+)
+ (add-hook 'dired-load-hook
+           (function (lambda () (load "dired-x"))))
+                                         ; (use-package dired+)
+ (use-package wdired)
+
+
+ (setq dired-use-ls-dired t)
+
+ (bind-key "l" 'dired-up-directory dired-mode-map)
+
+ (defun my-dired-switch-window ()
+   (interactive)
+   (if (eq major-mode 'sr-mode)
+       (call-interactively #'sr-change-window)
+     (call-interactively #'other-window)))
+
+ (bind-key "<tab>" 'my-dired-switch-window dired-mode-map)
+
+ ;;      (bind-key "M-!" 'async-shell-command dired-mode-map)
+ (unbind-key "M-G" dired-mode-map)
+ (unbind-key "M-s f" dired-mode-map)
+
+ ;; (defadvice dired-omit-startup (after diminish-dired-omit activate)
+ ;;   "Make sure to remove \"Omit\" from the modeline."
+ ;;   (diminish 'dired-omit-mode) dired-mode-map)
+
+ (defadvice dired-next-line (around dired-next-line+ activate)
+   "Replace current buffer if file is a directory."
+   ad-do-it
+   (while (and (not (eobp)) (not ad-return-value))
+     (forward-line)
+     (setq ad-return-value(dired-move-to-filename)))
+   (when (eobp)
+     (forward-line -1)
+     (setq ad-return-value(dired-move-to-filename))))
+
+ (defadvice dired-previous-line (around dired-previous-line+ activate)
+   "Replace current buffer if file is a directory."
+   ad-do-it
+   (while (and (not (bobp)) (not ad-return-value))
+     (forward-line -1)
+     (setq ad-return-value(dired-move-to-filename)))
+   (when (bobp)
+     (call-interactively 'dired-next-line)))
+
+ ;;        (defvar dired-omit-regexp-orig (symbol-function 'dired-omit-regexp))
+
+ ;; ;; Omit files that Git would ignore
+ ;;         (defun dired-omit-regexp ()
+ ;;           (let ((file (expand-file-name ".git"))
+ ;;                 parent-dir)
+ ;;             (while (and (not (file-exists-p file))
+ ;;                         (progn
+ ;;                           (setq parent-dir
+ ;;                                 (file-name-directory
+ ;;                                  (directory-file-name
+ ;;                                   (file-name-directory file))))
+ ;;                           ;; Give up if we are already at the root dir.
+ ;;                           (not (string= (file-name-directory file)
+ ;;                                         parent-dir))))
+ ;;               ;; Move up to the parent dir and try again.
+ ;;               (setq file (expand-file-name ".git" parent-dir)))
+ ;;             ;; If we found a change log in a parent, use that.
+ ;;             (if (file-exists-p file)
+ ;;                 (let ((regexp (funcall dired-omit-regexp-orig))
+ ;;                       (omitted-files
+ ;;                        (shell-command-to-string "git clean -d -x -n")))
+ ;;                   (if (= 0 (length omitted-files))
+ ;;                       regexp
+ ;;                       (concat
+ ;;                        regexp
+ ;;                        (if (> (length regexp) 0)
+ ;;                            "\\|" "")
+ ;;                        "\\("
+ ;;                        (mapconcat
+ ;;                         #'(lambda (str)
+ ;;                             (concat
+ ;;                              "^"
+ ;;                              (regexp-quote
+ ;;                               (substring str 13
+ ;;                                          (if (= ?/ (aref str (1- (length str))))
+ ;;                                              (1- (length str))
+ ;;                                              nil)))
+ ;;                              "$"))
+ ;;                         (split-string omitted-files "\n" t)
+ ;;                         "\\|")
+ ;;                        "\\)")))
+ ;;                 (funcall dired-omit-regexp-orig))))))
+
+ ;;     (eval-after-load "dired-aux"
+ ;;       '(defun dired-do-async-shell-command (command &optional arg file-list)
+ ;;         "Run a shell command COMMAND on the marked files asynchronously.
+
+ ;; Like `dired-do-shell-command' but if COMMAND doesn't end in ampersand,
+ ;; adds `* &' surrounded by whitespace and executes the command asynchronously.
+ ;; The output appears in the buffer `*Async Shell Command*'."
+ ;;         (interactive
+ ;;          (let ((files (dired-get-marked-files t current-prefix-arg)))
+ ;;            (list
+ ;;             ;; Want to give feedback whether this file or marked files are
+ ;;             ;; used:
+ ;;             (dired-read-shell-command "& on %s: " current-prefix-arg files)
+ ;;             current-prefix-arg
+ ;;             files)))
+ ;;         (unless (string-match "[ \t][*?][ \t]" command)
+ ;;           (setq command (concat command " *")))
+ ;;         (unless (string-match "&[ \t]*\\'" command)
+ ;;           (setq command (concat command " &")))
+ ;;         (dired-do-shell-command command arg file-list)))
+
+ ;; (add-hook 'dired-mode-hook 'dired-package-initialize)
+
+ ;; (defun dired-double-jump (first-dir second-dir)
+ ;;   (interactive
+ ;;    (list (ido-read-directory-name "First directory: "
+ ;;                                   (expand-file-name "~")
+ ;;                                   nil nil "dl/")
+ ;;          (ido-read-directory-name "Second directory: "
+ ;;                                   (expand-file-name "~")
+ ;;                                   nil nil "Archives/")))
+ ;;   (dired first-dir)
+ ;;   (dired-other-window second-dir))
+
+ ;; (bind-key "C-c J" 'dired-double-jump)
+
+
+
+        ;;; Copy
+ (add-hook 'dired-mode-hook
+           (lambda ()
+             (define-key dired-mode-map "c" 'dired-copy-filename)))
+
+ ;;---------------------------------------------------------
+ ;; F3 open dired item with default app in Windows, _cool
+ ;;---------------------------------------------------------
+ (defun open-in-external-app ()
+   "Open the current file or dired marked files in external app.
+    Works in Microsoft Windows, Mac OS X, Linux."
+   (interactive)
+   (let ( doIt
+          (myFileList
+           (cond
+            ((string-equal major-mode "dired-mode") (dired-get-marked-files))
+            (t (list (buffer-file-name))) ) ) )
+
+     (setq doIt (if (<= (length myFileList) 5)
+                    t
+                  (y-or-n-p "Open more than 5 files?") ) )
+
+     (when doIt
+       (cond
+        ((string-equal system-type "windows-nt")
+         (mapc (lambda (fPath) (w32-shell-execute "open"
+                                                  (replace-regexp-in-string "/" "\\" fPath t t))) myFileList))
+        ((string-equal system-type "darwin")
+         (mapc (lambda (fPath) (let ((process-connection-type nil))
+                                 (start-process "" nil "open" fPath)))  myFileList) )
+        ((string-equal system-type "gnu/linux")
+         (mapc (lambda (fPath) (let ((process-connection-type nil))
+                                 (start-process "" nil "xdg-open" fPath))) myFileList))))))
+
+ (eval-after-load "dired"
+   '(define-key dired-mode-map [f3]
+      (lambda () (interactive)
+        (browse-file (dired-get-filename)))))
+
+ (eval-after-load "dired-aux"
+   '(add-to-list 'dired-compress-file-suffixes
+                 '("\\.zip\\'" ".zip" "unzip")))
+
+ (eval-after-load "dired"
+   '(define-key dired-mode-map "z" 'dired-zip-files))
+ (defun dired-zip-files (zip-file)
+   "Create an archive containing the marked files."
+   (interactive "sEnter name of zip file: ")
+
+   ;; create the zip file
+   (let ((zip-file (if (string-match ".zip$" zip-file) zip-file (concat zip-file ".zip"))))
+     (shell-command
+      (concat "zip "
+              zip-file
+              " "
+              (concat-string-list
+               (mapcar
+                '(lambda (filename)
+                   (file-name-nondirectory filename))
+                (dired-get-marked-files))))))
+
+   (revert-buffer)
+
+   ;; remove the mark on all the files  "*" to " "
+   ;; (dired-change-marks 42 ?\040)
+   ;; mark zip file
+   ;; (dired-mark-files-regexp (filename-to-regexp zip-file))
+   )
+
+ (defun concat-string-list (list)
+   "Return a string which is a concatenation of all elements of the list separated by spaces"
+   (mapconcat '(lambda (obj) (format "%s" obj)) list " "))
+
+ (setq dired-recursive-copies t)
+
+
+
+ ;; Make dired less verbose
+ ;; (require 'dired-details)
+ ;; (setq-default dired-details-hidden-string "--- ")
+ ;; (dired-details-install)
+
+ ;; Reload dired after creating a directory
+ (defadvice dired-create-directory (after revert-buffer-after-create activate)
+   (revert-buffer))
+
+ ;; Reload dired after quitting wdired
+ (defadvice wdired-abort-changes (after revert-buffer-after-abort activate)
+   (revert-buffer))
+
+ ;; C-a is nicer in dired if it moves back to start of files
+ (defun dired-back-to-start-of-files ()
+   (interactive)
+   (backward-char (- (current-column) 2)))
+
+ (define-key dired-mode-map (kbd "C-a") 'dired-back-to-start-of-files)
+
+ ;; M-up is nicer in dired if it moves to the third line - straight to the ".."
+ (defun dired-back-to-top ()
+   (interactive)
+   (beginning-of-buffer)
+   (next-line 2)
+   (dired-back-to-start-of-files))
+
+ (define-key dired-mode-map (kbd "M-<up>") 'dired-back-to-top)
+
+ ;; M-down is nicer in dired if it moves to the last file
+ (defun dired-jump-to-bottom ()
+   (interactive)
+   (end-of-buffer)
+   (next-line -1)
+   (dired-back-to-start-of-files))
+
+ (define-key dired-mode-map (kbd "M-<down>") 'dired-jump-to-bottom)
+
+ ;; Delete with C-x C-k to match file buffers and magit
+ (define-key dired-mode-map (kbd "C-x C-k") 'dired-do-delete)
+
+ (eval-after-load "wdired"
+   '(progn
+      (define-key wdired-mode-map (kbd "C-a") 'dired-back-to-start-of-files)
+      (define-key wdired-mode-map (kbd "M-<up>") 'dired-back-to-top)
+      (define-key wdired-mode-map (kbd "M-<down>") 'dired-jump-to-bottom)))
+
+ (eval-after-load "dired-aux"
+   '(add-to-list 'dired-compress-file-suffixes
+                 '("\\.zip\\'" ".zip" "unzip")))
+
+ (eval-after-load "dired"
+   '(define-key dired-mode-map "z" 'dired-zip-files))
+
+ (defun dired-zip-files (zip-file)
+   "Create an archive containing the marked files."
+   (interactive "sEnter name of zip file: ")
+
+   ;; create the zip file
+   (let ((zip-file (if (string-match ".zip$" zip-file) zip-file (concat zip-file ".zip"))))
+     (shell-command
+      (concat "gzip "
+              zip-file
+              " "
+              (concat-string-list
+               (mapcar
+                '(lambda (filename)
+                   (file-name-nondirectory filename))
+                (dired-get-marked-files))))))
+
+   (revert-buffer)
+
+   ;; remove the mark on all the files  "*" to " "
+   ;; (dired-change-marks 42 ?\040)
+   ;; mark zip file
+   ;; (dired-mark-files-regexp (filename-to-regexp zip-file))
+   )
+
+ (defun my-dired-browser-find-file ()
+   "Dired function to view a file in a web browser"
+   (interactive)
+   (browse-url (browse-url-file-url (dired-get-filename))))
+ #+end_src
+*** my-dired
+
+ #+name: my-dired
+ #+begin_src emacs-lisp
+ (defun file-list ()
+   (if (string-equal major-mode "dired-mode")
+       (dired-get-marked-files t current-prefix-arg)
+     (list (buffer-file-name))))
+
+ (defun map-file (f)
+   (let* ((file-list (file-list))
+          (do-it-p (if (<= (length file-list) 5)
+                       t
+                     (y-or-n-p "Open more than 5 files? "))))
+     (when do-it-p
+       (mapc f file-list))))
+
+ (defun open ()
+   (interactive)
+   (map-file (lambda (file)
+               (shell-command (format "open \"%s\"" file)))))
+
+ (defun alac ()
+   (interactive)
+   (async-files "~/bin/xlda"))
+
+ (defun async-files (cmd)
+   (interactive)
+   (dired-do-async-shell-command cmd
+                                 current-prefix-arg
+                                 (file-list)))
+
+ ;; (after 'evil
+
+ ;; (defun define-leader-keys (map prefix key def &rest bindings)
+ ;;   (define-prefix-command  map)
+ ;;   (define-key my-leader-map prefix map)
+ ;;   (apply 'define-keys map key def bindings))
+
+ ;;   (define-leader-keys 'org-mode-map-leader "o"
+ ;;     "u" 'my-org-cycle-current-headline
+ ;;     "i" 'org-clock-in
+ ;;     "o" 'org-clock-out
+ ;;     "t" 'my-tangle
+ ;;     "a" 'org-agenda
+ ;;     "b" 'helm-bibtex
+ ;;     )
+
+ ;; )
+
+ (define-key dired-mode-map (kbd "C-o") 'my-dired-open)
+
+
+ (defconst mixed-in-key-filename-rx
+   '(and
+     (group (or
+             (+ alnum)
+             (and (+ alnum) " or " (+ alnum))))
+     " - "
+     (group (+ num))
+     " - "
+     (group (+ num))))
+
+ (defun fix-mixed-in-key-filename ()
+   (interactive)
+   (wdired-change-to-wdired-mode)
+   (save-excursion
+     (goto-char 1)
+     (while (search-forward-regexp
+             (rx-to-string mixed-in-key-filename-rx)
+             nil t)
+       (replace-match (concat (match-string 3) " - " (match-string 1) " - " (match-string 2))
+                      t nil))
+     (wdired-exit)))
+
+ (define-key dired-mode-map (kbd "C-c C-c") 'wdired-change-to-wdired-mode)
+
+
+ (defun my-sql-snake-case-tables-and-columns ()
+   (interactive)
+   (save-excursion
+     (goto-char 1)
+     (while (search-forward-regexp "`\\(.*?\\)`" nil t)
+       (replace-match
+         (concat "`"
+           (replace-regexp-in-string " " "_"
+             (replace-regexp-in-string "\\(\\.\\|:\\)" ""
+               (downcase (match-string 1)))) "`") t) t nil)))
+ #+end_src
+** Lispy
+ this is the config for lispy
+ #+begin_src emacs-lisp
+ (use-package lispy)
+ #+end_src
+** w3m
+ #+begin_src emacs-lisp
+ (setq browse-url-browser-function 'w3m-goto-url-new-session)
+
+ (setq browse-url-browser-function 'browse-url-default-macosx-browser)
+
+ (setq w3m-user-agent "Mozilla/5.0 (Linux; U; Android 2.3.3; zh-tw; HTC_Pyramid Build/GRI40) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.")
+ (defun hn ()
+   (interactive)
+   (browse-url "http://news.ycombinator.com"))
+ (defun reddit (reddit)
+   "Opens the REDDIT in w3m-new-session"
+   (interactive (list
+                 (read-string "Enter the reddit (default: psycology): " nil nil "psychology" nil)))
+   (browse-url (format "http://m.reddit.com/r/%s" reddit))
+   )
+ (defun wikipedia-search (search-term)
+   "Search for SEARCH-TERM on wikipedia"
+   (interactive
+    (let ((term (if mark-active
+                    (buffer-substring (region-beginning) (region-end))
+                  (word-at-point))))
+      (list
+       (read-string
+        (format "Wikipedia (%s):" term) nil nil term)))
+    )
+   (browse-url
+    (concat
+     "http://en.m.wikipedia.org/w/index.php?search="
+     search-term
+     ))
+   )
+ (defun w3m-open-site (site)
+   "Opens site in new w3m session with 'http://' appended"
+   (interactive
+    (list (read-string "Enter website address(default: w3m-home):" nil nil w3m-home-page nil )))
+   (w3m-goto-url-new-session
+    (concat "http://" site)))
+ #+end_src
+** gnus
+ #+begin_src emacs-lisp
+ (setq gnus-select-method '(nnnil))
+ (setq gnus-secondary-select-methods '((nntp "news.gwene.org")))
+ (setq gnus-read-active-file 'some
+       gnus-use-cache t)
+
+ ;; (setq gnus-select-method
+ ;;       '(nnimap "imap.gmail.com")
+ ;;       message-send-mail-function 'message-smtpmail-send-it
+ ;;       smtpmail-smtp-server "smtp.gmail.com"
+ ;;       smtpmail-stream-type 'ssl
+ ;;       smtpmail-smtp-service 465)
+
+ ;; (setq message-send-mail-function 'smtpmail-send-it
+ ;;       smtpmail-starttls-credentials '(("smtp.gmail.com" 587 nil nil))
+ ;;       smtpmail-auth-credentials '(("smtp.gmail.com" 587
+ ;;            "d.costaras@gmail.com" nil))
+ ;;       smtpmail-default-smtp-server "smtp.gmail.com"
+ ;;       smtpmail-smtp-server "smtp.gmail.com"
+ ;;       smtpmail-smtp-service 587
+ ;;       gnus-ignored-newsgroups "^to\\.\\|^[0-9. ]+\\( \\|$\\)\\|^[\"]\"[#'()]")
+
+ (setq gnus-thread-sort-functions
+       '(gnus-thread-sort-by-most-recent-date)
+       gnus-sort-gathered-threads-function 'gnus-thread-sort-by-number)
+
+ (add-hook 'gnus-summary-prepared-hook 'gnus-summary-hide-all-threads)
+ #+end_src
+** visual regexp
+ #+begin_src emacs-lisp
+ (use-package visual-regexp
+   :ensure t)
+ (define-key global-map (kbd "C-c r") 'vr/replace)
+ (define-key global-map (kbd "C-c q") 'vr/query-replace)
+ ;; if you use multiple-cursors, this is for you:
+ (define-key global-map (kbd "C-c m") 'vr/mc-mark)
+ #+end_src
+** Cake inflector
+
+  #+begin_src emacs-lisp
+ (use-package cake-inflector
+   :ensure t)
+  ;; (defun my-cake-singularize (str)
+  ;;   "Singularize string"
+  ;;   (interactive)
+  ;;   (cake-singularize str))
+
+  ;; (defun my-cake-pluralize (str)
+  ;;   "Pluralize string"
+  ;;   (let ((result str))
+  ;;     (loop for rule in cake-plural-rules do
+  ;;           (unless (not (string-match (nth 0 rule) str))
+  ;;             (setq result (replace-match (nth 1 rule) nil nil str))
+  ;;             (return result)))))
+
+  ;; (defun my-cake-camelize (str)
+  ;;   "Camelize snake_case str"
+  ;;   (s-upper-camel-case str))
+
+  ;; (defun my-cake-lower-camelize (str)
+  ;;   "lowerCamelize snake_case str"
+  ;;   (s-lower-camel-case str))
+
+  ;; (defun my-cake-snake (str)
+  ;;   "Change snake_case."
+  ;;   (s-snake-case str))
+  #+end_src
+
+** agressive indent
+ #+begin_src emacs-lisp
+ ;; (use-package agressive-indent
+ ;;   :ensure t
+ ;;   :config
+ ;;   (progn
+ ;;     (global-aggressive-indent-mode 1)
+ ;;     (add-to-list 'aggressive-indent-excluded-modes 'haml-mode)
+ ;;     (add-to-list 'aggressive-indent-excluded-modes 'coffee-mode)
+ ;;     (add-to-list 'aggressive-indent-excluded-modes 'livescript-mode)
+ ;;     (add-to-list 'aggressive-indent-excluded-modes 'sass-mode)))
+ #+end_src
+** Define word
+  #+begin_src emacs-lisp
+  (use-package define-word
+    :ensure t
+    :bind (("s-d" . define-word-at-point)
+           ("s-D" . define-word)))
+  #+end_src
+
+** Smart tab
+ #+begin_src emacs-lisp
+   (message "Smart tab:::: %.2fs" (- (float-time) shit-load-time-start))
+   (use-package smart-tab
+     :init
+     (progn
+       (setq smart-tab-using-hippie-expand t)
+       (global-smart-tab-mode t)))
+   #+end_src
+** ace-jump-mode
+
+ #+begin_src emacs-lisp
+ (message "Start jump:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (require 'ace-jump-mode)
+ (define-key global-map (kbd "M-SPC") 'ace-jump-mode)
+ #+end_src
+
+** Highlight parens
+
+ #+begin_src emacs-lisp
+ (use-package highlight-parentheses
+   :ensure t)
+ #+end_src
+
+** multiple-cursors
+
+  #+begin_src emacs-lisp
+     (message "Multiple Cursors:::: %.2fs" (- (float-time) shit-load-time-start))
+     (setq mc/cmds-to-run-for-all
+           '(
+             evil-append-line
+             evil-backward-WORD-begin
+             evil-backward-word-begin
+             evil-delete-char
+             evil-delete-line
+             evil-digit-argument-or-evil-beginning-of-line
+             evil-emacs-state
+             evil-end-of-line
+             evil-force-normal-state
+             evil-forward-WORD-begin
+             evil-forward-WORD-end
+             evil-forward-word-begin
+             evil-forward-word-end
+             evil-insert
+             evil-next-line
+             evil-normal-state
+             evil-previous-line
+             evil-yank
+             smarter-move-beginning-of-line
+             evil-delete
+             evil
+             evil-previous-visual-line
+             evil-backward-char
+             evil-forward-char
+             evil-find-char
+             evil-exit-visual-state
+             evil-append
+             helm-M-x
+             ))
+
+     (use-package multiple-cursors
+       :ensure t)
+
+   ;; (use-package evil-mc
+   ;;   :ensure t)
+
+  ;; (global-evil-mc-mode  1)
+
+     ;; (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+     (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+     (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+     ;; (global-set-key (kbd "C-c C->") 'mc/mark-all-like-this)
+ #+end_src
+
+** ispell
+
+ #+begin_src emacs-lisp
+ (message "Start ispell:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (global-set-key (kbd "C-c i") #'endless/ispell-word-then-abbrev)
+
+ (defun endless/ispell-word-then-abbrev (p)
+   "Call `ispell-word', then create an abbrev for it.
+ With prefix P, create local abbrev. Otherwise it will
+ be global."
+   (interactive "P")
+   (let ((bef (downcase (or (thing-at-point 'word)
+                            "")))
+         aft)
+     (call-interactively 'ispell-word)
+     (setq aft (downcase
+                (or (thing-at-point 'word) "")))
+     (unless (or (string= aft bef)
+                 (string= aft "")
+                 (string= bef ""))
+       (message "\"%s\" now expands to \"%s\" %sally"
+                bef aft (if p "loc" "glob"))
+       (define-abbrev
+         (if p local-abbrev-table global-abbrev-table)
+         bef aft))))
+
+ (setq save-abbrevs t)
+ (setq-default abbrev-mode t)
+ #+end_src
+
+** flyspell
+
+ #+begin_src emacs-lisp
+ (message "Start flyspell:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package ace-flyspell
+   :ensure t)
+ ;;(add-hook 'text-mode-hook 'flyspell-mode)
+ ;; (if (file-exists-p "/usr/local/bin/hunspell")
+ ;;     (progn
+ ;;       ;; Add english-hunspell as a dictionary
+ ;;       (setq-default ispell-program-name "hunspell"
+ ;;                     ispell-dictionary "en_US"))
+ ;;   (progn (setq-default ispell-program-name "aspell")
+ ;;          (setq ispell-personal-dictionary "~/.flydict"
+ ;;                ispell-extra-args '("--sug-mode=normal" "--ignore=3"))))
+
+ ;; (add-to-list 'ispell-skip-region-alist '("[^\000-\377]+"))
+
+
+ ;; flyspell
+ ;; (use-package flyspell
+ ;;   :config
+ ;;   (define-key flyspell-mode-map (kbd "M-n") 'flyspell-goto-next-error)
+ ;;   (define-key flyspell-mode-map (kbd "M-.") 'ispell-word))
+
+ ;; (use-package diminish
+ ;;   :init
+ ;;   (progn
+ ;;     (diminish 'flyspell-mode (string 32 #x2708))))
+
+
+ (defun my-flyspell-check-previous-highlighted-word (&optional arg)
+   "Correct the closer misspelled word.
+ This function scans a mis-spelled word before the cursor. If it finds one
+ it proposes replacement for that word. With prefix arg, count that many
+ misspelled words backwards."
+   (interactive)
+   (let ((pos1 (point))
+         (pos  (point))
+         (arg  (if (or (not (numberp arg)) (< arg 1)) 1 arg))
+         ov ovs)
+     (if (catch 'exit
+           (while (and (setq pos (previous-overlay-change pos))
+                       (not (= pos pos1)))
+             (setq pos1 pos)
+             (if (> pos (point-min))
+                 (progn
+                   (setq ovs (overlays-at (1- pos)))
+                   (while (consp ovs)
+                     (setq ov (car ovs))
+                     (setq ovs (cdr ovs))
+                     (if (and (flyspell-overlay-p ov)
+                              (= 0 (setq arg (1- arg))))
+                         (throw 'exit t)))))))
+         (save-excursion
+           (goto-char pos)
+           (flyspell-correct-word-before-point)
+           (setq flyspell-word-cache-word nil) ;; Force flyspell-word re-check
+           (flyspell-word))
+       (error "No word to correct before point"))))
+
+ #+end_src
+
+** flycheck
+
+ #+begin_src emacs-lisp
+ (message "Start flycheck:::: %.2fs" (- (float-time) shit-load-time-start))
+ (use-package flycheck
+   :ensure t
+   :config
+   (progn
+     (add-hook 'after-init-hook #'global-flycheck-mode)
+     (use-package flycheck-pos-tip
+       :ensure t)
+     (after 'flycheck
+       (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages))))
+ #+end_src
+
+** discogs
+ #+begin_src emacs-lisp
+ (message "Start discogs:::: %.2fs" (- (float-time) shit-load-time-start))
+ ;;; discogs.el --- discogs interface
+ ;; Copyright (C) 2013 Lars Magne Ingebrigtsen
+ ;; Author: Lars Magne Ingebrigtsen <larsi@gnus.org>
+ ;; Keywords: music
+ ;; discogs.el is free software; you can redistribute it and/or modify it
+ ;; under the terms of the GNU General Public License as published by
+ ;; the Free Software Foundation; either version 2, or (at your option)
+ ;; any later version.
+ ;;; Commentary:
+ ;;; Code:
+ (require 'cl)
+ (require 'json)
+
+ (defun discogs-query (object identifier)
+   (let ((url-request-extra-headers
+          '(("User-Agent" . "discogs.el/1.0 +http://lars.ingebrigtsen.no/"))))
+     (with-current-buffer
+         (url-retrieve-synchronously
+          (format "http://api.discogs.com/%s/%s"
+                  object identifier))
+       (goto-char (point-min))
+       (prog1
+           (when (re-search-forward "\r?\n\r?\n" nil t)
+             (json-read))
+         (kill-buffer (current-buffer))))))
+
+ (defun discogs-search (artist title)
+   (discogs-query
+    "database" (format "search?type=master&artist=%s&release_title=%s"
+                       artist title)))
+
+ (defun discogs-find-year (artist title)
+   (let ((data (discogs-search artist title)))
+     (when (eq (caar data) 'results)
+       (loop for release across (cdar data)
+             for year = (cdr (assq 'year release))
+             when year
+             minimize (string-to-number year)))))
+
+ (provide 'discogs)
+ #+end_src
+
+** minibuffer
+ #+begin_src emacs-lisp
+ (add-hook
+  'eval-expression-minibuffer-setup-hook
+  #'eldoc-mode)
+ #+end_src
+** info
+
+ #+begin_src emacs-lisp
+ (use-package Info
+   :general
+   (:keymaps 'Info-mode-map
+             :states 'motion
+             "SPC" 'my-leader-map
+             "/" 'Info-search
+             "n" 'Info-search-next
+             "H" 'Info-history-back
+             "L" 'Info-history-forward
+             "C-j" 'Info-scroll-up
+             "C-k" 'Info-scroll-down
+             "C-l" 'Info-next-reference
+             "C-h" 'Info-prev-reference))
+ #+end_src
+
+** help
+
+ #+begin_src emacs-lisp
+ (use-package help
+   :general
+   (:keymaps 'help-mode-map
+             :states 'motion
+             "SPC" 'my-leader-map
+             "L" 'help-go-forward
+             "H" 'help-go-back
+             "C-l" 'forward-button
+             "C-h" 'backward-button
+             "C-j" 'evil-scroll-page-down
+             "C-k" 'evil-scroll-page-up)
+   :config
+   (progn
+     (after 'evil
+       (evil-set-initial-state 'help-mode 'motion))))
+ #+end_src
+
+** ag
+
+ #+begin_src emacs-lisp
+ (use-package ag
+   :ensure t)
+ #+end_src
+
+** Git
+
+ #+begin_src emacs-lisp
+ (message "Magit and git:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package magit
+   :ensure t
+   :bind ("<f3>" . magit-status)
+   :config
+   (progn
+
+     (use-package git-flow)
+     (use-package evil-magit
+       :ensure t)
+
+     ;; Start the commit window in insert mode
+     (add-hook 'with-editor-mode-hook 'evil-insert-state)
+
+     ;; Add Evil bindings to accept/cancel commit
+     (evil-define-key 'normal with-editor-mode-map
+       (kbd "RET") 'with-editor-finish
+       [escape] 'with-editor-cancel)
+
+     (dolist (mode-map `(,magit-mode-map
+                         ,magit-log-mode-map
+                         ,magit-diff-mode-map
+                         ,magit-reflog-mode-map
+                         ,magit-status-mode-map
+                         ,magit-cherry-mode-map
+                         ,magit-process-mode-map))
+       (if mode-map
+           (define-key mode-map " " 'my-leader-map)))))
+ #+end_src
+
+*** time machine
+
+ #+begin_src emacs-lisp
+ (message "Start git/time machine:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ ;; (use-package git-timemachine
+ ;;   :ensure t)
+ #+end_src
+
+*** git flow
+
+ #+begin_src emacs-lisp
+ (message "Start git/git flow:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ ;; (use-package magit-gitflow
+ ;;   :ensure t
+ ;;   :config
+ ;;   (progn
+ ;;     (add-hook 'magit-mode-hook 'turn-on-magit-gitflow)))
+ #+end_src
+
+** erc
+
+ #+begin_src emacs-lisp
+ (message "erc:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package erc
+   :commands erc
+   :config
+   (progn
+     ;; joining && autojoing
+
+     ;; make sure to use wildcards for e.g. freenode as the actual server
+     ;; name can be be a bit different, which would screw up autoconnect
+     (erc-autojoin-mode t)
+     (setq erc-autojoin-channels-alist
+           '((".*\\.freenode.net" "#emacs" "#packer-tool")))
+
+     ;; (require 'erc-log)
+     (require 'erc-notify)
+
+     (defun my-erc-notify-hook (match-type nick message)
+       "Shows a growl notification, when user's nick was mentioned. If the buffer is currently not visible, makes it sticky."
+       (unless (posix-string-match "^\\** *Users on #" message)
+         (growl
+          (concat "ERC: name mentioned on: " (buffer-name (current-buffer)))
+          message
+          )))
+
+     (add-hook 'erc-text-matched-hook 'my-erc-notify-hook)
+
+     ;; Nickname
+     (setq erc-nick "pseudonamed")
+
+     ;; (require 'erc-spelling)
+     ;; (require 'erc-autoaway)
+     ;; (require 'erc-services)
+     ;; (require 'notifications)
+
+     (defadvice erc-display-prompt (after conversation-erc-display-prompt activate)
+       "Insert last recipient after prompt."
+       (let ((previous
+              (save-excursion
+                (if (and (search-backward-regexp (concat "^[^<]*<" erc-nick ">") nil t)
+                         (search-forward-regexp (concat "^[^<]*<" erc-nick ">"
+                                                        " *\\([^:]*: ?\\)") nil t))
+                    (match-string 1)))))
+         ;; when we got something, and it was in the last 3 mins, put it in
+         (when (and
+                previous
+                (> 180 (time-to-seconds
+                        (time-since (get-text-property 0 'timestamp previous)))))
+           (set-text-properties 0 (length previous) nil previous)
+           (insert previous))))
+
+     ;; check channels
+     (erc-track-mode t)
+     (setq erc-track-exclude-types '("JOIN" "NICK" "PART" "QUIT" "MODE" "324" "329" "332" "333" "353" "477"))
+     ;; don't show any of this
+     (setq erc-hide-list '("JOIN" "PART" "QUIT" "NICK"))
+
+     ;; (defun djcb-erc-start-or-switch ()
+     ;;   "Connect to ERC, or switch to last active buffer"
+     ;;   (interactive)
+     ;;   (if (get-buffer "irc.freenode.net:6667") ;; ERC already active?
+
+     ;;     (erc-track-switch-buffer 1) ;; yes: switch to last active
+     ;;     (when (y-or-n-p "Start ERC? ") ;; no: maybe start ERC
+     ;;       (erc :server "irc.freenode.net" :port 6667 :nick "foo" :full-name "bar")
+     ;;       (erc :server "irc.gimp.org" :port 6667 :nick "foo" :full-name "bar"))))
+
+     ;; ;; switch to ERC with Ctrl+c e
+     ;; (global-set-key (kbd "C-c e") 'djcb-erc-start-or-switch) ;; ERC
+
+     ))
+ #+end_src
+
+** aggressive indent
+ #+begin_src emacs-lisp
+ (use-package aggressive-indent
+   :ensure t)
+ #+end_src
+** adaptive wrap
+ #+begin_src emacs-lisp
+ (use-package adaptive-wrap
+   :ensure t)
+ #+end_src
+
+** hippie-expand
+ #+begin_src emacs-lisp
+   (message "Start hippie:::: %.2fs" (- (float-time) shit-load-time-start))
+    (global-set-key (kbd "C-;")  'hippie-expand)
+
+ (use-package hippie-exp)
+   ;; Hippie expand: look in buffer before filenames please
+
+   (setq hippie-expand-try-functions-list '(
+                                            yas-hippie-try-expand
+                                            try-expand-dabbrev
+                                            try-expand-dabbrev-all-buffers
+                                            try-expand-dabbrev-from-kill
+                                            try-complete-file-name-partially
+                                            try-complete-file-name
+                                            try-expand-all-abbrevs
+                                            try-complete-lisp-symbol-partially
+                                            try-complete-lisp-symbol))
+
+ (defadvice hippie-expand (around hippie-expand-case-fold)
+   "Try to do case-sensitive matching (not effective with all functions)."
+   (let ((case-fold-search nil))
+     ad-do-it))
+ (ad-activate 'hippie-expand)
+   (defun hippie-expand-lines ()
+     (interactive)
+     (let ((hippie-expand-try-functions-list '(try-expand-line
+                                               try-expand-line-all-buffers)))
+       (hippie-expand nil)))
+
+ #+end_src
+** neotree
+ #+begin_src emacs-lisp
+   (message "Start neotree:::: %.2fs" (- (float-time) shit-load-time-start))
+ (use-package neotree
+   :ensure t
+   :pin melpa-stable
+   :config
+   (progn
+
+     (setq neo-smart-open t
+           projectile-switch-project-action 'neotree-projectile-action)
+     (global-set-key [f8] 'neotree-project-dir-toggle)
+
+     (after 'evil
+       (evil-define-key 'normal neotree-mode-map (kbd "TAB") 'neotree-enter)
+       (evil-define-key 'normal neotree-mode-map (kbd "SPC") 'neotree-enter)
+       (evil-define-key 'normal neotree-mode-map (kbd "q") 'neotree-hide)
+       (evil-define-key 'normal neotree-mode-map (kbd "RET") 'neotree-enter))
+
+     (defun neotree-project-dir-toggle ()
+       "Open NeoTree using the project root, using find-file-in-project,
+ or the current buffer directory."
+       (interactive)
+       (let ((project-dir
+              (ignore-errors
+                (projectile-project-root)))
+             (file-name (buffer-file-name))
+             (neo-smart-open t))
+         (if (and (fboundp 'neo-global--window-exists-p)
+                  (neo-global--window-exists-p))
+             (neotree-hide)
+           (progn
+             (neotree-show)
+             (if project-dir
+                 (neotree-dir project-dir))
+             (if file-name
+                 (neotree-find file-name))))))))
+ #+end_src
+** eww
+
+ #+begin_src emacs-lisp
+ (message "Start eww:::: %.2fs" (- (float-time) shit-load-time-start))
+ (use-package eww
+   :general
+   (:keymaps 'eww-mode-map
+             :states '(motion normal)
+             )
+   :config
+   (progn
+     (setq browse-url-browser-function 'eww-browse-url)
+     (defun my-eww-readability-hook ()
+       (message "EWW readability hook")
+       (eww-readable)
+       (darkroom-mode))
+     (after 'evil
+       (evil-set-initial-state 'eww-mode 'motion))
+     (add-hook 'eww-after-render-hook 'my-eww-readability-hook)))
+ #+end_src
+
+** highlight symbol
+
+ #+begin_src emacs-lisp
+ (message "Start eww:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ #+end_src
+
+** elfeed
+
+ #+begin_src emacs-lisp
+ (use-package elfeed
+   :ensure t
+   :pin melpa-stable
+   :general
+   (:keymaps 'elfeed-search-mode-map
+             :states '(motion normal)
+             "<return>" 'elfeed-search-show-entry
+             "SPC" 'my-leader-map
+             "q" 'quit-window
+             "g" 'elfeed-search-update--force
+             "G" 'elfeed-search-fetch
+             "R" 'elfeed-mark-all-as-read
+             "c" 'elfeed-read-comics)
+   (:keymaps 'elfeed-show-mode-map
+             :states '(motion normal)
+             "SPC" 'my-leader-map
+             "q" 'elfeed-kill-buffer
+             "b" 'elfeed-browse-link
+             "j" 'elfeed-show-next
+             "k" 'elfeed-show-prev)
+   :config
+   (progn
+
+     (use-package elfeed-org
+       :ensure t
+       :config
+       (progn
+         (setq rmh-elfeed-org-files '("~/org/elfeed/feeds.org")
+               rmh-elfeed-org-tree-id "elfeed")
+         (elfeed-org)))
+
+     (after 'evil
+       (evil-set-initial-state 'elfeed-show-mode 'motion)
+       (evil-set-initial-state 'elfeed-search-mode 'motion))
+
+     (defun elfeed-browse-link ()
+       (interactive)
+       (shr-next-link)
+       (shr-browse-url))
+
+     (defun my-elfeed-show-hook ()
+       (darkroom-mode))
+
+     (add-hook 'elfeed-show-mode-hook 'my-elfeed-show-hook)
+
+     (defun elfeed-mark-all-as-read ()
+       "Mark currently shown articles read"
+       (interactive)
+       (mark-whole-buffer)
+       (elfeed-search-untag-all-unread))
+
+     (defun elfeed--read-tag (filter tag)
+       "Template for filtering feed categories.
+
+ FILTER is the filter string to apply, and TAG is a short name of
+ the displayed category.
+
+ The cursor is moved to the beginning of the first feed line."
+       (setq elfeed-search-filter filter)
+       (elfeed-search-update :force)
+       (goto-char (point-min))
+       (forward-line)
+       (message (concat "elfeed: show " tag)))
+
+     (defun elfeed--remove-sports ()
+       "Remove sports articles from world news"
+       (setq elfeed-search-filter "@1-month-ago +unread +n sport")
+       (elfeed-search-update :force)
+       (elfeed-mark-all-as-read)
+       (message "elfeed: sports removed"))
+
+     (defun elfeed-read-news ()
+       "Show global news articles"
+       (interactive)
+       ;; (elfeed--remove-sports)
+       (elfeed--read-tag "@1-month-ago +unread +n " "news"))
+     (define-key elfeed-search-mode-map (kbd "1") 'elfeed-read-news)
+
+     (defun elfeed-read-comics ()
+       "Show global news articles"
+       (interactive)
+       ;; (elfeed--remove-sports)
+       (elfeed--read-tag "@1-month-ago +unread +comics" "news"))
+     ;; (define-key elfeed-search-mode-map (kbd "1") 'elfeed-read-comics)
+
+     (defun bjm/elfeed-show-all ()
+       (interactive)
+       (bookmark-maybe-load-default-file)
+       (bookmark-jump "comics"))
+     (defun bjm/elfeed-show-emacs ()
+       (interactive)
+       (bookmark-maybe-load-default-file)
+       (bookmark-jump "elfeed-emacs"))
+     (defun bjm/elfeed-show-daily ()
+       (interactive)
+       (bookmark-maybe-load-default-file)
+       (bookmark-jump "elfeed-daily"))
+
+     ))
+ #+end_src
+
+** TODO abbrev
+ #+NAME: abbrev
+ | bc | because                               |
+ | wo | without                               |
+ | wi | with                                  |
+ | ex | For example,                          |
+ | qm | sacha@sachachua.com                   |
+ | qe | http://sachachua.com/dotemacs         |
+ | qw | http://sachachua.com/                 |
+ | qb | http://sachachua.com/blog/            |
+ | qc | http://sachachua.com/blog/emacs-chat/ |
+
+ #+begin_src emacs-lisp
+ (message "abbrev:::: %.2fs" (- (float-time) shit-load-time-start))
+ (use-package abbrev
+   :commands abbrev-mode
+   :diminish abbrev-mode
+   :init
+   (hook-into-modes #'abbrev-mode '(text-mode-hook))
+
+   :config
+   (progn
+     (if (file-exists-p abbrev-file-name)
+       (quietly-read-abbrev-file))
+
+
+     (setq abbrev-file-name (expand-file-name "abbrev_defs.el" user-usr-directory))
+
+     (setq flyspell-abbrev-p t)
+     (setq save-abbrevs t)
+     (setq save-abbrevs 'silently)
+ (define-key ctl-x-map "\C-i"
+   #'endless/ispell-word-then-abbrev)
+
+ (defun endless/ispell-word-then-abbrev (p)
+   "Call `ispell-word', then create an abbrev for it.
+ With prefix P, create local abbrev. Otherwise it will
+ be global.
+ If there's nothing wrong with the word at point, keep
+ looking for a typo until the beginning of buffer. You can
+ skip typos you don't want to fix with `SPC', and you can
+ abort completely with `C-g'."
+   (interactive "P")
+   (let (bef aft)
+     (save-excursion
+       (while (if (setq bef (thing-at-point 'word))
+                  ;; Word was corrected or used quit.
+                  (if (ispell-word nil 'quiet)
+                      nil ; End the loop.
+                    ;; Also end if we reach `bob'.
+                    (not (bobp)))
+                ;; If there's no word at point, keep looking
+                ;; until `bob'.
+                (not (bobp)))
+         (backward-word))
+       (setq aft (thing-at-point 'word)))
+     (if (and aft bef (not (equal aft bef)))
+         (let ((aft (downcase aft))
+               (bef (downcase bef)))
+           (define-abbrev
+             (if p local-abbrev-table global-abbrev-table)
+             bef aft)
+           (message "\"%s\" now expands to \"%s\" %sally"
+                    bef aft (if p "loc" "glob")))
+       (user-error "No typo at or before point"))))
+
+     (setq-default abbrev-mode t)
+
+     (add-hook 'expand-load-hook
+       (lambda ()
+         (add-hook 'expand-expand-hook 'indent-according-to-mode)
+         (add-hook 'expand-jump-hook 'indent-according-to-mode)))))
+ #+end_src
+
+ #+begin_src emacs-lisp
+ (mapc (lambda (x) (define-global-abbrev (car x) (cadr x))) data)
+ #+end_src
+
+** TODO Darkroom
+ #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el2
+ (use-package darkroom
+   :ensure t
+   :config
+   (progn
+     ;; (defvar darkroom-mode-face-foreground "Inconsolata")
+     ;; (defvar darkroom-mode-face-size 160)
+     ;; (defvar darkroom-mode-center-margin 80)
+     (define-key global-map [f12] 'darkroom-tentative-mode)))
+ #+end_src
+** TODO list processes
+ #+begin_src emacs-lisp
+ ;(autoload "list-processes+" 'list-processes+
+ ;          "A enhance list processes command" t)
+
+ #+end_src
+** TODO Prodigy
+ #+begin_src emacs-lisp
+ (message "prodigy:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package prodigy
+   :ensure t)
+
+ ;;(prodigy-define-tag
+ ;;  :name 'grunt
+ ;;  :on-output (lambda (service output)
+ ;;               (if  (s-matches? ".*\(Aborted due to warnings.\)" output)
+ ;;                 (prodigy-set-status service 'failed)
+ ;;                 (prodigy-set-status service 'running))))
+
+ (let ((project-name "award-stakolders"))
+
+   (prodigy-define-service
+     :name "AWARD SHDB start"
+     :command "dev-start"
+     ;; :args `(,(concat "PROJECT_NAME='" project-name "'"))
+     ;; :env `(("PROJECT_NAME" ,project-name)
+     ;;        ("LC_ALL" "en_US.UTF-8"))
+     :cwd (concat "~/src/" project-name "/")
+     :tags `(,(make-symbol project-name))
+     :kill-signal 'sigkill
+     :kill-process-buffer-on-stop t)
+
+   (prodigy-define-service
+     :name "AWARD SHDB create box"
+     :command "dev-create-box"
+     ;; :env `(("PROJECT_NAME" ,project-name)
+     ;;        ("LC_ALL" "en_US.UTF-8"))
+     ;; :args '("PROJECT_NAME='wp-server'")
+     :cwd "~/src/wp-server/"
+     :tags `(,(make-symbol project-name))
+     :kill-signal 'sigkill
+     :kill-process-buffer-on-stop t))
+
+
+   (prodigy-define-service
+     :name "WP server"
+     :command "dev-start"
+     ;; :args `()
+     :env `(("PROJECT_NAME" "wp-server")
+            ("SQL_DEV_ROOT_PASS" ,(password-store-get "hupu/wp-server/dev-root-pass"))
+            ("SQL_DEV_USER_PASS" ,(password-store-get "hupu/wp-server/dev-user-pass"))
+            ("LC_ALL" "en_US.UTF-8"))
+     :cwd "~/src/wp-server/"
+     :tags '(wp-server)
+     :kill-signal 'sigkill
+     :kill-process-buffer-on-stop t)
+
+   (prodigy-define-service
+     :name "WP server create"
+     :command "dev-create-box"
+     :env `(("PROJECT_NAME" "wp-server")
+            ("SQL_DEV_ROOT_PASS" ,(password-store-get "hupu/wp-server/dev-root-pass"))
+            ("SQL_DEV_USER_PASS" ,(password-store-get "hupu/wp-server/dev-user-pass"))
+            ("LC_ALL" "en_US.UTF-8"))
+     ;; :args '("PROJECT_NAME='wp-server'")
+     :cwd "~/src/wp-server/"
+     :tags '(wp-server)
+     :kill-signal 'sigkill
+     :kill-process-buffer-on-stop t)
+
+   (prodigy-define-service
+     :name "WP server provision"
+     :command "vagrant"
+     :env `(("PROJECT_NAME" "wp-server")
+            ("SQL_DEV_ROOT_PASS" ,(password-store-get "hupu/wp-server/dev-root-pass"))
+            ("SQL_DEV_USER_PASS" ,(password-store-get "hupu/wp-server/dev-user-pass"))
+            ("LC_ALL" "en_US.UTF-8"))
+     :args '("provision")
+     :cwd "~/src/wp-server/"
+     :tags '(wp-server)
+     :kill-signal 'sigkill
+     :kill-process-buffer-on-stop t)
+
+ (prodigy-define-service
+   :name "Award grunt"
+   :command "grunt"
+   :cwd "~/src/linode/award"
+   :tags '(grunt)
+   )
+
+ (prodigy-define-service
+   :name "WOR grunt"
+   :command "grunt"
+   :cwd "~/src/linode/wor"
+   :tags '(grunt)
+   )
+
+ #+end_src
+** Evil-lispy
+ #+begin_src emacs-lisp
+ ;;; evil-lispy.el --- precision Lisp editing with Evil and Lispy
+
+ ;; Copyright (C) 2015 Brandon Carrell
+
+ ;; Author: Brandon Carrell <brandoncarrell@gmail.com>, Mika Vilpas <mika.vilpas@gmail.com>
+ ;; URL: https://github.com/sp3ctum/evil-lispy
+ ;; Version: 0.0.1
+ ;; Keywords: lisp
+ ;; Package-Requires: (lispy evil)
+
+
+ ;; This file is not part of GNU Emacs
+
+ ;; This file is free software; you can redistribute it and/or modify
+ ;; it under the terms of the GNU General Public License as published by
+ ;; the Free Software Foundation; either version 3, or (at your option)
+ ;; any later version.
+
+ ;; This program is distributed in the hope that it will be useful,
+ ;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+ ;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ ;; GNU General Public License for more details.
+
+ ;; For a full copy of the GNU General Public License
+ ;; see <http://www.gnu.org/licenses/>.
+
+ ;;; Commentary:
+ ;;
+ ;; evil-lispy defines a minor mode and an additional Evil state for editing
+ ;; Lisp code.  The goal is to encourage a workflow where you can hop between
+ ;; Lispy State for making structured edits using Lispy bindings and the rest
+ ;; of the standard Evil states for general editing.
+
+ ;;; Code:
+
+ (require 'evil)
+ (require 'lispy)
+
+ (put 'evil-define-state 'lisp-indent-function 'defun)
+
+ ;; ——— Customization ———————————————————————————————————————————————————————————
+
+ (defgroup evil-lispy nil
+   "Evil integration with Lispy."
+   :group 'lispy)
+
+ (defcustom evil-lispy-cursor '("lawn green" box)
+   "the cursor used when in evil-lispy-mode")
+
+ ;; ——— State ———————————————————————————————————————————————————————————————————
+
+ ;;;###autoload
+ (evil-define-state lispy
+   "An evil state for Lispy, a precision editing mode for Lisp."
+   :tag "<L>"
+   :message "Entering evil-lispy state. Press ESC to get out of lispy."
+   :cursor evil-lispy-cursor
+   :entry-hook (evil-lispy-state-entry)
+   :exit-hook (evil-lispy-state-exit)
+   nil)
+
+ (defun evil-lispy-state-entry ()
+   (remove-hook 'activate-mark-hook #'evil-visual-activate-hook t)
+   (lispy-mode 1))
+
+ (defun evil-lispy-state-exit ()
+   (when (region-active-p) (deactivate-mark))
+   (add-hook 'activate-mark-hook #'evil-visual-activate-hook nil t)
+   (lispy-mode -1))
+
+ (defun evil-lispy-enter-state (direction extra-direction)
+   "Return a lambda which enters Lispy state at the DIRECTION side of
+ the current form.  DIRECTION must be either 'left or 'right."
+   (let ((f (intern (concat "lispy-" (symbol-name direction))))
+         (g (intern (concat "lispy-" (symbol-name extra-direction)))))
+     `(lambda ()
+        (interactive)
+        (when (looking-at lispy-left) (forward-char))
+        (let ((pos (point)))
+          (,f 1)
+          (when (eq (point) pos) (,g 1)))
+        (evil-lispy-state))))
+
+ (fset 'evil-lispy-enter-state-left (evil-lispy-enter-state 'left 'backward))
+ (fset 'evil-lispy-enter-state-right (evil-lispy-enter-state 'right 'forward))
+
+ (defun evil-lispy-enter-marked-state ()
+   "Enters `lispy-state' with the current symbol under point marked."
+   (interactive)
+   (evil-lispy-state)
+   (lispy-mark-symbol))
+
+ (defun evil-lispy-enter-visual-state ()
+   "If we're in visual state, enter `lispy-state' with the current region
+ selected."
+   (interactive)
+   (let ((start (region-beginning))
+         (end (region-end))
+         (pos (point)))
+     (evil-lispy-state)
+     (set-mark (if (eq pos start) end start))))
+
+ (defun evil-lispy-enter-insert-state (direction extra-direction)
+   "Return a lambda which enters Insert state at the DIRECTION side of
+ the current form.  DIRECTION must be either 'left or 'right."
+   `(lambda ()
+      (interactive)
+      (funcall (evil-lispy-enter-state ',direction ',extra-direction))
+      (evil-insert-state)
+      (cond
+       ((eq ',direction 'left)
+        (forward-char)
+        (unless (looking-at "\s")
+          (insert ?\s)
+          (backward-char)))
+       ((eq ',direction 'right)
+        (backward-char)
+        (unless (looking-back "\s")
+          (insert ?\s))))))
+
+ (fset 'evil-lispy-enter-insert-state-left
+       (evil-lispy-enter-insert-state 'left 'backward))
+ (fset 'evil-lispy-enter-insert-state-right
+       (evil-lispy-enter-insert-state 'right 'forward))
+
+ (defmacro evil-lispy-defnonstring-action (function-name
+                                           action
+                                           &rest args-to-action)
+   "Define a function that will insert the pressed key in comments and strings,
+ or call ACTION (a function) otherwise, with ARGS-TO-ACTION."
+   (declare (indent 1))
+   `(defun ,function-name (arg)
+      (interactive "p")
+      (if (lispy--in-string-or-comment-p)
+          (self-insert-command arg)
+        (apply (quote ,action) ,args-to-action))))
+
+ (evil-lispy-defnonstring-action evil-lispy-insert-to-lispy-right
+                                 evil-lispy-enter-state-right)
+ (evil-lispy-defnonstring-action evil-lispy-insert-to-lispy-left
+                                 evil-lispy-enter-state-left)
+
+ ;; ——— Mode ————————————————————————————————————————————————————————————————————
+
+ (defvar evil-lispy-mode-map (make-sparse-keymap))
+
+ (define-minor-mode evil-lispy-mode
+   "A minor mode for integrating Evil and Lispy."
+   :lighter " evil-lispy"
+   :keymap evil-lispy-mode-map
+   :after-hook (evil-normal-state))
+
+ ;; ——— Operations ——————————————————————————————————————————————————————————————
+
+ (defun evil-lispy-describe ()
+   (interactive)
+   (save-excursion
+     (lispy-mark-symbol)
+     (lispy-describe-inline)))
+
+ ;; ——— Keys ————————————————————————————————————————————————————————————————————
+
+ (define-key evil-lispy-state-map [escape] 'evil-normal-state)
+
+ ;; ——— Entering state ——————————————————
+ (evil-define-key 'normal evil-lispy-mode-map
+   "(" #'evil-lispy-enter-state-left
+   ")" #'evil-lispy-enter-state-right
+   "mv" #'evil-lispy-enter-marked-state
+   "<i" #'evil-lispy-enter-insert-state-left
+   ">A" #'evil-lispy-enter-insert-state-right)
+
+ (evil-define-key 'visual evil-lispy-mode-map
+   (kbd "RET") #'evil-lispy-enter-visual-state)
+
+ ;; ——— Editing operations ——————————————
+ (evil-define-key 'normal evil-lispy-mode-map
+   "K" #'evil-lispy-describe
+   (kbd "M-k") #'lispy-kill-sentence
+   (kbd "C-1") #'evil-lispy-describe
+   (kbd "C-2") #'lispy-arglist-inline)
+
+ ;; ——— Insert operations ———————————————
+ (evil-define-key 'insert evil-lispy-mode-map
+   "(" #'lispy-parens
+
+   "[" #'lispy-brackets
+   "}" #'lispy-brackets
+
+   "{" #'lispy-braces
+   "\"" #'lispy-quotes
+   ";" #'lispy-comment
+
+   ;; ( should always insert parentheses
+   ")" #'evil-lispy-insert-to-lispy-right
+   "[" #'evil-lispy-insert-to-lispy-left
+   "]" #'evil-lispy-insert-to-lispy-right
+
+   (kbd "DEL") #'lispy-delete-backward
+   (kbd "M-k") #'lispy-kill-sentence
+   (kbd "C-1") #'lispy-describe-inline
+   (kbd "C-2") #'lispy-arglist-inline)
+
+ (define-key lispy-mode-map "o" 'special-lispy-different)
+ (define-key lispy-mode-map "d" 'special-lispy-other-mode)
+ (define-key lispy-mode-map "i" 'special-lispy-flow)
+ (define-key lispy-mode-map "f" 'special-lispy-tab)
+
+ (provide 'evil-lispy)
+ #+end_src
+** Dump jump
+ #+begin_src emacs-lisp
+ (use-package dumb-jump
+   :ensure t
+   :bind (("M-g o" . dumb-jump-go-other-window)
+          ("M-g j" . dumb-jump-go)
+          ("M-g b" . dumb-jump-back)
+          ("M-g q" . dumb-jump-quick-look)
+          ("M-g x" . dumb-jump-go-prefer-external)
+          ("M-g z" . dumb-jump-go-prefer-external-other-window))
+   :config (setq dumb-jump-selector 'ivy))
+ #+end_src
+
+** Workgroups
+
+ #+begin_src emacs-lisp
+ (message "Workgroups:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package workgroups
+   :ensure t
+   :diminish (workgroups-mode . "w")
+   :config
+   (progn
+
+     (define-key key-translation-map " w" (kbd "M-,"))
+
+     (setq wg-switch-on-load nil
+           wg-prefix-key (kbd "M-,"))
+
+     (workgroups-mode 1)
+
+     (after 'evil
+       (define-keys wg-map
+         "e" 'wg-switch-to-workgroup))
+
+     (wg-load "~/.emacs.d/usr/workgroups")
+
+     (setq wg-query-for-save-on-emacs-exit nil)
+     (setq wg-morph-on nil)
+
+     (defun my-open-shells ()
+       (interactive)
+       (progn
+         ;; run a few shells.
+         (let ((workgroup (wg-get-workgroup 'name "sh" t)))
+           (wg-switch-to-workgroup workgroup)
+           (eshell "shell 1")
+           (eshell "shell 2")
+           (eshell "shell 3")
+           (eshell "shell 4")
+           (wg-revert-workgroup workgroup))))))
+ #+end_src
+
+
+* unused
+  :PROPERTIES:
+  :ARCHIVE_TIME: 2019-09-18 Wed 16:38
+  :ARCHIVE_FILE: ~/src/rcs/emacs-init/emacs.init.org
+  :ARCHIVE_OLPATH: languages
+  :ARCHIVE_CATEGORY: emacs.init
+  :END:
+** Math packages
+#+begin_src emacs-lisp
+  (message "Start math:::: %.2fs" (- (float-time) shit-load-time-start))
+
+  (use-package math ; Mathematica
+    :commands math-mode
+    :init
+    (add-to-list 'auto-mode-alist '("\\.m$" . math-mode))
+    :config
+    (progn
+      ;(require 'math)
+      ))
+
+
+  (use-package maxima
+    :commands maxima
+    :config
+    (progn
+      (load "~/.emacs.d/lib/setup-imaxima-imath.el")
+      (autoload 'maxima-mode "maxima" "Maxima mode" t)
+      (autoload 'imaxima "imaxima" "Frontend for maxima with Image support" t)
+      (autoload 'maxima "maxima" "Maxima interaction" t)
+      (autoload 'imath-mode "imath" "Imath mode for math formula input" t)
+      (setq imaxima-use-maxima-mode-flag t)))
+
+#+end_src
+** Python
+#+begin_src emacs-lisp
+  (message "Python:::: %.2fs" (- (float-time) shit-load-time-start))
+  (use-package python-mode
+    :mode ("\\.py\\'" . python-mode)
+    :interpreter ("python" . python-mode)
+    :config
+    (progn
+      (setq indent-tabs-mode nil
+            indicate-empty-lines t
+            py-python-history "~/.emacs.d/var/.python_history"
+            py-ipython-history "~/.emacs.d/var/.ipython_history"
+            )
+      (defun my-run-python ()
+        (interactive)
+        (progn
+          (save-buffer)
+          (py-execute-buffer)
+          (recenter-top-bottom)))
+
+      (define-key python-mode-map (kbd "\C-c \C-c") 'my-run-python)
+
+      (set (make-local-variable 'parens-require-spaces) nil)
+
+      (bind-key "C-c C-z" 'python-shell python-mode-map)
+      (unbind-key "C-c c" python-mode-map)
+      ))
+
+#+end_src
+
+** terraform
+#+begin_src emacs-lisp
+(message "Start terraform:::: %.2fs" (- (float-time) shit-load-time-start))
+
+(use-package terraform-mode
+  :ensure t)
+#+end_src
+** conf mode
+
+#+begin_src emacs-lisp
+(message "Start conf mode:::: %.2fs" (- (float-time) shit-load-time-start))
+
+(use-package conf-mode
+  :config
+  (progn
+    (defun my-conf-outline-hook ()
+      (setq-local outline-regexp "# \\*+")
+      (outline-minor-mode)
+      (hide-other)
+      (smart-tab-mode)
+      (after 'evil
+        (define-key conf-unix-mode-map (kbd "TAB") nil)
+        (evil-define-key 'normal conf-unix-mode-map (kbd "TAB") 'outline-toggle-children)))
+    (add-hook 'conf-unix-mode-hook 'my-conf-outline-hook)))
+#+end_src
+
+** Scala
+#+begin_src emacs-lisp
+    (message "Scala:::: %.2fs" (- (float-time) shit-load-time-start))
+
+      ;;; Maven
+    (use-package maven
+      :commands maven)
+
+    (use-package scala-mode
+      :commands scala-mode
+  :mode ("\\.scala$" . scala-mode)
+      :config
+      (progn
+
+        (use-package scala-mode-auto)
+        ;; (use-package ob-scala)
+
+          ;;; Ensime
+        (add-to-list 'load-path "~/.emacs.d/ensime/elisp/")
+        (use-package ensime)
+        (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
+
+        (setq ensime-jvm-args "-client -verbose:class -verbosegc -Xloggc:/tmp/ensime_gc.log -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+PrintGCDateStamps -XX:+PrintTenuringDistribution -XX:+PrintHeapAtGC -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -XX:+UseAdaptiveSizePolicy -Xms16M -Xmx512M -Djline.terminal=jline.UnsupportedTerminal -Djline.WindowsTerminal.directConsole=false") ; -Dfile.encoding=UTF-8
+        (setenv "ENSIME_JVM_ARGS" ensime-jvm-args)
+
+        (defun scala-turnoff-indent-tabs-mode ()
+          (setq indent-tabs-mode nil))
+
+        (defun my-restart-inf-scala ()
+          (interactive)
+
+            (progn
+              (scala-quit-interpreter)
+              (sleep-for 0.2)
+              (scala-run-scala "scala")
+              (other-buffer)))
+
+        (defun run-scala ()
+          (interactive)
+          (progn
+            (save-buffer)
+            (scala-eval-buffer)
+            (recenter-top-bottom)))
+
+        (yas-minor-mode-on)
+        (scala-turnoff-indent-tabs-mode)
+        (define-key scala-mode-map '[f6] 'mvn)
+        (define-key scala-mode-map (kbd "\C-c \C-c") 'run-scala)
+        (define-key scala-mode-map (kbd "\C-c c r") 'my-restart-inf-scala)
+
+        )) ; End progn, use-package
+
+#+end_src
+
+** SML
+ #+begin_src emacs-lisp
+ (message "SML:::: %.2fs" (- (float-time) shit-load-time-start))
+
+ (use-package sml-mode
+   :ensure t
+   :mode ("\\.sml$'" . sml-mode)
+   :config
+   (progn
+
+     (defun sml-and-run-tests ()
+       "If sml repl exists, then restart it else create a new repl"
+       (interactive)
+
+       ;; Save file
+       ;;(my-save)
+
+       (let ((cmd "sml")
+             (buffer-name "*sml*")
+             (file (when (and sml-config-file (file-exists-p sml-config-file))
+                     sml-config-file)))
+         (progn
+
+           (after 'evil
+             (evil-scroll-line-to-center (line-number-at-pos (point))))
+
+           ;; Kill the sml process if it's open
+           (when (get-buffer buffer-name)
+             (with-current-buffer buffer-name
+               (when (process-live-p cmd)
+                 (comint-send-eof)))
+             (sleep-for 0.1))
+
+           (save-current-buffer
+             (pop-to-buffer (apply 'make-comint cmd cmd file))
+             (delete-region (point-min) (point-max))
+             (inferior-sml-mode)
+             (goto-char (point-max))
+             (current-buffer))
+
+           (sml-prog-proc-load-file (buffer-file-name))
+           (sml-prog-proc-load-file
+            (concat (s-chop-suffix ".sml" (buffer-file-name)) "-test.sml"))
+
+           (comint-send-string (get-process cmd) "run();\n"))))
+
+     (add-hook 'sml-mode-hook
+               (lambda ()
+                 (define-key sml-mode-map (kbd "C-c C-c") 'sml-and-run-tests)))
+
+     ))
+
+
+#+end_src
+** Haskell
+#+begin_src emacs-lisp
+  (message "Haskell:::: %.2fs" (- (float-time) shit-load-time-start))
+
+  (use-package haskell-mode
+    :commands haskell-mode
+    :mode ("\\.hl$" . haskell-mode)
+
+    :config
+    (progn
+      (use-package hs-lint)    ;; https://gist.github.com/1241059
+      (add-hook 'haskell-mode-hook 'my-haskell-mode-hook)
+
+      (defun my-haskell-mode-hook ()
+        (setq haskell-program-name "hugs -98")
+        "hs-lint binding, plus autocompletiojn and paredit."
+        (local-set-key "\C-cl" 'hs-lint)
+        (flymake-haskell-enable)
+        (use-package ghc)
+        (ghc-init)
+        (flymake-mode)
+        (turn-on-haskell-doc-mode)
+        (turn-on-haskell-indentation)
+        )
+
+      ;; Ignore compiled Haskell files in filename completions
+      (add-to-list 'completion-ignored-extensions ".hi")
+
+      (defun flymake-haskell-init ()
+        "When flymake triggers, generates a tempfile containing the
+      contents of the current buffer, runs `hslint` on it, and
+      d
+  eletes file. Put this file path (and run `chmod a+x hslint`)
+      to enable hslint: https://gist.github.com/1241073"
+        (let* ((temp-file   (flymake-init-create-temp-buffer-copy
+                             'flymake-create-temp-inplace))
+               (local-file  (file-relative-name
+                             temp-file
+                             (file-name-directory buffer-file-name))))
+          (list "hlint" (list local-file))))
+
+      (defun flymake-haskell-enable ()
+        "Enables flymake-mode for haskell, and sets <C-c d> as command
+      to show current error."
+        (when (and buffer-file-name
+                   (file-writable-p
+                    (file-name-directory buffer-file-name))
+                   (file-writable-p buffer-file-name))
+          (local-set-key (kbd "C-c d") 'flymake-display-err-menu-for-current-line)
+          (flymake-mode t)))
+
+
+      )
+    )
+#+end_src
+** Ruby
+#+begin_src emacs-lisp
+(message "Ruby:::: %.2fs" (- (float-time) shit-load-time-start))
+
+  (use-package ruby-mode
+    :mode ("\\.rb\\'" . ruby-mode)
+    :interpreter ("ruby" . ruby-mode)
+    :config
+    (progn
+      (use-package yari
+        :init
+        (progn
+          (defvar yari-helm-source-ri-pages
+            '((name . "RI documentation")
+              (candidates . (lambda () (yari-ruby-obarray)))
+              (action  ("Show with Yari" . yari))
+              (candidate-number-limit . 300)
+              (requires-pattern . 2)
+              "Source for completing RI documentation."))
+
+          (defun helm-yari (&optional rehash)
+            (interactive (list current-prefix-arg))
+            (when current-prefix-arg (yari-ruby-obarray rehash))
+            (helm 'yari-helm-source-ri-pages (yari-symbol-at-point)))))
+
+        (add-to-list 'auto-mode-alist '("Capfile" . ruby-mode))
+  (add-to-list 'auto-mode-alist '("Gemfile" . ruby-mode))
+  (add-to-list 'auto-mode-alist '("Rakefile" . ruby-mode))
+  (add-to-list 'auto-mode-alist '("\\.rake\\'" . ruby-mode))
+  (add-to-list 'auto-mode-alist '("\\.rb\\'" . ruby-mode))
+  (add-to-list 'auto-mode-alist '("\\.ru\\'" . ruby-mode))
+
+      (defun my-ruby-smart-return ()
+        (interactive)
+        (when (memq (char-after) '(?\| ?\" ?\'))
+          (forward-char))
+        (call-interactively 'newline-and-indent))
+
+      (defun my-ruby-mode-hook ()
+        (require 'inf-ruby)
+        (inf-ruby-setup-keybindings)
+
+        (bind-key "<return>" 'my-ruby-smart-return ruby-mode-map)
+        (bind-key "C-h C-i" 'helm-yari ruby-mode-map)
+        (bind-key "C-c C-c" 'my-ruby-send-region ruby-mode-map)
+
+        (set (make-local-variable 'yas-fallback-behavior)
+             '(apply ruby-indent-command . nil))
+        (bind-key "<tab>" 'yas-expand-from-trigger-key ruby-mode-map)
+
+        (setq ruby-deep-arglist t)
+        (setq ruby-deep-indent-paren nil)
+        (setq c-tab-always-indent nil))
+
+      (defun my-ruby-send-region ()
+          (mark-whole-buffer)
+          (sleep-for 0.2)
+          (ruby-send-region))
+
+      (add-hook 'ruby-mode-hook 'my-ruby-mode-hook)))
+
+#+end_src
+*** el4r
+#+begin_src emacs-lisp
+;(add-to-list 'load-path "/Users/pseudo/.rvm/rubies/ruby-1.9.3-p392/share/emacs/site-lisp")
+;(require 'el4r)
+;(el4r-boot)
+#+end_src
+** Haml
+
+#+begin_src emacs-lisp
+(message "Haml mode:::: %.2fs" (- (float-time) shit-load-time-start))
+(use-package haml-mode
+  :ensure t
+  :pin melpa-stable
+  :mode ("\\.twig\\'" . haml-mode)
+  :config
+  (progn
+    (add-hook 'haml-mode-hook (lambda () (linum-mode)))))
+
+
+
+(defun haml-ify ()
+  "run html2haml on current buffer"
+  (interactive)
+  (setf filename buffer-file-name)
+  (setf newfilename (concat
+                     (car (split-string filename "\\.")) ".html.haml"))
+  (save-buffer)
+  (shell-command (concat
+                  "html2haml " filename " > " newfilename))
+  (kill-buffer (current-buffer))
+  (delete-file filename)
+  (find-file newfilename))
+#+end_src
+
+** Jade
+
+#+begin_src emacs-lisp
+(message "Haml mode:::: %.2fs" (- (float-time) shit-load-time-start))
+(use-package jade-mode
+  :ensure t
+  :mode("\\.jade\\'" . jade-mode))
+
+(defun my-evil-jade-indent ()
+  (if (equal major-mode 'jade-mode)
+      (let ((tabs-needed (jade-previous-line-indentation)))
+        (insert (make-string tabs-needed ? )))))
+
+(after 'evil
+  (defadvice evil-open-above (after wants-indent-above activate)
+    (my-evil-jade-indent))
+
+  (defadvice evil-open-below (after wants-indent-below activate)
+    (my-evil-jade-indent)))
+#+end_src
+
+** Javascript
+#+begin_src emacs-lisp
+(use-package rjsx-mode
+  :ensure t
+  :pin melpa-stable
+  :mode ("\\.js\\'" . rjsx-mode)
+  :config
+  (progn
+    (setq js2-strict-missing-semi-warning nil)
+    (setq js2-strict-trailing-comma-warning nil)
+    (setq js2-strict-inconsistent-return-warning nil)))
+#+end_src
+** apache
+
+#+begin_src emacs-lisp
+(message "Start apache:::: %.2fs" (- (float-time) shit-load-time-start))
+
+(use-package apache-mode
+  :ensure t)
+#+end_src
+
+** VimRC
+#+begin_src emacs-lisp
+(message "VimRC mode:::: %.2fs" (- (float-time) shit-load-time-start))
+  (use-package vimrc-mode
+          :commands vimrc-mode
+          :mode (("\\.vimperatorrc\\'" . vimrc-mode)("\\.vimp\\'" . vimrc-mode))
+          :init
+          (progn
+            )
+          :config
+          (progn
+            ))
+      ;
+#+end_src
+** yaml
+
+#+begin_src emacs-lisp
+(use-package yaml-mode
+  :ensure t)
+#+end_src
+
+** php
+#+begin_src emacs-lisp
+(message "Php mode:::: %.2fs" (- (float-time) shit-load-time-start))
+
+(use-package php-mode
+  :ensure t
+  :commands php-mode
+  :mode (("\\.php$'" . php-mode)
+         ("\\.blade.php$" . web-mode))
+  :config
+  (progn
+
+    ;; (use-package php-extras
+    ;;   :ensure t)
+
+    (setq php-manual-path "~/pl_documentation/php-chunked-xhtml/")
+
+    (modify-syntax-entry ?$ "." php-mode-syntax-table)
+
+
+    ;; (setq web-mode-markup-indent-offset 2)
+    ;; (setq web-mode-code-indent-offset 2)
+
+    ;; (setq web-mode-script-padding 2)
+    ;; (setq web-mode-css-indent-offset 2)
+
+    (setq web-mode-style-padding 4)
+    (setq web-mode-script-padding 4)
+    (setq web-mode-enable-current-column-highlight t)
+    (setq web-mode-enable-current-element-highlight t)
+
+    (add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.tpl\\.web\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.[agj]sp\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
+    (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
+
+    (defun pp-expression ()
+      (interactive)
+      (save-excursion
+        (if (use-region-p)
+            (kill-region (region-beginning) (region-end)))
+        (insert "$pp_var")
+        (evil-insert-newline-above)
+        (indent-according-to-mode)
+        (insert "$pp_var = ")
+        (yank)
+        (insert ";")
+        (evil-insert-newline-below)
+        (indent-according-to-mode)
+        (insert "pp( $pp_var );")))
+
+    (defun un-pp-expression ()
+      (interactive)
+      (save-excursion
+        (re-search-backward "\\$pp_var = \\(.*\\);" nil t))
+      (insert (match-string 1))
+      (delete-region (point) (save-excursion
+                               (skip-chars-forward "\\$pp_var") (point)))
+      (previous-line 2)
+      (move-beginning-of-line nil)
+      (delete-region (point) (progn
+                               (next-line 1)
+                               (+ 1 (line-end-position)))))
+
+    (defun my-php-mode-hook ()
+      (interactive)
+      (key-chord-define evil-insert-state-map ";;" 'insert-semicolon)
+
+      (setq php-template-compatibility nil)
+      (subword-mode 1)
+
+      (after 'evil
+        (define-leader-keys 'php-mode-map-leader "p"
+          "p" 'pp-expression
+          "u" 'un-pp-expression
+          ))
+
+      )
+    (define-key php-mode-map (kbd "C-M-h") 'evil-window-left)
+    (add-hook 'php-mode-hook 'my-php-mode-hook)
+
+
+    (defun insert-semicolon ()
+      (interactive)
+      (save-excursion
+        (end-of-line)
+        (insert ";")))
+
+    (defun insert-period()
+      (interactive)
+      (save-excursion
+        (end-of-line)
+        (insert ".")))
+
+
+
+
+    ))
+
+
+
+#+end_src
+** css
+#+begin_src emacs-lisp
+(message "Css mode:::: %.2fs" (- (float-time) shit-load-time-start))
+(use-package css-mode
+  :commands css-mode
+  :mode ("\\.css$'" . css-mode)
+  :config
+  (progn
+    (add-hook 'css-mode-hook (lambda () (linum-mode)))
+    ;; (require 'css-check)
+    ;; (require 'css-color)
+    ;; (require 'mon-css-color)
+    ;; (setq cssm-indent-function #'cssm-c-style-indenter)
+    ;; (setq cssm-indent-level '2)
+
+    )
+  )
+
+#+end_src
+** sass
+#+begin_src emacs-lisp
+(message "Scss mode:::: %.2fs" (- (float-time) shit-load-time-start))
+(setq scss-compile-at-save nil)
+#+end_src
+** Perl
+#+begin_src emacs-lisp
+ (defalias 'perl-mode 'cperl-mode)
+#+end_src
