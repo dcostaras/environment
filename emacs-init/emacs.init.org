@@ -568,12 +568,13 @@ Set user directories as constants for use in init script
 ** line numbers
 
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-  (setq display-line-numbers-type 'relative
-	display-line-numbers-grow-only t)
+(setq display-line-numbers-type 'relative
+      display-line-numbers-grow-only t
+      display-line-numbers-current-absolute nil)
 (add-hook 'org-mode-hook
 	  (lambda ()
 	    (setq-local display-line-numbers-type 'visual)))
-  (global-display-line-numbers-mode)
+(global-display-line-numbers-mode)
 #+end_src
 
 ** whitespace
@@ -1618,7 +1619,6 @@ evil-visualstar  h 20150301… available  melpa       16  Starts a * or # search
 
 #+name: helm-config
 #+begin_src emacs-lisp :noweb yes
-  (message "helm-config")
   (setq helm-input-idle-delay 0)
   (setq helm-exit-idle-delay 0)
   (setq helm-split-window-in-side-p t)
@@ -2340,8 +2340,8 @@ current query will be used to initialize the search.  Otherwise
 	("j" windmove-down)
 	("k" windmove-up)
 	("l" windmove-right)
-	("q" hydra-move-splitter-left)
-	("w" hydra-move-splitter-down)
+	("q" balance-windows)
+	("w" save-buffer)
 	("e" hydra-move-splitter-up)
 	("r" hydra-move-splitter-right)
 	("b" helm-mini)
@@ -3482,45 +3482,62 @@ version 2015-10-08"
 ** Notes
 *** TODO how to set prefix key to a sparse key map
 ** Begin
+
 #+begin_src emacs-lisp :noweb yes :tangle ~/.emacs.d/init.el
-    (message "org:::: %.2fs" (- (float-time) shit-load-time-start))
+(message "org:::: %.2fs" (- (float-time) shit-load-time-start))
 
-  ;; (use-package names
-  ;; :ensure t)
+;; (use-package names
+;; :ensure t)
 
-    (use-package org
+(use-package org
 
-      :bind
-      (("C-c c" . org-capture)
-       ("C-c t" . org-table-recalculate-buffer-tables)
-       ("C-c a" . org-agenda)
-       ("C-c S" . org-store-link)
-       ("C-c l" . org-insert-link))
+  :bind
+  (("C-c c" . org-capture)
+   ("C-c t" . org-table-recalculate-buffer-tables)
+   ("C-c a" . org-agenda)
+   ("C-c S" . org-store-link)
+   ("C-c l" . org-insert-link))
 
-      :mode
-      ("\\.org\\'" . org-mode)
+  :mode
+  ("\\.org\\'" . org-mode)
 
-      :config
-      (progn
-	;; (define-namespace my-org-
-	;; <<org-functions>>)
-	;; <<org-setq>>
-	;; <<org-packages>>
-	;; <<org-jira>>
-	;; <<org-config>>
-	;; <<org-calendar>>
-	;; <<org-taskjuggler>>
-	;; <<org-pomodoro>>
-	;; <<org-agenda>>
-	;; <<org-pdf>>
-	;; <<org-contacts>>
-	;; <<org-evil>>
-	;; <<org-capture>>
-	<<org-babel>>
-	;; <<org-bib>>
+  :config
+  (progn
 
-	))
+(add-to-list 'org-emphasis-alist
+	     '("!"  (:foreground "red") "<mark>" "</mark>"
+	       )
+	     ;; '(
+	     ;;  ("!"  (:foreground "red") )
+	     ;;  ("/" italic "<i>" "</i>")
+	     ;;  ("_" underline "<span style=\"text-decoration:underline;\">" "</span>")
+	     ;;  ("-" (:overline t) "<span style=\"text-decoration:overline;\">" "</span>")
+
+	     ;;  ("*" org-verbatim "<code>" "</code>" verbatim)
+	     ;;  ("+" (:strike-through t) "<del>" "</del>"))
+	     )
+    (setq org-src-preserve-indentation nil
+	  org-edit-src-content-indentation 0)
+    ;; (define-namespace my-org-
+    ;; <<org-functions>>)
+    ;; <<org-setq>>
+    ;; <<org-packages>>
+    ;; <<org-jira>>
+    ;; <<org-config>>
+    ;; <<org-calendar>>
+    ;; <<org-taskjuggler>>
+    ;; <<org-pomodoro>>
+    ;; <<org-agenda>>
+    ;; <<org-pdf>>
+    ;; <<org-contacts>>
+    ;; <<org-evil>>
+    ;; <<org-capture>>
+    <<org-babel>>
+    ;; <<org-bib>>
+
+    ))
 #+end_src
+
 ** Setq
 
 #+name: org-setq
@@ -4489,7 +4506,8 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 :ensure t
 :init
 (progn
-    (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t))
+    ;; (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
+    )
 :config
 (progn
     ;; (setq clojure-defun-style-default-indent t)
@@ -4675,6 +4693,17 @@ _q_: quit
 (setq nrepl-popup-stacktraces-in-repl t)
 (setq nrepl-history-file "~/.emacs.d/var/nrepl-history")
 
+(defface my/highlight
+  '((t :foreground "#F92672"))
+  "My highlighting")
+
+(defun my/highlight-words ()
+  "Use hi-lock to highlight specific words"
+  (hi-lock-face-buffer "\\(and-paths\\|or-paths\\|cond-path\\)" 'my/highlight))
+
+(add-hook 'clojure-mode-hook #'my/highlight-words)
+
+
 ;; (eval-after-load 'clojure-mode
 ;;   '(font-lock-add-keywords
 ;;     'clojure-mode `(("(\\(fn\\)[\[[:space:]]"
@@ -4810,6 +4839,20 @@ _q_: quit
 
 (add-to-list 'company-backends 'company-elisp-finder-keyword-backend)
 
+#+end_src
+
+* BNF
+
+(add-hook 'after-save-hook (lambda () (cider-load-buffer (get-buffer "query_parser.cljc<carpenter>"))) nil t)
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(defun my-bnf-mode-hook ()
+  (font-lock-add-keywords
+   'bnf-mode '(("(\\*.*\\*)" 0 'font-lock-comment-face t)))
+  (setq comment-start "(* ")
+  (setq comment-end " *)"))
+
+(add-hook 'bnf-mode-hook 'my-bnf-mode-hook)
 #+end_src
 
 * SQL
