@@ -10,11 +10,14 @@ bash-completion
 bat
 boot-clj
 cataclysm
+borkdude/brew/clj-kondo
+borkdude/brew/jet
 clojure
 ffmpeg
 flac
 gnupg
 gnutls
+gnu-typist
 graphviz
 htop
 leiningen

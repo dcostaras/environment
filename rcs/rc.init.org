@@ -492,30 +492,49 @@
 sudo xattr -rd com.apple.quarantine $0
     #+end_src
 
+*** edn pretty-print
+
+#+begin_src clojure :shebang "#!/usr/local/bin/planck" :tangle ~/bin/edn-pp
+(ns eq.core
+  (:require [cljs.pprint :refer [pprint]]
+            [cljs.reader :as edn]
+            [planck.core :as planck :refer [*in* slurp]]
+            [clojure.string :as string]))
+
+(def in (-> *in* slurp edn/read-string))
+
+(->> in
+     (take-while identity)
+     (string/join)
+     (edn/read-string)
+     (pprint))
+#+end_src
+
 ** audio conversion
 
   #+BEGIN_SRC sh :tangle ~/.zshrc
-     #find . -type f -name "*.mkv" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -vn -c:a libmp3lame -y "${FILE%.mkv}.mp3";' _ '{}' \;
+  #find . -type f -name "*.mkv" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -vn -c:a libmp3lame -y "${FILE%.mkv}.mp3";' _ '{}' \;
 
-     #split file
-     function split-audio {
-         ffmpeg -i "$1" -f segment -segment_times "$2" -c copy "$1"a%03d
-     }
+  #split file
+  function split-audio {
+      ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
+      # ffmpeg -i "$1" -f segment -segment_time 3 -c copy out%03d.mp3
+  }
 
-     function convert-mkv-video-to-opus-audio {
-         find . -type f -name "*.mkv" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -c:a copy "${FILE%.mkv}.opus";' _ '{}' \;
-     }
+  function convert-mkv-video-to-opus-audio {
+      find . -type f -name "*.mkv" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -c:a copy "${FILE%.mkv}.opus";' _ '{}' \;
+  }
 
-     function convert-opus-to-aac {
-         find . -type f -name "*.webm" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -c:a libfdk_aac -vbr 5 -cutoff 18000 "${FILE%.webm}.m4a";' _ '{}' \;
-     }
+  function convert-opus-to-aac {
+      find . -type f -name "*.webm" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -c:a libfdk_aac -vbr 5 -cutoff 18000 "${FILE%.webm}.m4a";' _ '{}' \;
+  }
 
-     function convert-flac-to-alac {
-         find . -type f -name "*.flac" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -acodec alac "${FILE%.flac}.m4a";' _ '{}' \;
-     }
-     function TODO-not-working-raw-to-m4a {
-         ffmpeg -f u16le -ar 44100 -ac 1 -i input.raw
-     }
+  function convert-flac-to-alac {
+      find . -type f -name "*.flac" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -acodec alac "${FILE%.flac}.m4a";' _ '{}' \;
+  }
+  function TODO-not-working-raw-to-m4a {
+      ffmpeg -f u16le -ar 44100 -ac 1 -i input.raw
+  }
   #+END_SRC
 
 * next

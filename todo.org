@@ -1,0 +1,2 @@
+use this for brew installations
+https://github.com/Homebrew/homebrew-bundle

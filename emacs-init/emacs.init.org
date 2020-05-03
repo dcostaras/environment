@@ -2237,27 +2237,27 @@ current query will be used to initialize the search.  Otherwise
 #+BEGIN_SRC emacs-lisp :tangle ~/.emacs.d/init.el
   (use-package magit
     :ensure t
-    :init
-    (general-create-definer magit-leader-define
-      :prefix "SPC g")
+    :defer t
     :general
-    (magit-leader-define 'normal
-      "" nil
-      "s" 'magit-status)
-    ;; (general-define-key
-    ;;  :states 'normal
-    ;;  :keymap 'magit-mode-map
-    ;;  "j" 'evil-next-line
-    ;;  "k" 'evil-previous-line
-    ;;  )
+    (leader-define 'normal
+                   "gs" 'magit-status)
+    (:states 'normal
+             :keymaps 'magit-status-mode-map
+             "TAB" 'magit-section-toggle)
+    :init
+    (progn
+      (use-package evil-magit
+        :ensure t
+        :defer t))
     :config
     (progn
+      (require 'git-rebase)
+      (require 'evil-magit)
       (evil-set-initial-state 'magit-status-mode 'normal)
       (define-key magit-minibuffer-local-ns-map "\s"
-	(lambda ()
-	  (interactive)
-	  (insert "-")))))
-
+        (lambda ()
+          (interactive)
+          (insert "-")))))
 #+END_SRC
 
 * Avy
@@ -2925,25 +2925,25 @@ current query will be used to initialize the search.  Otherwise
 ** main
 
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-  (message "company:::: %.2fs" (- (float-time) shit-load-time-start))
-  (use-package company
-    :ensure t
-    :diminish t
-    :general ("<tab>" 'company-complete)
-    :init (global-company-mode)
-    :config
-    (progn
+(message "company:::: %.2fs" (- (float-time) shit-load-time-start))
+;; (use-package company
+;;   :ensure t
+;;   :diminish t
+;;   :general ("<tab>" 'company-complete)
+;;   :init (global-company-mode)
+;;   :config
+;;   (progn
 
-      (setq company-idle-delay nil)
+;;     (setq company-idle-delay nil)
 
-      ;; (use-package company-quickhelp
-      ;;   :ensure t
-      ;;   :config (company-quickhelp-mode 1))
+;;     ;; (use-package company-quickhelp
+;;     ;;   :ensure t
+;;     ;;   :config (company-quickhelp-mode 1))
 
-      ;;(push 'company-readline company-backends)
-      ;;(add-hook 'rlc-no-readline-hook (lambda () (company-mode -1)))
+;;     ;;(push 'company-readline company-backends)
+;;     ;;(add-hook 'rlc-no-readline-hook (lambda () (company-mode -1)))
 
-      ))
+;;     ))
 #+end_src
 
 * functions

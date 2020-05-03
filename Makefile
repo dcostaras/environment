@@ -18,16 +18,6 @@ all: \
 	sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
 	touch $@
 
-# TODO: install brew rule
-
-.targets/cask: brew/taps.dat
-	xargs brew tap <$<
-	touch $@
-
-.targets/fonts: fonts/cask.dat | .targets/cask
-	xargs brew cask install <$<
-	touch $@
-
 gitconfig: ~/.gitconfig
 ~/.gitconfig: git/config
 	$(call to-file,git/config,~/.gitconfig)
@@ -52,11 +42,19 @@ gitconfig: ~/.gitconfig
 	cp -R ~/src/emacs/nextstep/Emacs.app /Applications/Emacs.app
 	touch $@
 
+# .PHONY: .targets/emacs-init
+# .targets/emacs-init: emacs-init/emacs.init.org
+# 	emacs --nw --batch --eval "(require 'org)" --eval '(org-babel-tangle-file "$<")'
+# 	emacs --batch -l org --eval "(org-babel-tangle-file \"$1\")"
+# 	touch $@
+
 .targets/hosts: | .targets/brew/commands
 	git clone git@github.com:StevenBlack/hosts.git ~/src/hosts
 	pip3 install lxml bs4
 	cd ~/src/hosts && python3 updateHostsFile.py --auto --replace --extensions gambling porn fakenews social
 	touch $@
+
+# TODO: install brew rule
 
 .targets/cellar-cask:
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$PATH"' >> ~/.bash_profile
@@ -67,16 +65,24 @@ gitconfig: ~/.gitconfig
 	xargs brew install <$<
 	touch $@
 
+.targets/brew/cask: brew/taps.dat
+	#xargs brew tap < $<
+	# touch $@
+
+.targets/brew/fonts: fonts/cask.dat | .targets/brew/cask
+	xargs brew cask install <$<
+	touch $@
+
 .targets/bash: | .targets/brew/commands
 	echo '/usr/local/bin/bash' | sudo tee -a /etc/shells > /dev/null
 	chsh -s /usr/local/bin/bash
 	touch $@
 
-.targets/java8: .targets/cask
+.targets/java8: .targets/brew/cask
 	brew cask install java8
 	touch $@
 
-.targets/brew/apps: brew/apps.dat | .targets/cask
+.targets/brew/apps: brew/apps.dat | .targets/brew/cask
 	xargs brew cask install <$<
 	touch $@
 
@@ -86,5 +92,6 @@ gitconfig: ~/.gitconfig
 	cd ~/.config/wireguard && sudo chmod -R og-rwx ~/.config/wireguard/*
 	touch $@
 
-.targets: targets
-	xargs mkdir -p <$<
+.targets:
+	mkdir -p targets/brew
+	touch $@
