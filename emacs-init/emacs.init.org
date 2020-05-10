@@ -812,23 +812,29 @@ Set user directories as constants for use in init script
 ** general
 
  #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-   (use-package general
-     :ensure t
-     :pin melpa-stable
-     :config
-     (progn
+ (use-package general
+   :ensure t
+   :pin melpa-stable
+   :config
+   (progn
 
-       (general-create-definer leader-define
-         :prefix "SPC")
+     (general-create-definer leader-define
+       :states 'normal
+       :keymaps 'override
+       :prefix "SPC")
 
-       (general-create-definer my-local-leader-def
-         :prefix "SPC m")
+     (leader-define
+       "j" 'hydra-window/body
+       "k" 'avy-goto-char-2)
 
-       (leader-define
-         :keymaps 'normal
-         "a" 'org-agenda
-         "b" 'counsel-bookmark
-         "c" 'org-capture)))
+     (general-create-definer my-local-leader-def
+       :prefix "SPC m")
+
+     (leader-define
+       :keymaps 'normal
+       "a" 'org-agenda
+       "b" 'counsel-bookmark
+       "c" 'org-capture)))
  #+end_src
 
 ** hydra
@@ -2235,30 +2241,394 @@ current query will be used to initialize the search.  Otherwise
 * magit
 
 #+BEGIN_SRC emacs-lisp :tangle ~/.emacs.d/init.el
-  (use-package magit
-    :ensure t
-    :defer t
-    :general
-    (leader-define 'normal
-                   "gs" 'magit-status)
-    (:states 'normal
-             :keymaps 'magit-status-mode-map
-             "TAB" 'magit-section-toggle)
-    :init
-    (progn
-      (use-package evil-magit
-        :ensure t
-        :defer t))
-    :config
-    (progn
-      (require 'git-rebase)
-      (require 'evil-magit)
-      (evil-set-initial-state 'magit-status-mode 'normal)
-      (define-key magit-minibuffer-local-ns-map "\s"
-        (lambda ()
-          (interactive)
-          (insert "-")))))
+(use-package magit
+  :ensure t
+  :defer t
+  :general
+  (leader-define 'normal
+    "gs" 'magit-status)
+  (:states 'normal
+           :keymaps 'magit-status-mode-map
+           "TAB" 'magit-section-toggle)
+  :init
+  (progn
+    (use-package evil-magit
+      :ensure t
+      :defer t))
+  :config
+  (progn
+    (use-package magit-annex
+      :ensure t)
+    (use-package git-annex
+      :ensure t)
+    (define-key git-annex-dired-map "f"
+      #'magit-annex-file-action)
+    (require 'git-rebase)
+    (require 'evil-magit)
+    (evil-set-initial-state 'magit-status-mode 'normal)
+    (define-key magit-minibuffer-local-ns-map "\s"
+      (lambda ()
+        (interactive)
+        (insert "-")))))
 #+END_SRC
+
+* dired
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(message "Start dired:::: %.2fs" (- (float-time) shit-load-time-start))
+(use-package dired
+  :defer t
+  :general
+  (general-define-key
+   :states 'normal
+   "-" 'dired-jump)
+
+  (general-define-key
+   :states 'normal
+   :keymaps 'dired-mode-map
+   "SPC" 'dired-jump)
+
+
+  )
+ #+end_src
+
+* buffer
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(message "Start ace-window:::: %.2fs" (- (float-time) shit-load-time-start))
+(use-package winner
+  :config (winner-mode 1))
+
+(use-package ibuffer
+  :general
+  (general-define-key
+   "C-x C-b" 'ibuffer))
+
+(use-package ace-window
+  :ensure t
+
+  :general
+  (leader-define
+    :states '(normal)
+    "j" 'hydra-window/body
+    "k" 'avy-goto-char-2)
+
+  :config
+  (progn
+
+    (defhydra hydra-window ()
+      "
+    Movement^^    ^Split^         ^Switch^     ^Resize^   ^Buffer actions^       ^window actions^
+    ---------------------------------------------------------------------------------------------
+    _h_ ←         _v_ertical      _b_uffer     _q_ X←     _y_ank buffer
+    _j_ ↓         _x_ horizontal  i_B_uffer    _w_ X↓     _P_aste buffer
+    _k_ ↑         _u_ndo          _f_ind files _e_ X↑     _s_ave buffer
+    _l_ →         _C-r_ redo      _a_ce 1      _r_ X→     _f_ind-file
+    _F_ollow      _D_lt Other     _s_wap       e_q_ualize _p_rojectile-find-file
+    _SPC_ cancel  _o_nly this     _S_ave       _m_aximize
+				  _d_elete
+    "
+      ("h" windmove-left)
+      ("j" windmove-down)
+      ("k" windmove-up)
+      ("l" windmove-right)
+      ("q" balance-windows)
+      ("w" save-buffer)
+      ("e" hydra-move-splitter-up)
+      ("r" hydra-move-splitter-right)
+      ("b" helm-mini)
+      ("B" ibuffer)
+      ("f" helm-find-files)
+      ("p" helm-projectile-find-file)
+      ("F" follow-mode)
+      ("s" save-buffer)
+      ("a" (lambda ()
+	     (interactive)
+	     (ace-window 1)
+	     (add-hook 'ace-window-end-once-hook
+		       'hydra-window/body)))
+      ("v" (lambda ()
+	     (interactive)
+	     (split-window-right)
+	     (windmove-right)))
+      ("x" (lambda ()
+	     (interactive)
+	     (split-window-below)
+	     (windmove-down)))
+      ("s" (lambda ()
+	     (interactive)
+	     (ace-window 4)
+	     (add-hook 'ace-window-end-once-hook
+		       'hydra-window/body)))
+      ("S" save-buffer)
+      ("d" delete-window)
+      ("D" (lambda ()
+	     (interactive)
+	     (ace-window 16)
+	     (add-hook 'ace-window-end-once-hook
+		       'hydra-window/body)))
+      ("o" delete-other-windows)
+      ("m" ace-maximize-window)
+      ("y" (lambda ()
+	     (interactive)
+	     (clipboard-kill-ring-save (point-min) (point-max))))
+      ("P" (lambda ()
+	     (interactive)
+	     (evil-paste-before 1)))
+      ("c" (lambda ()
+	     (interactive)
+	     (erase-buffer)))
+      ("z" (progn
+	     (winner-undo)
+	     (setq this-command 'winner-undo))
+       )
+      ("u" winner-undo)
+      ("C-r" winner-redo)
+      ("SPC" nil))
+
+    ;; (after 'evil
+    ;;   (define-key my-leader-map "j"
+
+    ;;     ))
+
+    (setq aw-keys '(?s ?d ?f ?g ?h ?j ?k ?l)
+	  aw-dispatch-always t
+	  aw-leading-char-style 'path)
+
+    (ace-window-display-mode)
+
+    ;; (custom-set-faces
+    ;;  '(aw-leading-char-face
+    ;;    ((t (:inherit ace-jump-face-foreground :height 3.0)))))
+
+    (defvar aw-dispatch-alist
+      '((?x aw-delete-window " Ace - Delete Window")
+	(?m aw-swap-window " Ace - Swap Window")
+	(?a aw-flip-window)
+	(?v aw-split-window-vert " Ace - Split Vert Window")
+	(?b aw-split-window-horz " Ace - Split Horz Window")
+	(?i delete-other-windows " Ace - Maximize Window")
+	(?o delete-other-windows))
+      "List of actions for `aw-dispatch-default'.")
+
+    ))
+
+(use-package popwin
+  :ensure t
+  :config
+  (progn
+    (setq popwin:special-display-config
+	  '(("*Miniedit Help*" :noselect t)
+	    help-mode
+	    (completion-list-mode :noselect t)
+	    (compilation-mode :noselect t)
+	    (grep-mode :noselect t)
+	    ("*Pp Macroexpand Output*" :noselect t)
+	    "*Shell Command Output*"
+	    "*vc-diff*"
+	    "*vc-change-log*"
+	    (" *undo-tree*" :width 60 :position right)
+	    "*cider-test-report*"))
+    (popwin-mode 1)))
+
+;; (use-package perspective
+;;   :ensure t
+;;   :config
+;;   (progn
+;;     (persp-mode)))
+
+;; (use-package window-purpose
+;;   :ensure t
+;;   :config
+;;   (progn
+;;     (purpose-mode)
+;;     (use-package window-purpose-x)
+;;     (purpose-x-magit-single-on)
+;;     (purpose-x-persp-setup)))
+#+end_src
+
+* themes
+** Cool dark color theme
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(defvar cool-fg       "#ffffff")
+(defvar cool-bg       "#18191B")
+(defvar cool-green-0  "#95ff94")
+(defvar cool-green-1  "#25492D")
+(defvar cool-yellow-0 "#f9fe8a")
+(defvar cool-yellow-1 "#fec952")
+(defvar cool-red-0    "#f5666d")
+(defvar cool-pink-0   "#F74D97")
+(defvar cool-pink-1   "#FA519A")
+(defvar cool-pink-2   "#FD8DBD")
+(defvar cool-purple-0 "#a8799c")
+(defvar cool-blue-0   "#a3beff")
+(defvar cool-blue-1   "#9cd4fc")
+(defvar cool-blue-2   "#8ca0fd")
+(defvar cool-blue-3   "#acb3eF")
+
+(defun color-theme-cool-dark ()
+  "Cool Dark Theme"
+  (interactive)
+  (set-face-background 'region "#25492D")
+
+  (color-theme-install
+   (append
+    (list 'color-theme-cool-dark
+          `((background-color . ,cool-bg)
+            (background-mode . light)
+            (border-color . ,cool-bg)
+            (cursor-color . ,cool-green-0)
+            (foreground-color . ,cool-fg)
+            (mouse-color . "black")
+            )
+          `(col-highlight ((t (:background "black"))))
+          `(fringe ((t (:background ,cool-bg))))
+          `(mode-line ((t (:foreground ,cool-pink-1 :background "black"))))
+          `(mode-line-buffer-id ((t (:bold t :foreground ,cool-yellow-0))))
+          `(mode-line-inactive ((t (:foreground ,cool-green-0 :background "black"))))
+          `(minibuffer-prompt ((t (:foreground ,cool-blue-1 :bold t))))
+          `(region ((t (:background ,cool-green-1))))
+          `(mode-line-filename-face ((t (:bold t :foreground ,cool-yellow-0))))
+
+          `(mode-line-mode-face ((t (:bold t :foreground ,cool-purple-0))))
+
+          `(mode-line-folder-face ((t (:bold t :foreground ,cool-blue-1))))
+
+          `(font-lock-builtin-face ((t (:bold t :foreground ,cool-red-0))))
+          `(font-lock-comment-face ((t (:foreground ,cool-pink-2))))
+          `(font-lock-constant-face ((t (:foreground ,cool-red-0))))
+          `(font-lock-doc-face ((t (:foreground ,cool-yellow-0))))
+          `(font-lock-function-name-face ((t (:foreground ,cool-blue-0))))
+          `(font-lock-keyword-face ((t (:bold t :foreground ,cool-yellow-1))))
+          `(font-lock-preprocessor-face ((t (:foreground ,cool-fg))))
+          `(font-lock-string-face ((t (:foreground ,cool-yellow-0))))
+          `(font-lock-type-face ((t (:foreground ,cool-pink-0 :bold t))))
+          `(font-lock-variable-name-face ((t (:foreground ,cool-blue-2))))
+          `(font-lock-warning-face ((t (:foreground ,cool-red-0 :bold t))))
+
+          `(helm-candidate-number ((t (:background "black" :foreground "#95ff94"))))
+          `(helm-ff-directory ((t (:background "#333" :foreground "#9cd4fc"))))
+          `(helm-selection ((t (:background "#333" :foreground "#a3beff" :underline t))))
+          `(helm-separator ((t (:foreground "#f5666d"))))
+          `(helm-source-header ((t (:background "#333" :foreground "#f9fe8a" :underline t))))
+          `(helm-visible-mark ((t (:background "#333" :foreground "#a8799c"))))
+          `(helm-ff-prefix ((t (:background "black" :foreground "yellow"))))
+          `(helm-match ((t (:background ,cool-purple-0))))
+          `(helm-grep-match ((t (:background "black" :foreground "green"))))
+          `(highlight ((t (:background "white" :foreground ,cool-green-0))))
+
+          `(region ((t (:background "red"))))
+
+          `(header-line ((t (:inherit mode-line :background ,"black" :foreground ,cool-pink-0 :box nil))))
+
+          `(emms-playlist-selected-face ((t (:foreground ,cool-purple-0))))
+          `(emms-playlist-track-face  ((t (:foreground ,cool-green-0))))
+
+          `(hl-line ((t (:background, "black"))))
+
+          `(sp-show-pair-match-face ((t (:background ,cool-purple-0))))
+          `(sp-show-pair-mismatch-face ((t (:background ,cool-red-0))))
+          `(sp-pair-overlay-face ((t (:background "black" ))))
+
+          `(erc-action-face ((t (:foreground ,cool-red-0))))
+          `(erc-button ((t (:foreground ,cool-purple-0))))
+          `(erc-current-nick-face ((t (:foreground ,cool-pink-2))))
+          `(erc-error-face ((t (:foreground ,cool-red-0 :bold t))))
+          `(erc-input-face ((t (:foreground ,cool-fg))))
+          `(erc-keyword-face ((t (:foreground ,cool-red-0))))
+          `(erc-my-nick-face ((t (:foreground ,cool-blue-0))))
+          `(erc-nick-default-face ((t (:bold t :foreground ,cool-pink-1))))
+          `(erc-notice-face ((t (:foreground ,cool-blue-2))))
+          `(erc-prompt-face ((t (:foreground ,cool-fg))))
+          `(erc-timestamp-face ((t (:foreground ,cool-green-0))))
+
+          ;; `(company-tooltip ((t (:inherit default :background ,(color-lighten-name bg 2)))))
+          ;; `(company-scrollbar-bg ((t (:background ,cool-pink-1))))
+          ;; `(company-scrollbar-fg ((t (:background ,cool-yellow-0))))
+          ;; `(company-tooltip-selection ((t (:inherit font-lock-function-name-face))))
+          ;; `(company-tooltip-common ((t (:inherit font-lock-constant-face))))
+
+          `(magit-log-sha1 ((t (:foreground "#cf6a4c"))))
+          `(magit-log-head-label-local ((t (:foreground "#3387cc"))))
+          `(magit-log-head-label-remote ((t (:foreground "#65b042"))))
+          `(magit-branch ((t (:bold t :foreground ,cool-yellow-1))))
+          `(magit-section-title ((t (:bold t :foreground ,cool-pink-0))))
+          `(magit-item-highlight ((t (:background "#1f1f1f"))))
+          `(magit-diff-add ((t (:bold t :foreground ,cool-green-0))))
+          `(magit-diff-del ((t (:bold nil :foreground ,cool-red-0))))
+
+          `(gnus-group-mail-1-empty ((t (:foreground ,cool-pink-1))))
+          `(gnus-group-mail-1 ((t (:bold t :foreground ,cool-pink-1))))
+          `(gnus-group-mail-3-empty ((t (:foreground ,cool-blue-0))))
+          `(gnus-group-mail-3 ((t (:bold t :foreground ,cool-pink-1))))
+          `(gnus-group-news-3-empty ((t (:foreground ,cool-blue-2))))
+          `(gnus-group-news-3 ((t (:bold t :foreground ,cool-green-0))))
+
+          `(w3m-anchor ((t (:bold t :foreground ,cool-pink-1))))
+          ))))
+
+#+end_src
+
+** Load my theme
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+  (message "Start theme:::: %.2fs" (- (float-time) shit-load-time-start))
+  (use-package monokai-theme
+    :ensure t)
+  (load-theme 'monokai t)
+#+end_src
+
+** Load my theme
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(defun set-cursor-according-to-mode ()
+  (cond
+   (isearch-mode
+    (set-cursor-color monokai-blue))
+   (buffer-read-only
+    (set-cursor-color monokai-red))
+   (t
+    (set-cursor-color monokai-orange))))
+
+;; (add-hook 'post-command-hook 'set-cursor-according-to-mode)
+#+end_src
+
+* rx
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(message "Start rx forms:::: %.2fs" (- (float-time) shit-load-time-start))
+
+(defconst whitespace-rx
+  (rx (and string-start (* (or blank "\n")) string-end)))
+#+end_src
+
+* ediff
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+  (setq ediff-split-window-function 'split-window-horizontally)
+  (setq ediff-diff-options "-w")
+
+  ;; (add-hook 'ediff-after-quit-hook-internal 'winner-undo)
+
+  (add-hook 'ediff-load-hook
+	    (lambda ()
+
+	      (add-hook 'ediff-before-setup-hook
+			(lambda ()
+			  (setq ediff-saved-window-configuration (current-window-configuration))))
+
+	      (let ((restore-window-configuration
+		     (lambda ()
+		       (set-window-configuration ediff-saved-window-configuration))))
+		(add-hook 'ediff-quit-hook restore-window-configuration 'append)
+		(add-hook 'ediff-suspend-hook restore-window-configuration 'append))))
+
+  (add-hook 'ediff-startup-hook
+	    (lambda ()
+	      (shrink-window 40)))
+#+end_src
 
 * Avy
 
