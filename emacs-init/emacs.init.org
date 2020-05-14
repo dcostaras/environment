@@ -109,7 +109,8 @@ Deferred loading using John Wiegley's use-package. use-package needs to be insta
 
 (require 'use-package)
 
-(use-package diminish)
+(use-package diminish
+  :ensure t)
 #+end_src
 
 * bug-hunter
