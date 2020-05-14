@@ -821,7 +821,7 @@ Set user directories as constants for use in init script
 
      (general-create-definer leader-define
        :states 'normal
-       :keymaps 'override
+       :keymaps '(override global)
        :prefix "SPC")
 
      (leader-define
@@ -2246,8 +2246,8 @@ current query will be used to initialize the search.  Otherwise
   :ensure t
   :defer t
   :general
-  (leader-define 'normal
-    "gs" 'magit-status)
+  (leader-define
+    "g" 'magit-status)
   (:states 'normal
            :keymaps 'magit-status-mode-map
            "TAB" 'magit-section-toggle)
