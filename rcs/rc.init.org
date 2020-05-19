@@ -423,6 +423,10 @@
     open /Applications/Emacs-alt-icon.app -n --args --with-profile emacs
   #+end_src
 
+  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-raw
+    open /Applications/Emacs.app -n --args --with-profile raw
+  #+end_src
+
 *** elit
 **** elit-cli
 
