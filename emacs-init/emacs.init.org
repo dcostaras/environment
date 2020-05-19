@@ -4792,85 +4792,71 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 
 * Lisps
   #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-    (message "Lisps:::: %.2fs" (- (float-time) shit-load-time-start))
+  (message "Lisps:::: %.2fs" (- (float-time) shit-load-time-start))
 
-    ;; (defvar cool-fg       "#ffffff")
-    ;; (defvar cool-bg       "#18191B")
-    ;; (defvar cool-green-0  "#95ff94")
-    ;; (defvar cool-green-1  "#25492D")
-    ;; (defvar cool-orange-0 "#ED7200")
-    ;; (defvar cool-yellow-0 "#f9fe8a")
-    ;; (defvar cool-yellow-1 "#fec952")
-    ;; (defvar cool-red-0    "#f5666d")
-    ;; (defvar cool-pink-0   "#F74D97")
-    ;; (defvar cool-pink-1   "#FA519A")
-    ;; (defvar cool-pink-2   "#FD8DBD")
-    ;; (defvar cool-purple-0 "#a8799c")
-    ;; (defvar cool-blue-0   "#a3beff")
-    ;; (defvar cool-blue-1   "#9cd4fc")
-    ;; (defvar cool-blue-2   "#8ca0fd")
-    ;; (defvar cool-blue-3   "#acb3eF")
+  ;; (defvar cool-fg       "#ffffff")
+  ;; (defvar cool-bg       "#18191B")
+  ;; (defvar cool-green-0  "#95ff94")
+  ;; (defvar cool-green-1  "#25492D")
+  ;; (defvar cool-orange-0 "#ED7200")
+  ;; (defvar cool-yellow-0 "#f9fe8a")
+  ;; (defvar cool-yellow-1 "#fec952")
+  ;; (defvar cool-red-0    "#f5666d")
+  ;; (defvar cool-pink-0   "#F74D97")
+  ;; (defvar cool-pink-1   "#FA519A")
+  ;; (defvar cool-pink-2   "#FD8DBD")
+  ;; (defvar cool-purple-0 "#a8799c")
+  ;; (defvar cool-blue-0   "#a3beff")
+  ;; (defvar cool-blue-1   "#9cd4fc")
+  ;; (defvar cool-blue-2   "#8ca0fd")
+  ;; (defvar cool-blue-3   "#acb3eF")
 
-    (use-package rainbow-delimiters
-      :ensure t)
+  (use-package rainbow-delimiters
+    :ensure t)
 
-    ;; (use-package highlight-parentheses
-    ;;   :ensure t
-    ;;   :pin melpa-stable
-    ;;   :config
-    ;;   (setq hl-paren-colors
-    ;; 	`("cyan" "magenta" "yellow" "dark violet")))
+  (use-package paredit
+    :ensure t)
 
-    (use-package paredit
-      :ensure t)
+  (use-package aggressive-indent
+    :ensure t)
 
-    (use-package aggressive-indent
-      :ensure t)
+  (use-package lispy
+    :ensure t
+    :pin melpa-stable
+    :general
+    (:keymaps 'lispy-mode-map
+	      "M-," nil)
+    :init
+    (progn
+      (use-package lispyville
+	:ensure t
+	:pin melpa-stable
+	:config
+	(progn
+	  (lispyville-set-key-theme '(operators c-w additional))
+	  (add-hook 'lispy-mode-hook #'lispyville-mode))))
+    :config
+    (progn
+      (defun conditionally-enable-lispy ()
+	(when (eq this-command 'eval-expression)
+	  (lispy-mode 1)))
+      (add-hook 'minibuffer-setup-hook 'conditionally-enable-lispy)))
 
-    (use-package lispy
-      :ensure t
-      :pin melpa-stable
-      :general
-      (:keymaps 'lispy-mode-map
-		"M-," nil)
-      :config
-      (progn
-	(defun conditionally-enable-lispy ()
-	  (when (eq this-command 'eval-expression)
-	    (lispy-mode 1)))
-	(add-hook 'minibuffer-setup-hook 'conditionally-enable-lispy)
+  (defun my-lisp-mode-hook ()
+    (paredit-mode)
+    (rainbow-delimiters-mode)
+    (aggressive-indent-mode)
+    (show-paren-mode)
+    (lispy-mode))
 
-	;; (setq lispy-safe-delete t
-	;; 	  lispy-safe-copy t
-	;; 	  lispy-safe-paste t
-	;; 	  lispy-colon-no-space-regex '((lisp-mode "."))
-	;; 	  lispy-completion-method 'helm
-	;; 	  lispy-compat '(edebug cider macrostep))
-	))
-
-    ;; (use-package lispyville
-    ;;   :ensure t
-    ;;   :pin melpa-stable
-    ;;   :config
-    ;;   (progn
-    ;;     (add-hook 'lispy-mode-hook #'lispyville-mode)))
-
-    (defun my-lisp-mode-hook ()
-      (paredit-mode)
-      (rainbow-delimiters-mode)
-      (aggressive-indent-mode)
-      ;; (highlight-parentheses-mode)
-      (show-paren-mode)
-      ;;(lispy-mode 1)
-      )
-
-    (hook-into-modes 'my-lisp-mode-hook
-		     '(scheme-mode-hook
-		       emacs-lisp-mode-hook
-		       reb-lisp-mode-hook
-		       clojure-mode-hook
-		       lisp-mode-hook
-		       cider-repl-mode-hook))
+  (general-add-hook
+   '(scheme-mode-hook
+     emacs-lisp-mode-hook
+     reb-lisp-mode-hook
+     clojure-mode-hook
+     lisp-mode-hook
+     cider-repl-mode-hook)
+   #'my-lisp-mode-hook)
 #+end_src
 
 ** Scheme
