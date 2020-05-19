@@ -4815,21 +4815,21 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
     :general
     (:keymaps 'lispy-mode-map
 	      "M-," nil)
-    :init
-    (progn
-      (use-package lispyville
-	:ensure t
-	:pin melpa-stable
-	:config
-	(progn
-	  (lispyville-set-key-theme '(operators c-w additional commentary))
-	  (add-hook 'lispy-mode-hook #'lispyville-mode))))
     :config
     (progn
       (defun conditionally-enable-lispy ()
 	(when (eq this-command 'eval-expression)
 	  (lispy-mode 1)))
       (add-hook 'minibuffer-setup-hook 'conditionally-enable-lispy)))
+
+  (use-package lispyville
+    :ensure t
+    :pin melpa-stable
+    :after lispy
+    :config
+    (progn
+      (lispyville-set-key-theme '(operators c-w additional commentary))
+      (add-hook 'lispy-mode-hook #'lispyville-mode)))
 
   (defun my-lisp-mode-hook ()
     (paredit-mode)
