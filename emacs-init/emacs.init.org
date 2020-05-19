@@ -872,7 +872,6 @@ Set user directories as constants for use in init script
       <<evil-keys>>
       <<evil-escape>>
       <<evil-exchange>>
-      <<evil-commentary>>
       <<evil-collection>>
       ;;<<evil-leader>>
       ;;<<evil-plugins>>
@@ -928,16 +927,6 @@ Set user directories as constants for use in init script
     (setq evil-escape-key-sequence "jk"
           evil-escape-unordered-key-sequence t)
     (evil-escape-mode)))
-#+end_src
-
-** evil-commentary
-
-#+name: evil-commentary
-#+begin_src emacs-lisp
-;; TODO modify this to be able to do #_ in clojure somehow
-(use-package evil-commentary
-  :ensure t)
-(evil-commentary-mode)
 #+end_src
 
 ** plugins
@@ -4833,7 +4822,7 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 	:pin melpa-stable
 	:config
 	(progn
-	  (lispyville-set-key-theme '(operators c-w additional))
+	  (lispyville-set-key-theme '(operators c-w additional commentary))
 	  (add-hook 'lispy-mode-hook #'lispyville-mode))))
     :config
     (progn
