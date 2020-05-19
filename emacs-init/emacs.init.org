@@ -871,6 +871,7 @@ Set user directories as constants for use in init script
       (evil-mode 1)
       <<evil-keys>>
       <<evil-escape>>
+      <<evil-exchange>>
       <<evil-commentary>>
       <<evil-collection>>
       ;;<<evil-leader>>
@@ -881,6 +882,16 @@ Set user directories as constants for use in init script
       ;;<<evil-functions>>
       ;;<<evil-integration>>
       ))
+#+end_src
+
+** evil-exchange
+
+#+name: evil-exchange
+#+begin_src emacs-lisp
+(use-package evil-exchange
+  :ensure t
+  :config
+  (evil-exchange-install))
 #+end_src
 
 ** evil-keys
