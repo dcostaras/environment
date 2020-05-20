@@ -4789,27 +4789,7 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
   #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
   (message "Lisps:::: %.2fs" (- (float-time) shit-load-time-start))
 
-  ;; (defvar cool-fg       "#ffffff")
-  ;; (defvar cool-bg       "#18191B")
-  ;; (defvar cool-green-0  "#95ff94")
-  ;; (defvar cool-green-1  "#25492D")
-  ;; (defvar cool-orange-0 "#ED7200")
-  ;; (defvar cool-yellow-0 "#f9fe8a")
-  ;; (defvar cool-yellow-1 "#fec952")
-  ;; (defvar cool-red-0    "#f5666d")
-  ;; (defvar cool-pink-0   "#F74D97")
-  ;; (defvar cool-pink-1   "#FA519A")
-  ;; (defvar cool-pink-2   "#FD8DBD")
-  ;; (defvar cool-purple-0 "#a8799c")
-  ;; (defvar cool-blue-0   "#a3beff")
-  ;; (defvar cool-blue-1   "#9cd4fc")
-  ;; (defvar cool-blue-2   "#8ca0fd")
-  ;; (defvar cool-blue-3   "#acb3eF")
-
   (use-package rainbow-delimiters
-    :ensure t)
-
-  (use-package paredit
     :ensure t)
 
   (use-package aggressive-indent
