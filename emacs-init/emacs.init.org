@@ -4845,7 +4845,6 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
       (add-hook 'lispy-mode-hook #'lispyville-mode)))
 
   (defun my-lisp-mode-hook ()
-    (paredit-mode)
     (rainbow-delimiters-mode)
     (aggressive-indent-mode)
     (show-paren-mode)
@@ -4856,10 +4855,17 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
      emacs-lisp-mode-hook
      reb-lisp-mode-hook
      clojure-mode-hook
-     lisp-mode-hook
-     cider-repl-mode-hook)
+     lisp-mode-hook)
    #'my-lisp-mode-hook)
-#+end_src
+
+  (defun my-lisp-repl-mode-hook ()
+    (rainbow-delimiters-mode)
+    (aggressive-indent-mode nil)
+    (show-paren-mode)
+    (lispy-mode))
+
+  (general-add-hook '(cider-repl-mode-hook) #'my-lisp-repl-mode-hook)
+  #+end_src
 
 ** Scheme
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
