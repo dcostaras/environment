@@ -4834,7 +4834,14 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
     :after lispy
     :config
     (progn
-      (lispyville-set-key-theme '(operators c-w additional commentary))
+      (lispyville-set-key-theme
+       '(operators
+	 c-w
+	 prettify
+	 additional-motions
+	 additional-insert
+	 commentary
+	 slurp/barf-lispy))
       (add-hook 'lispy-mode-hook #'lispyville-mode)))
 
   (defun my-lisp-mode-hook ()
