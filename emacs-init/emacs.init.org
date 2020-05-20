@@ -2293,6 +2293,12 @@ current query will be used to initialize the search.  Otherwise
   )
  #+end_src
 
+* electric pair
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(electric-pair-mode)
+#+end_src
+
 * buffer
 
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
