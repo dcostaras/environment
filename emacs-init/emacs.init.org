@@ -4941,7 +4941,7 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 (use-package cider
 :ensure t
 :pin melpa-stable
-:general ("C-c C-c" 'cider-eval-defn)
+:general ("C-c C-i" 'my-cider-integrant-reset)
 :config
 (progn
 
@@ -4980,6 +4980,19 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 	(cider-eval-region (region-beginning)
 			    (region-end))))))
 #+end_src
+
+**** functions
+
+ #+name: clojure-functions
+ #+begin_src emacs-lisp
+ (defun my-cider-stop ()
+   (interactive)
+   (cider-interactive-eval "(stop)"))
+
+ (defun my-cider-integrant-reset ()
+   (interactive)
+   (cider-interactive-eval "(integrant.repl/reset)"))
+ #+end_src
 
 *** clj-refactor
 
@@ -5028,15 +5041,6 @@ _q_: quit
 (if (featurep 'evil)
 (evil-define-key 'normal clojure-mode-map " o" 'hydra-clojure-motion/body)
 (define-key clojure-mode-map (kbd "C-c o") 'hydra-clojure-motion/body))
-#+end_src
-
-*** functions
-
-#+name: clojure-functions
-#+begin_src emacs-lisp
-(defun my-cider-stop ()
-(interactive)
-(cider-interactive-eval "(stop)"))
 #+end_src
 
 *** config
