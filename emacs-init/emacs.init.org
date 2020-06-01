@@ -4857,15 +4857,15 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 #+begin_src emacs-lisp :noweb yes :tangle ~/.emacs.d/init.el
 (message "Clojure:::: %.2fs" (- (float-time) shit-load-time-start))
 (use-package clojure-mode
-:commands clojure-mode
-:mode ("\\.boot\\'" . clojure-mode)
-:ensure t
-:init
-(progn
+  :commands clojure-mode
+  :mode ("\\.boot\\'" . clojure-mode)
+  :ensure t
+  :init
+  (progn
     ;; (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
     )
-:config
-(progn
+  :config
+  (progn
     ;; (setq clojure-defun-style-default-indent t)
     ;; <<clojure-keys>>
     <<clojure-cider>>
@@ -4939,60 +4939,56 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 #+name: clojure-cider
 #+begin_src emacs-lisp
 (use-package cider
-:ensure t
-:pin melpa-stable
-:general ("C-c C-i" 'my-cider-integrant-reset)
-:config
-(progn
+  :ensure t
+  :pin melpa-stable
+  :general ("C-c C-i" 'my-cider-integrant-reset)
+  :config
+  (progn
 
-    (setq cider-boot-parameters "dev")
-    (setq cider-auto-select-test-report-buffer nil)
-    (setq cider-repl-history-file "~/.emacs.d/var/cider-history")
-    (setq cider-repl-use-clojure-font-lock t)
-    (setq cider-repl-wrap-history t)
-    (setq nrepl-log-messages t)
-    (setq cider-show-error-buffer nil)
+    (defun my-cider-stop ()
+      (interactive)
+      (cider-interactive-eval "(stop)"))
 
-    (defun cider-eval-test-and-run ()
-    (interactive)
-    (cider-eval-defun-at-point)
-    (cider-test-run-test))
+    (defun my-cider-integrant-reset ()
+      (interactive)
+      (projectile-save-project-buffers)
+      (cider-interactive-eval "(integrant.repl/reset)"))
+    ;; (setq cider-boot-parameters "dev")
+    ;; (setq cider-auto-select-test-report-buffer nil)
+    ;; (setq cider-repl-history-file "~/.emacs.d/var/cider-history")
+    ;; (setq cider-repl-use-clojure-font-lock t)
+    ;; (setq cider-repl-wrap-history t)
+    ;; (setq nrepl-log-messages t)
+    ;; (setq cider-show-error-buffer nil)
 
-    (evil-define-key 'normal clojure-mode-map (kbd "C-c C-c") 'cider-eval-test-and-run)
+    ;; (defun cider-eval-test-and-run ()
+    ;; (interactive)
+    ;; (cider-eval-defun-at-point)
+    ;; (cider-test-run-test))
 
-    (add-to-list 'aggressive-indent-excluded-modes 'cider-repl-mode)
+    ;; (evil-define-key 'normal clojure-mode-map (kbd "C-c C-c") 'cider-eval-test-and-run)
 
-    (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
-    (add-hook 'cider-test-report-mode-hook #'visual-line-mode)
+    ;; (add-to-list 'aggressive-indent-excluded-modes 'cider-repl-mode)
 
-    ;; (setq cider-cljs-lein-repl
-    ;;       "(do (require 'figwheel-sidecar.repl-api)
-    ;;        (figwheel-sidecar.repl-api/start-figwheel!)
-    ;;        (figwheel-sidecar.repl-api/cljs-repl))")
+    ;; (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
+    ;; (add-hook 'cider-test-report-mode-hook #'visual-line-mode)
 
-    (define-key cider-mode-map (kbd "M-,") nil)
-    (add-hook 'cider-mode-hook #'eldoc-mode)
+    ;; ;; (setq cider-cljs-lein-repl
+    ;; ;;       "(do (require 'figwheel-sidecar.repl-api)
+    ;; ;;        (figwheel-sidecar.repl-api/start-figwheel!)
+    ;; ;;        (figwheel-sidecar.repl-api/cljs-repl))")
 
-    (defun cider-eval-defn ()
-    (interactive)
-    (save-excursion
-	(mark-defun)
-	(cider-eval-region (region-beginning)
-			    (region-end))))))
+    ;; (define-key cider-mode-map (kbd "M-,") nil)
+    ;; (add-hook 'cider-mode-hook #'eldoc-mode)
+
+    ;; (defun cider-eval-defn ()
+    ;; (interactive)
+    ;; (save-excursion
+    ;; 	(mark-defun)
+    ;; 	(cider-eval-region (region-beginning)
+    ;; 			    (region-end))))
+    ))
 #+end_src
-
-**** functions
-
- #+name: clojure-functions
- #+begin_src emacs-lisp
- (defun my-cider-stop ()
-   (interactive)
-   (cider-interactive-eval "(stop)"))
-
- (defun my-cider-integrant-reset ()
-   (interactive)
-   (cider-interactive-eval "(integrant.repl/reset)"))
- #+end_src
 
 *** clj-refactor
 
