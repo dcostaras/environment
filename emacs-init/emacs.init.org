@@ -4824,6 +4824,8 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 	 slurp/barf-lispy))
       (add-hook 'lispy-mode-hook #'lispyville-mode)))
 
+  (setq show-paren-delay 0)
+
   (defun my-lisp-mode-hook ()
     (rainbow-delimiters-mode)
     ;;(aggressive-indent-mode)
