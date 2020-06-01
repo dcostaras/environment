@@ -4792,8 +4792,8 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
   (use-package rainbow-delimiters
     :ensure t)
 
-  (use-package aggressive-indent
-    :ensure t)
+;;  (use-package aggressive-indent
+;;    :ensure t)
 
   (use-package lispy
     :ensure t
@@ -4826,7 +4826,7 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 
   (defun my-lisp-mode-hook ()
     (rainbow-delimiters-mode)
-    (aggressive-indent-mode)
+    ;;(aggressive-indent-mode)
     (show-paren-mode)
     (lispy-mode))
 
@@ -4840,7 +4840,7 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 
   (defun my-lisp-repl-mode-hook ()
     (rainbow-delimiters-mode)
-    (aggressive-indent-mode nil)
+    ;;(aggressive-indent-mode nil)
     (show-paren-mode)
     (lispy-mode))
 
@@ -5889,7 +5889,7 @@ _q_: quit
 ** Aggressive indent
 
    #+begin_src emacs-lisp
-     (aggressive-indent-global-mode)
+     ;;(aggressive-indent-global-mode)
    #+end_src
 
 ** highlighting
