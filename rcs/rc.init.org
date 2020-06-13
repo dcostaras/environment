@@ -8,8 +8,8 @@
 (require 'boot.repl)
 
 (swap! boot.repl/*default-dependencies*
-       concat '[[cider/cider-nrepl "0.25.0-SNAPSHOT"]
-                [nrepl "0.6.0"]
+       concat '[[cider/cider-nrepl "0.25.0"]
+                [nrepl "0.7.0"]
                 [refactor-nrepl "2.5.0"]
                 [clj-commons/pomegranate "1.2.0"]])
 
