@@ -4,11 +4,9 @@ endef
 
 all: \
 	.targets/hosts \
-	.targets/brew-commands \
-	.targets/brew-apps \
+        .targets/brew \
 	.targets/git \
 	.targets/spacemacs \
-	.targets/bash \
 	.targets/java8 \
 	.targets/wireguard \
 	gitconfig \
@@ -59,17 +57,25 @@ gitconfig: ~/.gitconfig
 .targets/cellar-cask:
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$PATH"' >> ~/.bash_profile
 
-.targets/brew/commands: brew/commands.dat | .targets
+.targets/brew: \
+    .targets/brew/upgrade \
+    .targets/brew/fonts \
+    .targets/brew/apps
+
+.targets/brew/upgrade:
 	brew update || brew update
 	brew upgrade
+	brew cask upgrade
+
+.targets/brew/commands: brew/commands.dat .targets/brew/upgrade | .targets
 	xargs brew install <$<
 	touch $@
 
-.targets/brew/cask: brew/taps.dat
-	#xargs brew tap < $<
-	# touch $@
+.targets/brew/fonts: fonts/cask.dat .targets/brew/upgrade | .targets
+	xargs brew cask install <$<
+	touch $@
 
-.targets/brew/fonts: fonts/cask.dat | .targets/brew/cask
+.targets/brew/apps: brew/apps.dat .targets/brew/upgrade | .targets
 	xargs brew cask install <$<
 	touch $@
 
@@ -80,10 +86,6 @@ gitconfig: ~/.gitconfig
 
 .targets/java8: .targets/brew/cask
 	brew cask install java8
-	touch $@
-
-.targets/brew/apps: brew/apps.dat | .targets/brew/cask
-	xargs brew cask install <$<
 	touch $@
 
 .targets/wireguard: | .targets/brew-commands
