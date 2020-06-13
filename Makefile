@@ -7,7 +7,6 @@ all: \
         .targets/brew \
 	.targets/git \
 	.targets/spacemacs \
-	.targets/java8 \
 	.targets/wireguard \
 	gitconfig \
 	| .targets
@@ -82,10 +81,6 @@ gitconfig: ~/.gitconfig
 .targets/bash: | .targets/brew/commands
 	echo '/usr/local/bin/bash' | sudo tee -a /etc/shells > /dev/null
 	chsh -s /usr/local/bin/bash
-	touch $@
-
-.targets/java8: .targets/brew/cask
-	brew cask install java8
 	touch $@
 
 .targets/wireguard: | .targets/brew-commands
