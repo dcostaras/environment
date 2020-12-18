@@ -13,6 +13,7 @@ cataclysm
 borkdude/brew/clj-kondo
 borkdude/brew/jet
 clojure
+emacs-plus
 ffmpeg
 flac
 gnupg

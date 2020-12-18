@@ -64,14 +64,6 @@ needs
 ** linum relative current line number var buffer local not file local
 ** req package
 [[https://github.com/edvorg/req-package][req package]]
-Disclaimer: Uses lots of code from many places.
-* profiles
-
-#+begin_src emacs-lisp :tangle ~/.emacs-profiles.el
-(("emacs" . ((user-emacs-directory . "~/.emacs.d")))
- ("spacemacs" . ((user-emacs-directory . "~/.emacs.d.spacemacs"))))
-#+end_src
-
 * Load time
 
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
@@ -404,151 +396,158 @@ Set user directories as constants for use in init script
 *** Other generic
     #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
 
-      (blink-cursor-mode 0)
+    (blink-cursor-mode 0)
 
-      (global-hl-line-mode)
-      ;; Auto refresh buffers
-      (global-auto-revert-mode 1)
+    (global-hl-line-mode)
+    ;; Auto refresh buffers
+    (global-auto-revert-mode 1)
 
-      ;; Also auto refresh dired, but be quiet about it
-      (put 'overwrite-mode 'disabled t)
+    ;; Also auto refresh dired, but be quiet about it
+    (put 'overwrite-mode 'disabled t)
 
-      (column-number-mode t)                                                                              ; Column number mode
+    (column-number-mode t)                                                                              ; Column number mode
 
-      (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt) ;; Watch for password prompt
+    (add-hook 'comint-output-filter-functions 'comint-watch-for-password-prompt) ;; Watch for password prompt
 
-      ;; overrride the default function....
-      (defun emacs-session-filename (SESSION-ID)
-        (concat "~/.emacs.d/var/session." SESSION-ID))
+    ;; overrride the default function....
+    (defun emacs-session-filename (SESSION-ID)
+      (concat "~/.emacs.d/var/session." SESSION-ID))
 
-      ;; filecache: http://www.emacswiki.org/cgi-bin/wiki/FileNameCache
-      (eval-after-load "filecache"
-        '(progn (message "Loading file cache...")
-                (file-cache-add-directory "~/")
-                (file-cache-add-directory-list '("~/Desktop" "~/Documents"))))
+    ;; filecache: http://www.emacswiki.org/cgi-bin/wiki/FileNameCache
+    (eval-after-load "filecache"
+      '(progn (message "Loading file cache...")
+	      (file-cache-add-directory "~/")
+	      (file-cache-add-directory-list '("~/Desktop" "~/Documents"))))
 
-      (use-package saveplace)
-      (use-package savehist
-        :config
-        (progn
-          (savehist-mode t)
-          (setq savehist-additional-variables '(search ring regexp-search-ring)
-           savehist-autosave-interval 60
-           savehist-file "~/.emacs.d/var/savehist")))
+    (use-package saveplace)
+    (use-package savehist
+      :config
+      (progn
+	(savehist-mode t)
+	(setq savehist-additional-variables '(search ring regexp-search-ring)
+	 savehist-autosave-interval 60
+	 savehist-file "~/.emacs.d/var/savehist")))
 
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; key board / input method settings
-      (setq locale-coding-system 'utf-8)
-      (set-terminal-coding-system 'utf-8)
-      (set-keyboard-coding-system 'utf-8)
-      (set-selection-coding-system 'utf-8)
-      (prefer-coding-system 'utf-8)
-      (set-language-environment "UTF-8")
-      (set-input-method nil)
-      (setq read-quoted-char-radix 10)
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; key board / input method settings
+    (setq locale-coding-system 'utf-8)
+    (set-terminal-coding-system 'utf-8)
+    (set-keyboard-coding-system 'utf-8)
+    (set-selection-coding-system 'utf-8)
+    (prefer-coding-system 'utf-8)
+    (set-language-environment "UTF-8")
+    (set-input-method nil)
+    (setq read-quoted-char-radix 10)
 
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; the modeline
-      (line-number-mode t)
-      (column-number-mode t)
-      (size-indication-mode t)
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; the modeline
+    (line-number-mode t)
+    (column-number-mode t)
+    (size-indication-mode t)
 
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; safe locals
-      ;; we mark these as 'safe', so emacs22+ won't give us annoying
-      ;; warnings
-      (setq safe-local-variable-values
-            (quote ((auto-recompile . t)
-                    (my-org-tangle-switch . t)
-                    (folding-mode . t)
-                    (outline-minor-mode . t)
-                    auto-recompile outline-minor-mode)))
-
-
-      ;; ignore byte-compile warnings
-      (setq warnings-to-ignore '())
-      (add-to-list 'warnings-to-ignore '(free-vars))
-      (add-to-list 'warnings-to-ignore '(nresolved))
-      (add-to-list 'warnings-to-ignore '(callargs))
-      (add-to-list 'warnings-to-ignore '(redefine))
-      (add-to-list 'warnings-to-ignore '(obsolete))
-      (add-to-list 'warnings-to-ignore '(noruntine))
-      (add-to-list 'warnings-to-ignore '(cl-functions))
-      (add-to-list 'warnings-to-ignore '(interactive-only))
-
-      (setq byte-compile-warnings warnings-to-ignore)
-
-      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-      ;; the minibuffer
-      ;;
-      (setq
-       enable-recursive-minibuffers nil         ;;  allow mb cmds in the mb
-       max-mini-window-height .25             ;;  max 2 lines
-       minibuffer-scroll-window nil
-       resize-mini-windows nil)
-
-      (icomplete-mode t)                       ;; completion in minibuffer
-      (setq
-       icomplete-prospects-height 1           ;; don't spam my minibuffer
-       icomplete-compute-delay 0)             ;; don't wait
-      (require 'icomplete+ nil 'noerror)      ;; drew adams' extras
-
-      (setq cua-enable-cua-keys nil)           ;; only for rectangles
-      (cua-mode t)
-
-                                              ;(setq ;; scrolling
-                                              ;scroll-margin 0                        ;; do smooth scrolling, ...
-                                              ;scroll-conservatively 100000           ;; ... the defaults ...
-                                              ;scroll-up-aggressively 0               ;; ... are very ...
-                                              ;scroll-down-aggressively 0             ;; ... annoying
-                                              ;scroll-preserve-screen-position t)     ;; preserve screen pos with C-v/M-v
-
-      (setq fringe-mode '(1 . 0))              ;; emacs 22+
-      (delete-selection-mode 1)                ;; delete the sel with a keyp
-
-      (if (eq window-system 'x)
-          (setq x-select-enable-clipboard t        ;; copy-paste should work ...
-                interprogram-paste-function            ;; ...with...
-                'x-cut-buffer-or-selection-value))      ;; ...other X clients
-
-      (setq search-highlight t                 ;; highlight when searching...
-            query-replace-highlight t)             ;; ...and replacing
-      (fset 'yes-or-no-p 'y-or-n-p)            ;; enable y/n answers to yes/no
-
-      (setq completion-ignore-case t           ;; ignore case when completing...
-            read-file-name-completion-ignore-case t) ;; ...filenames too
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; safe locals
+    ;; we mark these as 'safe', so emacs22+ won't give us annoying
+    ;; warnings
+    (setq safe-local-variable-values
+	  (quote ((auto-recompile . t)
+		  (my-org-tangle-switch . t)
+		  (folding-mode . t)
+		  (outline-minor-mode . t)
+		  auto-recompile outline-minor-mode)))
 
 
-      (setq initial-scratch-message
-            ";; Hello Neo ")
+    ;; ignore byte-compile warnings
+    (setq warnings-to-ignore '())
+    (add-to-list 'warnings-to-ignore '(free-vars))
+    (add-to-list 'warnings-to-ignore '(nresolved))
+    (add-to-list 'warnings-to-ignore '(callargs))
+    (add-to-list 'warnings-to-ignore '(redefine))
+    (add-to-list 'warnings-to-ignore '(obsolete))
+    (add-to-list 'warnings-to-ignore '(noruntine))
+    (add-to-list 'warnings-to-ignore '(cl-functions))
+    (add-to-list 'warnings-to-ignore '(interactive-only))
 
-      ;; put fortune in scratch buffer
-      ;; (setq initial-scratch-message
-      ;;       (format
-      ;;        ";; %s\n\n"
-      ;;        (replace-regexp-in-string
-      ;;         "\n" "\n;; " ; comment each line
-      ;;         (replace-regexp-in-string
-      ;;          "\n$" ""    ; remove trailing linebreak
-      ;;          (shell-command-to-string "fortune")))))
+    (setq byte-compile-warnings warnings-to-ignore)
 
-      (put 'narrow-to-region 'disabled nil)    ;; enable...
-      (put 'erase-buffer 'disabled nil)        ;; ... useful things
-      (file-name-shadow-mode t)                ;; be smart about filenames in mbuf
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    ;; the minibuffer
+    ;;
+    (setq
+     enable-recursive-minibuffers nil         ;;  allow mb cmds in the mb
+     max-mini-window-height .25             ;;  max 2 lines
+     minibuffer-scroll-window nil
+     resize-mini-windows nil)
 
-      ;; only start emacs server when it's not started, I hate warnings.
-      ;; (setq server-socket-file "~/tmp/emacs1000/server")
-      ;; (unless (file-exists-p server-socket-file)
-      ;;   (server-start))
+    ;;(icomplete-mode t)                       ;; completion in minibuffer
+    ;; (setq
+    ;;  icomplete-prospects-height 1           ;; don't spam my minibuffer
+    ;;  icomplete-compute-delay 0)             ;; don't wait
+    ;; (require 'icomplete+ nil 'noerror)      ;; drew adams' extras
 
-                                              ;(require 'edit-server)
-                                              ;(edit-server-start)
-      ;; Initail file load
-      ;; (if (not (boundp 'loaded))
-      ;;     (progn
-      ;;       (find-file "~/lsdev.org")
-      ;;       (switch-to-buffer "lsdev.org")))
-      ;; (setq loaded 1)
+    (setq cua-enable-cua-keys nil)           ;; only for rectangles
+    (cua-mode t)
+
+					    ;(setq ;; scrolling
+					    ;scroll-margin 0                        ;; do smooth scrolling, ...
+					    ;scroll-conservatively 100000           ;; ... the defaults ...
+					    ;scroll-up-aggressively 0               ;; ... are very ...
+					    ;scroll-down-aggressively 0             ;; ... annoying
+					    ;scroll-preserve-screen-position t)     ;; preserve screen pos with C-v/M-v
+
+    (setq fringe-mode '(1 . 0))              ;; emacs 22+
+    (delete-selection-mode 1)                ;; delete the sel with a keyp
+
+    (if (eq window-system 'x)
+	(setq x-select-enable-clipboard t        ;; copy-paste should work ...
+	      interprogram-paste-function            ;; ...with...
+	      'x-cut-buffer-or-selection-value))      ;; ...other X clients
+
+    (setq search-highlight t                 ;; highlight when searching...
+	  query-replace-highlight t)             ;; ...and replacing
+    (fset 'yes-or-no-p 'y-or-n-p)            ;; enable y/n answers to yes/no
+
+    (setq completion-ignore-case t           ;; ignore case when completing...
+	  read-file-name-completion-ignore-case t) ;; ...filenames too
+
+
+    (setq initial-scratch-message
+	  ";; Hello Neo ")
+
+    ;; put fortune in scratch buffer
+    ;; (setq initial-scratch-message
+    ;;       (format
+    ;;        ";; %s\n\n"
+    ;;        (replace-regexp-in-string
+    ;;         "\n" "\n;; " ; comment each line
+    ;;         (replace-regexp-in-string
+    ;;          "\n$" ""    ; remove trailing linebreak
+    ;;          (shell-command-to-string "fortune")))))
+
+    (put 'narrow-to-region 'disabled nil)    ;; enable...
+    (put 'erase-buffer 'disabled nil)        ;; ... useful things
+    (file-name-shadow-mode t)                ;; be smart about filenames in mbuf
+
+    ;; only start emacs server when it's not started, I hate warnings.
+    ;; (setq server-socket-file "~/tmp/emacs1000/server")
+    ;; (unless (file-exists-p server-socket-file)
+    ;;   (server-start))
+
+					    ;(require 'edit-server)
+					    ;(edit-server-start)
+    ;; Initail file load
+    ;; (if (not (boundp 'loaded))
+    ;;     (progn
+    ;;       (find-file "~/lsdev.org")
+    ;;       (switch-to-buffer "lsdev.org")))
+    ;; (setq loaded 1)
+
+
+
+
+
+
+
 
 #+end_src
 
@@ -848,9 +847,9 @@ Set user directories as constants for use in init script
 ** isearch+
 
  #+begin_src emacs-lisp :noweb yes :tangle ~/.emacs.d/init.el
- (use-package isearch+
-   :config
-   (setq isearchp-highlight-regexp-group-levels-flag t))
+   ;; (use-package isearch+
+   ;;   :config
+   ;;   (setq isearchp-highlight-regexp-group-levels-flag t))
  #+end_src
 
 * evil
@@ -863,12 +862,23 @@ Set user directories as constants for use in init script
     :init
     (progn
       (setq evil-default-state 'normal
-	    evil-respect-visual-line-mode t
-	    evil-want-C-u-scroll t
-	    evil-want-keybinding nil))
+            evil-respect-visual-line-mode t
+            evil-want-C-u-scroll t
+            evil-want-keybinding nil)
+      (evil-mode 1))
+
+    :general
+    ([remap evil-ex-search-forward] 'swiper)
+    ([remap evil-ex-search-backward] 'swiper-backward)
     :config
     (progn
-      (evil-mode 1)
+
+      (use-package evil-surround
+        :ensure t
+        :config
+        (global-evil-surround-mode 1))
+
+      (evil-select-search-module 'evil-search-module 'evil-search)
       <<evil-keys>>
       <<evil-escape>>
       <<evil-exchange>>
@@ -1601,25 +1611,414 @@ evil-visualstar  h 20150301… available  melpa       16  Starts a * or # search
         ad-do-it))
 #+end_src
 
+* completion
+
+#+begin_src emacs-lisp :noweb yes :tangle ~/.emacs.d/init.el
+;; (use-package ivy-avy
+;;   :ensure t)
+
+(use-package counsel
+  :after ivy
+  :delight
+  :bind (
+	 ("M-y" . counsel-yank-pop)
+	 ;; ("C-x C-d" . counsel-dired-jump)
+         ;; ("C-x C-h" . counsel-minibuffer-history)
+         ;; ("C-x C-l" . counsel-find-library)
+         ;; ("C-x C-r" . counsel-recentf)
+         ;; ("C-x C-u" . counsel-unicode-char)
+         ;; ("C-x C-v" . counsel-set-variable)
+
+	 :map ivy-minibuffer-map
+	 ("C-h" . counsel-up-directory)
+	 ("C-l" . counsel-down-directory)
+	 ("C-u" . ivy-scroll-down-command)
+	 ("C-d" . ivy-scroll-up-command)
+	 ("C-j" . ivy-next-line)
+	 ("C-k" . ivy-previous-line)
+         ("C-r" . counsel-minibuffer-history)
+
+	 ;; Doesn't work for some reasonn
+	 ;; :map ivy-switch-buffer-map
+	 ;; ("C-k" . ivy-previous-line)
+	 ;; ("C-K" . ivy-switch-buffer-kill)
+
+	 ;; (global-set-key (kbd "<f6>") 'ivy-resume)
+	 ;; (global-set-key (kbd "C-x C-f") 'counsel-find-file)
+	 ;; (global-set-key (kbd "<f1> f") 'counsel-describe-function)
+	 ;; (global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+	 ;; (global-set-key (kbd "<f1> o") 'counsel-describe-symbol)
+	 ;; (global-set-key (kbd "<f1> l") 'counsel-find-library)
+	 ;; (global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+	 ;; (global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+	 ;; (global-set-key (kbd "C-c g") 'counsel-git)
+	 ;; (global-set-key (kbd "C-c j") 'counsel-git-grep)
+	 ;; (global-set-key (kbd "C-c k") 'counsel-ag)
+	 ;; (global-set-key (kbd "C-x l") 'counsel-locate)
+	 ;; (global-set-key (kbd "C-S-o") 'counsel-rhythmbox)
+	 )
+
+  :config (progn
+	    (counsel-mode)
+	    (define-key ivy-switch-buffer-map (kbd "C-k") 'ivy-previous-line)
+	    )
+  :custom
+  ;; (counsel-rg-base-command "rg -S -M 150 --no-heading --line-number --color never %s")
+  (counsel-find-file-ignore-regexp "\\(?:\\`\\(?:\\.\\|__\\)\\|elc\\|pyc$\\)")
+  (counsel-grep-base-command "grep -niE %s %s")
+  (counsel-grep-base-command
+   "rg -i -M 120 --no-heading --line-number --color never %s %s")
+  (counsel-rg-base-command
+   (split-string
+    "rg --sort path -M 240 --no-heading --line-number --color never %s"))
+  (counsel-git-grep-cmd-default
+   (concat "git --no-pager grep --full-name -n --no-color -i -e '%s' -- './*' "
+	   (mapconcat (lambda (x) (format "':!*.%s'" x))
+		      '("htm" "so" "a" "TTC" "NDS" "png" "md5") " ")))
+  )
+
+(use-package counsel-projectile
+  :ensure t
+  :after counsel
+  :general
+  (leader-define
+    "s p" 'counsel-projectile-ag))
+
+(use-package swiper
+  :after ivy
+  :bind (("C-s" . swiper)
+         :map swiper-map
+         ("M-%" . swiper-query-replace)))
+
+(use-package ivy-hydra
+  :ensure t)
+
+(use-package ivy
+  :delight
+  :after ivy-rich
+  :bind
+  (("C-c C-r" . ivy-resume)
+   ("M-x" . counsel-M-x)
+   :map ivy-minibuffer-map
+   ("C-c o" . ivy-occur)
+   ("C-c C-a" . ivy-read-action)
+   ("C-:" . ivy-dired)
+   ("C-r" . counsel-minibuffer-history)
+   ;; ("C-x b" . ivy-switch-buffer)
+   ;; ("C-x B" . ivy-switch-buffer-other-window)
+   ;; ("M-H"   . ivy-resume)
+   ;; ("<tab>" . ivy-alt-done)
+   ;; ("C-i" . ivy-partial-or-done)
+   ;; ("S-SPC" . nil)
+   ;; :map ivy-switch-buffer-map
+   ;; ("C-k" . ivy-switch-buffer-kill)
+   )
+
+  :custom
+  (enable-recursive-minibuffers t)
+  (ivy-case-fold-search-default t)
+  (ivy-count-format "(%d/%d) ")
+  (ivy-count-format "(%d/%d) ")
+  (ivy-display-style 'fancy)
+  (ivy-extra-directories nil)
+  (ivy-re-builders-alist '((t . ivy--regex-plus)))
+  (ivy-use-virtual-buffers t)
+  (ivy-use-selectable-prompt t)
+  (ivy-read-action-function #'ivy-hydra-read-action)
+
+  :config
+  (defun ivy-insert-action (x)
+    (with-ivy-window
+      (insert x)))
+
+  (ivy-set-actions
+   t
+   '(("I" ivy-insert-action "insert")))
+
+  ;; not sure what this is from abo-abo's config
+  (let ((key "C-."))
+    (when (boundp 'ivy-dispatching-done-hydra-exit-keys)
+      (add-to-list 'ivy-dispatching-done-hydra-exit-keys (list key nil "back")))
+    (define-key ivy-minibuffer-map (kbd key) 'ivy-dispatching-done))
+
+  (ivy-mode)
+  )
+
+(use-package ivy-pass
+  :after ivy
+  :commands ivy-pass)
+
+(use-package ivy-rich
+  :defer 0.1
+  :preface
+  (defun ivy-rich-branch-candidate (candidate)
+    "Displays the branch candidate of the candidate for ivy-rich."
+    (let ((candidate (expand-file-name candidate ivy--directory)))
+      (if (or (not (file-exists-p candidate)) (file-remote-p candidate))
+          ""
+        (format "%s%s"
+                (propertize
+                 (replace-regexp-in-string abbreviated-home-dir "~/"
+                                           (file-name-directory
+                                            (directory-file-name candidate)))
+                 'face 'font-lock-doc-face)
+                (propertize
+                 (file-name-nondirectory
+                  (directory-file-name candidate))
+                 'face 'success)))))
+
+  (defun ivy-rich-compiling (candidate)
+    "Displays compiling buffers of the candidate for ivy-rich."
+    (let* ((candidate (expand-file-name candidate ivy--directory)))
+      (if (or (not (file-exists-p candidate)) (file-remote-p candidate)
+              (not (magit-git-repo-p candidate)))
+          ""
+        (if (my/projectile-compilation-buffers candidate)
+            "compiling"
+          ""))))
+
+  (defun ivy-rich-file-group (candidate)
+    "Displays the file group of the candidate for ivy-rich"
+    (let ((candidate (expand-file-name candidate ivy--directory)))
+      (if (or (not (file-exists-p candidate)) (file-remote-p candidate))
+          ""
+        (let* ((group-id (file-attribute-group-id (file-attributes candidate)))
+               (group-function (if (fboundp #'group-name) #'group-name #'identity))
+               (group-name (funcall group-function group-id)))
+          (format "%s" group-name)))))
+
+  (defun ivy-rich-file-modes (candidate)
+    "Displays the file mode of the candidate for ivy-rich."
+    (let ((candidate (expand-file-name candidate ivy--directory)))
+      (if (or (not (file-exists-p candidate)) (file-remote-p candidate))
+          ""
+        (format "%s" (file-attribute-modes (file-attributes candidate))))))
+
+  (defun ivy-rich-file-size (candidate)
+    "Displays the file size of the candidate for ivy-rich."
+    (let ((candidate (expand-file-name candidate ivy--directory)))
+      (if (or (not (file-exists-p candidate)) (file-remote-p candidate))
+          ""
+        (let ((size (file-attribute-size (file-attributes candidate))))
+          (cond
+           ((> size 1000000) (format "%.1fM " (/ size 1000000.0)))
+           ((> size 1000) (format "%.1fk " (/ size 1000.0)))
+           (t (format "%d " size)))))))
+
+  (defun ivy-rich-file-user (candidate)
+    "Displays the file user of the candidate for ivy-rich."
+    (let ((candidate (expand-file-name candidate ivy--directory)))
+      (if (or (not (file-exists-p candidate)) (file-remote-p candidate))
+          ""
+        (let* ((user-id (file-attribute-user-id (file-attributes candidate)))
+               (user-name (user-login-name user-id)))
+          (format "%s" user-name)))))
+
+  (defun ivy-rich-switch-buffer-icon (candidate)
+    "Returns an icon for the candidate out of `all-the-icons'."
+    (with-current-buffer
+        (get-buffer candidate)
+      (let ((icon (all-the-icons-icon-for-mode major-mode :height 0.9)))
+        (if (symbolp icon)
+            (all-the-icons-icon-for-mode 'fundamental-mode :height 0.9)
+          icon))))
+  :config
+  (plist-put ivy-rich-display-transformers-list
+             'counsel-find-file
+             '(:columns
+               ((ivy-rich-candidate               (:width 73))
+                (ivy-rich-file-user               (:width 8 :face font-lock-doc-face))
+                (ivy-rich-file-group              (:width 4 :face font-lock-doc-face))
+                (ivy-rich-file-modes              (:width 11 :face font-lock-doc-face))
+                (ivy-rich-file-size               (:width 7 :face font-lock-doc-face))
+                (ivy-rich-file-last-modified-time (:width 30 :face font-lock-doc-face)))))
+  (plist-put ivy-rich-display-transformers-list
+             'counsel-projectile-switch-project
+             '(:columns
+               ((ivy-rich-branch-candidate        (:width 80))
+                (ivy-rich-compiling))))
+  (plist-put ivy-rich-display-transformers-list
+             'ivy-switch-buffer
+             '(:columns
+               ((ivy-rich-switch-buffer-icon       (:width 2))
+                (ivy-rich-candidate                (:width 40))
+                (ivy-rich-switch-buffer-size       (:width 7))
+                (ivy-rich-switch-buffer-indicators (:width 4 :face error :align right))
+                (ivy-rich-switch-buffer-major-mode (:width 20 :face warning)))
+               :predicate (lambda (cand) (get-buffer cand))))
+  (ivy-rich-mode 1))
+
+
+(use-package ivy-dired-history
+:ensure t
+:after ivy)
+
+;; (use-package ivy-prescient
+;; :ensure t
+;; :after counsel
+;; :config (ivy-prescient-mode))
+
+;; (use-package all-the-icons
+;;   :ensure t)
+;; (use-package all-the-icons-ivy
+;;   :ensure t
+;;   :after (all-the-icons ivy)
+;;   :custom (all-the-icons-ivy-buffer-commands '(ivy-switch-buffer-other-window))
+;;   :config
+;;   (add-to-list 'all-the-icons-ivy-file-commands 'counsel-dired-jump)
+;;   (add-to-list 'all-the-icons-ivy-file-commands 'counsel-find-library)
+;;   (all-the-icons-ivy-setup))
+
+;; (use-package all-the-icons-ivy-rich
+;;   :ensure t
+;;   :init (all-the-icons-ivy-rich-mode 1))
+
+
+
+;; (define-key ivy-minibuffer-map (kbd "") 'ivy-alt-done)
+;; ("<return>" . ivy-alt-done)
+;; ("C-M-h" . ivy-previous-line-and-call)
+
+
+;; (ivy-set-display-transformer 'counsel-describe-function nil)
+
+;; (defun ivy-dired ()
+;;   (interactive)
+;;   (if ivy--directory
+;;       (ivy-quit-and-run
+;;        (dired ivy--directory)
+;;        (when (re-search-forward
+;;               (regexp-quote
+;;                (substring ivy--current 0 -1)) nil t)
+;;          (goto-char (match-beginning 0))))
+;;     (user-error
+;;      "Not completing files currently")))
+;; (put 'ivy-dired 'no-counsel-M-x t)
+
+;; (setq ivy-switch-buffer-faces-alist
+;;       '((emacs-lisp-mode . swiper-match-face-1)
+;;         (dired-mode . ivy-subdir)
+;;         (org-mode . org-level-4)))
+
+
+;; TODO: --sort may be slow, since it turns off parallelism
+;; but I like --sort because of consistent result display.
+;; there's no flickering beteen the input "ivy-f" and "ivy-fo".
+
+
+
+;; (defun ora-counsel-git ()
+;;   (interactive)
+;;   (let ((counsel-git-cmd "rg -0 --files"))
+;;     (counsel-git)))
+
+;; (defun ivy-view-backtrace ()
+;;   (interactive)
+;;   (switch-to-buffer "*ivy-backtrace*")
+;;   (delete-region (point-min) (point-max))
+;;   (fundamental-mode)
+;;   (insert ivy-old-backtrace)
+;;   (goto-char (point-min))
+;;   (forward-line 1)
+;;   (let (part parts)
+;;     (while (< (point) (point-max))
+;;       (condition-case nil
+;;           (progn
+;;             (setq part (read (current-buffer)))
+;;             (push part parts)
+;;             (delete-region (point-min) (point)))
+;;         (error
+;;          (progn
+;;            (ignore-errors (up-list))
+;;            (delete-region (point-min) (point)))))))
+;;   (goto-char (point-min))
+;;   (dolist (part parts)
+;;     (lispy--insert part)
+;;     (lispy-alt-multiline)
+;;     (insert "\n")))
+
+;; (setq counsel-fzf-dir-function
+;;       (lambda ()
+;;         (let ((d (locate-dominating-file default-directory ".git")))
+;;           (if (or (null d)
+;;                   (equal (expand-file-name d)
+;;                          (expand-file-name "~/")))
+;;               default-directory
+;;             d))))
+
+;; (setq counsel-linux-apps-directories
+;;       '("/usr/local/share/applications/"
+;;         "/usr/share/applications/"))
+
+;; (define-key ivy-switch-buffer-map (kbd "C-k") 'ivy-switch-buffer-kill)
+
+;; (defun ora-toggle-ivy-posframe ()
+;;   (interactive)
+;;   (require 'ivy-posframe)
+;;   (if (assoc t ivy-display-functions-alist)
+;;       (setq ivy-display-functions-alist
+;;             (assq-delete-all t ivy-display-functions-alist))
+;;     (add-to-list 'ivy-display-functions-alist '(t . ivy-posframe-display-at-frame-center))
+;;     (ivy-posframe-enable)))
+
+;; (setq ivy-posframe-font "-PfEd-DejaVu Sans Mono-normal-normal-normal-*-18-*-*-*-m-0-iso10646-1")
+;; (setq ivy-posframe-width 80)
+
+;; (when (file-exists-p "/home/.ecryptfs/")
+;;   (let ((db-fname (expand-file-name "~/.local/mlocate.db")))
+;;     (setenv "LOCATE_PATH" db-fname)
+
+;;     (defun ora-counsel-locate ()
+;;       (interactive)
+;;       (when (> (time-to-number-of-days
+;;                 (time-subtract
+;;                  (current-time)
+;;                  (nth 5 (file-attributes db-fname))))
+;;                1)
+;;         (orfu-shell
+;;          (format "time updatedb -l 0 -o %s -U $HOME" db-fname) "*updatedb*"))
+;;       (counsel-locate))
+
+;;     (global-set-key (kbd "C-x l") 'ora-counsel-locate)))
+
+;; (setq counsel-org-goto-all-outline-path-prefix 'file-name-nondirectory)
+
+;; (define-key isearch-mode-map (kbd "C-c s") 'swiper-isearch-toggle)
+;; (define-key swiper-map (kbd "C-c s") 'swiper-isearch-toggle)
+;; (define-key ivy-occur-grep-mode-map (kbd "M-i") #'ora-ivy-occur-grep-iedit)
+;; (setq swiper-verbose nil)
+
+;; (defun ora-ivy-occur-grep-iedit ()
+;;   (interactive)
+;;   (when buffer-read-only
+;;     (ivy-wgrep-change-to-wgrep-mode))
+;;   (iedit-mode))
+
+;; (setq counsel-recentf-include-xdg-list t)
+
+
+#+end_src
+
 * helm
 ** Notes
 *** TODO Find a better way to run the next and previous line funcs repeatedly.
 ** Main
 
 #+begin_src emacs-lisp :noweb yes :tangle ~/.emacs.d/init.el
-  (message "Helm:::: %.2fs" (- (float-time) shit-load-time-start))
+(message "Helm:::: %.2fs" (- (float-time) shit-load-time-start))
 
-  (use-package helm
-    :diminish helm-mode "h"
-    :ensure t
-    :commands (my-helm-locate
-               helm-find-files)
-    :bind (("M-x" . helm-M-x)
-           ("M-y" . helm-show-kill-ring))
-    :config (progn
-              (message "helm-config")
-              <<helm-config>>
-              ))
+;; (use-package helm
+;;   :diminish helm-mode "h"
+;;   :ensure t
+;;   :commands (my-helm-locate
+;;              helm-find-files)
+;;   :bind (("M-x" . helm-M-x)
+;;          ("M-y" . helm-show-kill-ring))
+;;   :config (progn
+;;             (message "helm-config")
+;;             <<helm-config>>
+;;             ))
+
 #+end_src
 
 ** Config
@@ -2287,10 +2686,9 @@ current query will be used to initialize the search.  Otherwise
   (general-define-key
    :states 'normal
    :keymaps 'dired-mode-map
-   "SPC" 'dired-jump)
-
-
-  )
+   "C-o" 'dired-find-file-other-window
+   ;; "SPC" 'dired-jump
+   ))
  #+end_src
 
 * electric pair
@@ -2343,10 +2741,13 @@ current query will be used to initialize the search.  Otherwise
       ("w" save-buffer)
       ("e" hydra-move-splitter-up)
       ("r" hydra-move-splitter-right)
-      ("b" helm-mini)
+      ;; ("b" helm-mini)
       ("B" ibuffer)
-      ("f" helm-find-files)
-      ("p" helm-projectile-find-file)
+      ;; ("f" helm-find-files)
+      ("f" counsel-find-file)
+      ("p" counsel-find-file)
+      ("b" counsel-switch-buffer)
+      ;; ("p" helm-projectile-find-file)
       ("F" follow-mode)
       ("s" save-buffer)
       ("a" (lambda ()
@@ -2681,155 +3082,156 @@ current query will be used to initialize the search.  Otherwise
 * buffer
 
 #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-  (message "Start ace-window:::: %.2fs" (- (float-time) shit-load-time-start))
-  (use-package winner
-    :config (winner-mode 1))
+(message "Start ace-window:::: %.2fs" (- (float-time) shit-load-time-start))
+(use-package winner
+  :config (winner-mode 1))
 
-  (use-package ibuffer
-    :general
-    (general-define-key
-     "C-x C-b" 'ibuffer))
+(use-package ibuffer
+  :general
+  (general-define-key
+   "C-x C-b" 'ibuffer))
 
-  (use-package ace-window
-    :ensure t
+(use-package ace-window
+  :ensure t
 
-    :general
-    (leader-define 'normal
-      "j" 'hydra-window/body
-      "k" 'avy-goto-char-2)
+  :general
+  (leader-define 'normal
+    "j" 'hydra-window/body
+    "k" 'avy-goto-char-2)
 
-    :config
-    (progn
+  :config
+  (progn
 
-      (defhydra hydra-window ()
-	"
-    Movement^^    ^Split^         ^Switch^     ^Resize^   ^Buffer actions^       ^window actions^
-    ---------------------------------------------------------------------------------------------
-    _h_ ←         _v_ertical      _b_uffer     _q_ X←     _y_ank buffer
-    _j_ ↓         _x_ horizontal  i_B_uffer    _w_ X↓     _P_aste buffer
-    _k_ ↑         _u_ndo          _f_ind files _e_ X↑     _s_ave buffer
-    _l_ →         _C-r_ redo      _a_ce 1      _r_ X→     _f_ind-file
-    _F_ollow      _D_lt Other     _s_wap       e_q_ualize _p_rojectile-find-file
-    _SPC_ cancel  _o_nly this     _S_ave       _m_aximize
-				  _d_elete
-    "
-	("h" windmove-left)
-	("j" windmove-down)
-	("k" windmove-up)
-	("l" windmove-right)
-	("q" balance-windows)
-	("w" save-buffer)
-	("e" hydra-move-splitter-up)
-	("r" hydra-move-splitter-right)
-	("b" helm-mini)
-	("B" ibuffer)
-	("f" helm-find-files)
-	("p" helm-projectile-find-file)
-	("F" follow-mode)
-	("s" save-buffer)
-	("a" (lambda ()
-	       (interactive)
-	       (ace-window 1)
-	       (add-hook 'ace-window-end-once-hook
-			 'hydra-window/body)))
-	("v" (lambda ()
-	       (interactive)
-	       (split-window-right)
-	       (windmove-right)))
-	("x" (lambda ()
-	       (interactive)
-	       (split-window-below)
-	       (windmove-down)))
-	("s" (lambda ()
-	       (interactive)
-	       (ace-window 4)
-	       (add-hook 'ace-window-end-once-hook
-			 'hydra-window/body)))
-	("S" save-buffer)
-	("d" delete-window)
-	("D" (lambda ()
-	       (interactive)
-	       (ace-window 16)
-	       (add-hook 'ace-window-end-once-hook
-			 'hydra-window/body)))
-	("o" delete-other-windows)
-	("m" ace-maximize-window)
-	("y" (lambda ()
-	       (interactive)
-	       (clipboard-kill-ring-save (point-min) (point-max))))
-	("P" (lambda ()
-	       (interactive)
-	       (evil-paste-before 1)))
-	("c" (lambda ()
-	       (interactive)
-	       (erase-buffer)))
-	("z" (progn
-	       (winner-undo)
-	       (setq this-command 'winner-undo))
-	 )
-	("u" winner-undo)
-	("C-r" winner-redo)
-	("SPC" nil))
+    (defhydra hydra-window ()
+      "
+  Movement^^    ^Split^         ^Switch^     ^Resize^   ^Buffer actions^       ^window actions^
+  ---------------------------------------------------------------------------------------------
+  _h_ ←         _v_ertical      _b_uffer     _q_ X←     _y_ank buffer
+  _j_ ↓         _x_ horizontal  i_B_uffer    _w_ X↓     _P_aste buffer
+  _k_ ↑         _u_ndo          _f_ind files _e_ X↑     _s_ave buffer
+  _l_ →         _C-r_ redo      _a_ce 1      _r_ X→     _f_ind-file
+  _F_ollow      _D_lt Other     _s_wap       e_q_ualize _p_rojectile-find-file
+  _SPC_ cancel  _o_nly this     _S_ave       _m_aximize
+				_d_elete
+  "
+      ("h" windmove-left)
+      ("j" windmove-down)
+      ("k" windmove-up)
+      ("l" windmove-right)
+      ("q" balance-windows)
+      ("w" save-buffer)
+      ("e" hydra-move-splitter-up)
+      ("r" hydra-move-splitter-right)
+      ("B" ibuffer)
+      ("f" counsel-find-file)
+      ("p" counsel-projectile-find-file)
+      ("b" counsel-switch-buffer)
+      ;; ("p" helm-projectile-find-file)
+      ("F" follow-mode)
+      ("s" save-buffer)
+      ("a" (lambda ()
+	     (interactive)
+	     (ace-window 1)
+	     (add-hook 'ace-window-end-once-hook
+		       'hydra-window/body)))
+      ("v" (lambda ()
+	     (interactive)
+	     (split-window-right)
+	     (windmove-right)))
+      ("x" (lambda ()
+	     (interactive)
+	     (split-window-below)
+	     (windmove-down)))
+      ("s" (lambda ()
+	     (interactive)
+	     (ace-window 4)
+	     (add-hook 'ace-window-end-once-hook
+		       'hydra-window/body)))
+      ("S" save-buffer)
+      ("d" delete-window)
+      ("D" (lambda ()
+	     (interactive)
+	     (ace-window 16)
+	     (add-hook 'ace-window-end-once-hook
+		       'hydra-window/body)))
+      ("o" delete-other-windows)
+      ("m" ace-maximize-window)
+      ("y" (lambda ()
+	     (interactive)
+	     (clipboard-kill-ring-save (point-min) (point-max))))
+      ("P" (lambda ()
+	     (interactive)
+	     (evil-paste-before 1)))
+      ("c" (lambda ()
+	     (interactive)
+	     (erase-buffer)))
+      ("z" (progn
+	     (winner-undo)
+	     (setq this-command 'winner-undo))
+       )
+      ("u" winner-undo)
+      ("C-r" winner-redo)
+      ("SPC" nil))
 
-      ;; (after 'evil
-      ;;   (define-key my-leader-map "j"
+    ;; (after 'evil
+    ;;   (define-key my-leader-map "j"
 
-      ;;     ))
+    ;;     ))
 
-      (setq aw-keys '(?s ?d ?f ?g ?h ?j ?k ?l)
-	    aw-dispatch-always t
-	    aw-leading-char-style 'path)
+    (setq aw-keys '(?s ?d ?f ?g ?h ?j ?k ?l)
+	  aw-dispatch-always t
+	  aw-leading-char-style 'path)
 
-      (ace-window-display-mode)
+    (ace-window-display-mode)
 
-      ;; (custom-set-faces
-      ;;  '(aw-leading-char-face
-      ;;    ((t (:inherit ace-jump-face-foreground :height 3.0)))))
+    ;; (custom-set-faces
+    ;;  '(aw-leading-char-face
+    ;;    ((t (:inherit ace-jump-face-foreground :height 3.0)))))
 
-      (defvar aw-dispatch-alist
-	'((?x aw-delete-window " Ace - Delete Window")
-	  (?m aw-swap-window " Ace - Swap Window")
-	  (?a aw-flip-window)
-	  (?v aw-split-window-vert " Ace - Split Vert Window")
-	  (?b aw-split-window-horz " Ace - Split Horz Window")
-	  (?i delete-other-windows " Ace - Maximize Window")
-	  (?o delete-other-windows))
-	"List of actions for `aw-dispatch-default'.")
+    (defvar aw-dispatch-alist
+      '((?x aw-delete-window " Ace - Delete Window")
+	(?m aw-swap-window " Ace - Swap Window")
+	(?a aw-flip-window)
+	(?v aw-split-window-vert " Ace - Split Vert Window")
+	(?b aw-split-window-horz " Ace - Split Horz Window")
+	(?i delete-other-windows " Ace - Maximize Window")
+	(?o delete-other-windows))
+      "List of actions for `aw-dispatch-default'.")
 
-      ))
+    ))
 
-  (use-package popwin
-    :ensure t
-    :config
-    (progn
-      (setq popwin:special-display-config
-	    '(("*Miniedit Help*" :noselect t)
-	      help-mode
-	      (completion-list-mode :noselect t)
-	      (compilation-mode :noselect t)
-              (grep-mode :noselect t)
-	      ("*Pp Macroexpand Output*" :noselect t)
-	      "*Shell Command Output*"
-	      "*vc-diff*"
-	      "*vc-change-log*"
-	      (" *undo-tree*" :width 60 :position right)
-	      "*cider-test-report*"))
-      (popwin-mode 1)))
+(use-package popwin
+  :ensure t
+  :config
+  (progn
+    (setq popwin:special-display-config
+	  '(("*Miniedit Help*" :noselect t)
+	    help-mode
+	    (completion-list-mode :noselect t)
+	    (compilation-mode :noselect t)
+            (grep-mode :noselect t)
+	    ("*Pp Macroexpand Output*" :noselect t)
+	    "*Shell Command Output*"
+	    "*vc-diff*"
+	    "*vc-change-log*"
+	    (" *undo-tree*" :width 60 :position right)
+	    "*cider-test-report*"))
+    (popwin-mode 1)))
 
-  ;; (use-package perspective
-  ;;   :ensure t
-  ;;   :config
-  ;;   (progn
-  ;;     (persp-mode)))
+;; (use-package perspective
+;;   :ensure t
+;;   :config
+;;   (progn
+;;     (persp-mode)))
 
-  ;; (use-package window-purpose
-  ;;   :ensure t
-  ;;   :config
-  ;;   (progn
-  ;;     (purpose-mode)
-  ;;     (use-package window-purpose-x)
-  ;;     (purpose-x-magit-single-on)
-  ;;     (purpose-x-persp-setup)))
+;; (use-package window-purpose
+;;   :ensure t
+;;   :config
+;;   (progn
+;;     (purpose-mode)
+;;     (use-package window-purpose-x)
+;;     (purpose-x-magit-single-on)
+;;     (purpose-x-persp-setup)))
 #+end_src
 
 * themes
@@ -4527,78 +4929,107 @@ support it."
 #+NAME: org-babel
 #+begin_src emacs-lisp
 
-  ;; (require 'ob-mathematica)
-  ;; (require 'ob-maxima)
-  (defun tangle-on-save-org-mode-file()
-    (when (string= (message "%s" major-mode) "org-mode")
-      (org-babel-tangle)))
+;; (require 'ob-mathematica)
+;; (require 'ob-maxima)
+(use-package ob-http
+  :ensure t)
 
-  (add-hook 'after-save-hook 'tangle-on-save-org-mode-file)
+(defun ob-http-pretty-edn (str)
+  (cond
+
+   ((executable-find "zprint") (ob-http-shell-command-to-string "cljstyle pipe" str))
+
+   (t str)))
+
+(defun ob-http-parse-content-type (content-type)
+  (when content-type
+    (cond
+     ((string-match "json" content-type) 'json)
+     ((string-match "html" content-type) 'html)
+     ((string-match "xml" content-type) 'xml)
+     ((string-match "edn" content-type) 'edn))))
+
+(defun ob-http-pretty (body content-type)
+  (if (string= "" body)
+      body
+    (cl-case (ob-http-parse-content-type content-type)
+      (json (ob-http-pretty-json body))
+      (xml (ob-http-pretty-xml body))
+      (html (ob-http-pretty-html body))
+      (edn (ob-http-pretty-edn body))
+      (otherwise body))))
+
+(defun tangle-on-save-org-mode-file()
+  (when (string= (message "%s" major-mode) "org-mode")
+    (org-babel-tangle)))
+
+(add-hook 'after-save-hook 'tangle-on-save-org-mode-file)
 
 
-  ;; syntax highlighting in export src blocks
-  (defun my/org-inline-css-hook (exporter)
-    "Insert custom inline css to automatically set the
+;; syntax highlighting in export src blocks
+(defun my/org-inline-css-hook (exporter)
+  "Insert custom inline css to automatically set the
   background of code to whatever theme I'm using's background"
-    (when (eq exporter 'html)
-      (let* ((my-pre-bg (face-background 'default))
-             (my-pre-fg (face-foreground 'default)))
-        (setq
-         org-html-head-extra
-         (concat
-          org-html-head-extra
-          (format "<style type=\"text/css\">\n pre.src {background-color: %s; color: %s;}</style>\n"
-                  my-pre-bg my-pre-fg))))))
+  (when (eq exporter 'html)
+    (let* ((my-pre-bg (face-background 'default))
+	   (my-pre-fg (face-foreground 'default)))
+      (setq
+       org-html-head-extra
+       (concat
+	org-html-head-extra
+	(format "<style type=\"text/css\">\n pre.src {background-color: %s; color: %s;}</style>\n"
+		my-pre-bg my-pre-fg))))))
 
-  (add-hook 'org-export-before-processing-hook 'my/org-inline-css-hook)
-  ;; active Babel languages
+(add-hook 'org-export-before-processing-hook 'my/org-inline-css-hook)
+;; active Babel languages
 (setq org-confirm-babel-evaluate
       (lambda (lang body)
         (not (or (string= lang "sql-mode")
                  (string= lang "http")
                  (string= lang "sql")
                  (string= lang "clojure")))))
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '(
-     ;; (maxima . t)
-     ;; (mathematica . t)
-     ;; (latex . t)
-     ;; (python . t)
-     ;; (sass .t)
-      (sql . t)
-     ;; (js . t)
-     ;; (shell . t)
-     ;; (scala . t)
-     ;; (dot . t)
-      (clojure . t)
-     ;; (gnuplot . t)
-     ;; (http . t)
-     ;; (csharp . t)
-     ;; (ditaa . t)
-      (dot . t)
-     ;; (plantuml . t)
-     ;; (scheme . t)
-     ))
-  (setq org-babel-clojure-backend 'cider)
-  (setq org-src-window-setup 'current-window)
-  (setq org-confirm-babel-evaluate nil)
-  (setq org-babel-clojure-sync-nrepl-timeout nil)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '(
+   ;; (maxima . t)
+   ;; (mathematica . t)
+   ;; (latex . t)
+   ;; (python . t)
+   ;; (sass .t)
+   (sql . t)
+   (http . t)
+   ;; (js . t)
+   (shell . t)
+   ;; (scala . t)
+   ;; (dot . t)
+   (clojure . t)
+   ;; (gnuplot . t)
+   ;; (http . t)
+   ;; (csharp . t)
+   ;; (ditaa . t)
+   (dot . t)
+   ;; (plantuml . t)
+   ;; (scheme . t)
+   ))
+(setq org-babel-clojure-backend 'cider)
+(setq org-src-window-setup 'current-window)
+(setq org-confirm-babel-evaluate nil)
+(setq org-babel-clojure-sync-nrepl-timeout nil)
 
-  (defun my/org-inline-css-hook (exporter)
-    "Insert custom inline css to automatically set the
+(defun my/org-inline-css-hook (exporter)
+  "Insert custom inline css to automatically set the
   background of code to whatever theme I'm using's background"
-    (when (eq exporter 'html)
-      (let* ((my-pre-bg (face-background 'default))
-             (my-pre-fg (face-foreground 'default)))
-        (setq
-         org-html-head-extra
-         (concat
-          org-html-head-extra
-          (format "<style type=\"text/css\">\n pre.src {background-color: %s; color: %s;}</style>\n"
-                  my-pre-bg my-pre-fg))))))
+  (when (eq exporter 'html)
+    (let* ((my-pre-bg (face-background 'default))
+	   (my-pre-fg (face-foreground 'default)))
+      (setq
+       org-html-head-extra
+       (concat
+	org-html-head-extra
+	(format "<style type=\"text/css\">\n pre.src {background-color: %s; color: %s;}</style>\n"
+		my-pre-bg my-pre-fg))))))
 
-  (add-hook 'org-export-before-processing-hook 'my/org-inline-css-hook)
+(add-hook 'org-export-before-processing-hook 'my/org-inline-css-hook)
 #+end_src
 
 ** Functions
@@ -4785,68 +5216,80 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 (global-set-key [f9] 'dh-hydra-markdown-mode/body)
   #+end_src
 
+* flymake
+
+  #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+  (use-package flymake
+    :ensure nil
+    :bind (([f8] . flymake-goto-next-error)
+	   ([f7] . flymake-goto-prev-error))
+    :hook (prog-mode . (lambda () (flymake-mode t)))
+    :config (remove-hook 'flymake-diagnostic-functions #'flymake-proc-legacy-flymake))
+  #+end_src
+
 * Lisps
   #+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
-  (message "Lisps:::: %.2fs" (- (float-time) shit-load-time-start))
+      (message "Lisps:::: %.2fs" (- (float-time) shit-load-time-start))
 
-  (use-package rainbow-delimiters
-    :ensure t)
+      (use-package rainbow-delimiters
+        :ensure t)
 
-;;  (use-package aggressive-indent
-;;    :ensure t)
+    ;;  (use-package aggressive-indent
+    ;;    :ensure t)
 
-  (use-package lispy
-    :ensure t
-    :pin melpa-stable
-    :general
-    (:keymaps 'lispy-mode-map
-	      "M-," nil)
-    :config
-    (progn
-      (defun conditionally-enable-lispy ()
-	(when (eq this-command 'eval-expression)
-	  (lispy-mode 1)))
-      (add-hook 'minibuffer-setup-hook 'conditionally-enable-lispy)))
+      (use-package lispy
+        :ensure t
+        :pin melpa-stable
+        :general
+        (:keymaps 'lispy-mode-map
+      "M-," nil)
+        :config
+        (progn
+    (defun conditionally-enable-lispy ()
+      (when (eq this-command 'eval-expression)
+        (lispy-mode 1)))
+    (add-hook 'minibuffer-setup-hook 'conditionally-enable-lispy)))
 
-  (use-package lispyville
-    :ensure t
-    :pin melpa-stable
-    :after lispy
-    :config
-    (progn
-      (lispyville-set-key-theme
-       '(operators
-	 c-w
-	 prettify
-	 additional-motions
-	 additional-insert
-	 commentary
-	 slurp/barf-lispy))
-      (add-hook 'lispy-mode-hook #'lispyville-mode)))
+      ;; (use-package lispyville
+    ;;     :ensure t
+    ;;     :pin melpa-stable
+    ;;     :after lispy
+    ;;     :config
+    ;;     (progn
+    ;; (lispyville-set-key-theme
+    ;;  '(operators
+    ;; 	 c-w
+    ;; 	 prettify
+    ;; 	 additional-motions
+    ;; 	 additional-insert
+    ;; 	 commentary
+    ;; 	 slurp/barf-lispy))
+    ;; (add-hook 'lispy-mode-hook #'lispyville-mode)))
 
-  (setq show-paren-delay 0)
+      (setq show-paren-delay 0)
 
-  (defun my-lisp-mode-hook ()
-    (rainbow-delimiters-mode)
-    ;;(aggressive-indent-mode)
-    (show-paren-mode)
-    (lispy-mode))
+      (defun my-lisp-mode-hook ()
+        (rainbow-delimiters-mode)
+        ;;(aggressive-indent-mode)
+        (show-paren-mode)
+        (lispy-mode))
 
-  (general-add-hook
-   '(scheme-mode-hook
-     emacs-lisp-mode-hook
-     reb-lisp-mode-hook
-     clojure-mode-hook
-     lisp-mode-hook)
-   #'my-lisp-mode-hook)
+      (general-add-hook
+       '(scheme-mode-hook
+         emacs-lisp-mode-hook
+         reb-lisp-mode-hook
+         clojure-mode-hook
+         lisp-mode-hook)
+       #'my-lisp-mode-hook)
 
-  (defun my-lisp-repl-mode-hook ()
-    (rainbow-delimiters-mode)
-    ;;(aggressive-indent-mode nil)
-    (show-paren-mode)
-    (lispy-mode))
+      (defun my-lisp-repl-mode-hook ()
+        (rainbow-delimiters-mode)
+        ;;(aggressive-indent-mode nil)
+        (show-paren-mode)
+        ;; (lispy-mode)
+        )
 
-  (general-add-hook '(cider-repl-mode-hook) #'my-lisp-repl-mode-hook)
+      (general-add-hook '(cider-repl-mode-hook) #'my-lisp-repl-mode-hook)
   #+end_src
 
 ** Scheme
@@ -4871,10 +5314,32 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
     ;; (setq clojure-defun-style-default-indent t)
     ;; <<clojure-keys>>
     <<clojure-cider>>
+    <<clojure-packages>>
     ;; <<clojure-refactor>>
-    <<clojure-flycheck>>
+    ;;<<clojure-flycheck>>
+    <<clojure-flymake>>
     <<clojure-config>>
     ))
+#+end_src
+
+*** packages
+
+#+name: clojure-packages
+#+begin_src emacs-lisp
+(use-package zprint-mode
+  :ensure t)
+
+(use-package cljr-ivy
+:ensure t
+:after ivy)
+
+(use-package ivy-clojuredocs
+:ensure t
+:after ivy)
+
+(use-package flymake-kondor
+  :ensure t ;;flymake-quickdef
+  :hook (clojure-mode . flymake-kondor-setup))
 #+end_src
 
 *** keys
@@ -4929,10 +5394,10 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 
 #+name: clojure-flycheck
 #+begin_src emacs-lisp
-(use-package flycheck-clojure
-:ensure t)
+;;(use-package flycheck-clojure
+;;:ensure t)
 
-(after 'flycheck (flycheck-clojure-setup))
+;;(after 'flycheck (flycheck-clojure-setup))
 
 #+end_src
 
@@ -4942,8 +5407,8 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
 #+begin_src emacs-lisp
 (use-package cider
   :ensure t
-  :pin melpa-stable
-  :general ("C-c C-i" 'my-cider-integrant-reset)
+  :pin melpa
+  :general ("C-c C-i" 'my-cider-wandi-reset)
   :config
   (progn
 
@@ -4955,8 +5420,19 @@ Links, footnotes  C-c C-a    _L_: link          _U_: uri        _F_: footnote   
       (interactive)
       (projectile-save-project-buffers)
       (cider-interactive-eval "(integrant.repl/reset)"))
+
+    (defun my-cider-wandi-reset ()
+      (interactive)
+      (projectile-save-project-buffers)
+      (cider-interactive-eval "(user/reset-app)"))
+
+    (defun my-cider-load-debug-repl ()
+      (interactive)
+      (cider-interactive-eval "(user/reset-app)"))
+
+    (setq cider-auto-select-test-report-buffer nil)
+    (setq cider-save-file-on-load t)
     ;; (setq cider-boot-parameters "dev")
-    ;; (setq cider-auto-select-test-report-buffer nil)
     ;; (setq cider-repl-history-file "~/.emacs.d/var/cider-history")
     ;; (setq cider-repl-use-clojure-font-lock t)
     ;; (setq cider-repl-wrap-history t)
@@ -5058,6 +5534,10 @@ _q_: quit
 (defun my/highlight-words ()
   "Use hi-lock to highlight specific words"
   (hi-lock-face-buffer "\\(and-paths\\|or-paths\\|cond-path\\)" 'my/highlight))
+
+(put-clojure-indent 'context 2)
+(put-clojure-indent 'POST 2)
+(put-clojure-indent 'GET 2)
 
 (add-hook 'clojure-mode-hook #'my/highlight-words)
 
@@ -5224,6 +5704,17 @@ _q_: quit
     (database :default "award_shdb")
     (server :default "127.0.0.1")
     (port :default 3306)))
+#+end_src
+
+* scss mode
+
+#+begin_src emacs-lisp :tangle ~/.emacs.d/init.el
+(use-package scss-mode
+  :ensure t
+  :custom
+  (indent-tabs-mode nil)
+  (css-indent-offset 2)
+  (scss-compile-at-save nil))
 #+end_src
 
 * Debug
@@ -6438,9 +6929,9 @@ highlight"
 
 
     #+BEGIN_SRC emacs-lisp
-      (evil-select-search-module 'evil-search-module 'isearch)
-      (quelpa '(isearch+ :url "https://raw.githubusercontent.com/emacsmirror/emacswiki.org/master/isearch+.el" :fetcher url))
-      (require 'isearch+)
+      ;;j(evil-select-search-module 'evil-search-module 'isearch)
+      ;;j(quelpa '(isearch+ :url "https://raw.githubusercontent.com/emacsmirror/emacswiki.org/master/isearch+.el" :fetcher url))
+      ;;j(require 'isearch+)
     #+END_SRC
 
 *** evil-escape

@@ -28,19 +28,25 @@
 ** taps
 
    #+BEGIN_SRC clojure :tangle ~/.boot/profile.boot :ns 'nil
-     (require '[puget.printer :as puget])
+(require '[puget.printer :as puget])
+(intern 'clojure.core 'pp puget.printer/cprint)
 
-     (intern 'clojure.core 'pp puget.printer/cprint)
+;;(set-env! :dependencies #(conj % '[hashp "0.2.0"]))
 
-     (add-tap
-      (bound-fn*
-       (fn [{:keys [filename value pp]}]
-         (when (and pp value)
-           (puget.printer/cprint value))
-         (when filename
-           (spit (str filename ".edn")
-                 (str (with-out-str (clojure.pprint/pprint value)) "\n")
-                 :append true)))))
+;;(require 'hashp.core)
+;;(boot.core/load-data-readers!)
+
+#_(when (bound? add-tap)
+    (add-tap
+     (bound-fn*
+      (fn [{:keys [filename value pp]}]
+        (when (and pp value)
+          (puget.printer/cprint value))
+        (when filename
+          (spit (str filename ".edn")
+                (str (with-out-str (clojure.pprint/pprint value)) "\n")
+                :append true))))))
+
    #+END_SRC
 
 ** Add spyscope to local projects
@@ -50,23 +56,9 @@
      ;; (boot.core/load-data-readers!)
    #+END_SRC
 
-** Debug macro
-
-   (defmacro debug
-   "Print debug info."
-   [& variables]
-   (let [datetime "2011-12-17 01:59:37"
-   naked-msg (str "Debug: " datetime " in " *file* "@" (:line
-   (meta &form)))]
-   (if (empty? variables)
-   (println naked-msg)
-   `(let [kvs# (zipmap (map #(str % " =>") '~variables)
-   (vector ~@variables))]
-   (println (str ~naked-msg ":") kvs#)))))
-
 ** deps
 
-#+BEGIN_SRC clojure :tangle ~/.clojure/deps.edn :ns 'nil
+#+BEGIN_SRC clojure :tangle ~/.clojure/deps.edn :ns nil
 ;; see https://github.com/seancorfield/dot-clojure
 {:mvn/repos {"sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}
  :aliases
@@ -260,8 +252,61 @@
   :pne {:main-opts,["-e","(defmacro,$,[&,body],(list,'while,(list,'when-let,'[$_,(read-line)],(let,[v,(gensym)],(list,'let,(vector,v,(list*,'do,body)),(list,'println,v))),'$_)))"]}
 
   :repl {:main-opts ["-e" "(require,'[clojure.main,:as,m])(m/repl,:init,#(apply,require,m/repl-requires),:eval,(fn,[form],(do,(require,'[clojure.pprint,:refer,[pp]])(eval,form))))"]}
+
+  :hashp {:extra-deps {hashp {:mvn/version "0.2.0"}
+                       com.gfredericks/debug-repl {:mvn/version "0.0.11"}}}
 }}
 #+END_SRC
+
+** clj-kondo
+
+#+BEGIN_SRC clojure :tangle ~/.config/clj-kondo/config.edn :ns nil
+{:linters
+  {:unresolved-symbol
+    {:exclude [break!]}}}
+#+END_SRC
+
+** shadow-cljs
+
+#+BEGIN_SRC clojure :tangle ~/.shadow-cljs/config.edn :ns nil
+{:dependencies [hashp "0.2.0"]
+ :nrepl {:init-ns user}
+ :builds {:wandi {:devtools {:preloads [hashp.core]}}}}
+#+END_SRC
+
+* Emacs profiles
+
+#+begin_src emacs-lisp :tangle ~/.emacs-profiles.el
+(("emacs" . ((user-emacs-directory . "~/.emacs.d")))
+ ("spacemacs" . ((user-emacs-directory . "~/.emacs.d.spacemacs")))
+ ("doomacs" . ((user-emacs-directory . "~/fakehome/doom-emacs"))))
+#+end_src
+
+*** emacsen
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/spacemacs
+  open /Applications/Emacs-alt-icon.app -n --args --with-profile spacemacs
+#+end_src
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs
+  open /Applications/Emacs.app -n --args --with-profile emacs
+#+end_src
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-config-editor
+  open /Applications/Emacs-alt-icon.app -n --args --with-profile emacs
+#+end_src
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-raw
+  open /Applications/Emacs.app -n --args --with-profile raw
+#+end_src
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doomacs
+  DOOMDIR=~/fakehome/doom-emacs-config EMACSDIR=~/fakehome/doom-emacs open /Applications/Emacs.app -n --args --with-profile doomacs
+#+end_src
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doomsync
+  DOOMDIR=~/fakehome/doom-emacs-config EMACSDIR=~/fakehome/doom-emacs ./doom sync
+#+end_src
 
 * shell
 ** theme
@@ -411,24 +456,6 @@
 	 fi
   #+end_src
 
-*** emacsen
-
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/spacemacs
-    open /Applications/Emacs-alt-icon.app -n --args --with-profile spacemacs
-  #+end_src
-
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs
-    open /Applications/Emacs.app --args --with-profile emacs
-  #+end_src
-
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-config-editor
-    open /Applications/Emacs-alt-icon.app -n --args --with-profile emacs
-  #+end_src
-
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-raw
-    open /Applications/Emacs.app -n --args --with-profile raw
-  #+end_src
-
 *** elit
 **** elit-cli
 
@@ -517,6 +544,10 @@ sudo xattr -rd com.apple.quarantine $0
 #+end_src
 
 ** audio conversion
+
+Testing validy of audio files:
+ffprobe *.mp3 -show_format 2>/dev/null
+
 
   #+BEGIN_SRC sh :tangle ~/.zshrc
   #find . -type f -name "*.mkv" -exec bash -c 'FILE="$1"; ffmpeg -i "${FILE}" -vn -c:a libmp3lame -y "${FILE%.mkv}.mp3";' _ '{}' \;

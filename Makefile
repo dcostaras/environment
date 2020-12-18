@@ -1,12 +1,14 @@
+SHELL := /bin/bash
+
 define to-file
 	printf '%b\n' "$$(cat $1)" > $2
 endef
 
+
 all: \
-	.targets/hosts \
-        .targets/brew \
+	hosts \
+    .targets/brew \
 	.targets/git \
-	.targets/spacemacs \
 	.targets/wireguard \
 	gitconfig \
 	| .targets
@@ -19,25 +21,25 @@ gitconfig: ~/.gitconfig
 ~/.gitconfig: git/config
 	$(call to-file,git/config,~/.gitconfig)
 
-.targets/spacemacs-src:
-	git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
-	touch $@
+# .targets/spacemacs-src:
+# 	git clone https://github.com/syl20bnr/spacemacs ~/.emacs.d
+# 	touch $@
 
-.targets/spacemacs: .targets/spacemacs-src .targets/emacs-app | .targets/fonts
-	cd ~/.emacs.d.spacemacs && git checkout develop
-	touch $@
+# .targets/spacemacs: .targets/spacemacs-src .targets/emacs-app | .targets/fonts
+# 	cd ~/.emacs.d.spacemacs && git checkout develop
+# 	touch $@
 
-.targets/emacs-src:
-	git clone git://git.savannah.gnu.org/emacs.git ~/src/emacs
-	touch $@
+# .targets/emacs-src:
+# 	git clone git://git.savannah.gnu.org/emacs.git ~/src/emacs
+# 	touch $@
 
-.targets/emacs-app: | .targets/brew/commands .targets/c-headers
-	echo 'export PATH="/usr/local/opt/texinfo/bin:$$PATH"' >> ~/.bash_profile
-	cd ~/src/emacs && make configure
-	cd ~/src/emacs && ./configure --with-ns
-	cd ~/src/emacs && make install
-	cp -R ~/src/emacs/nextstep/Emacs.app /Applications/Emacs.app
-	touch $@
+# .targets/emacs-app: | .targets/brew/commands .targets/c-headers
+# 	echo 'export PATH="/usr/local/opt/texinfo/bin:$$PATH"' >> ~/.bash_profile
+# 	cd ~/src/emacs && make configure
+# 	cd ~/src/emacs && ./configure --with-ns
+# 	cd ~/src/emacs && make install
+# 	cp -R ~/src/emacs/nextstep/Emacs.app /Applications/Emacs.app
+# 	touch $@
 
 # .PHONY: .targets/emacs-init
 # .targets/emacs-init: emacs-init/emacs.init.org
@@ -45,7 +47,16 @@ gitconfig: ~/.gitconfig
 # 	emacs --batch -l org --eval "(org-babel-tangle-file \"$1\")"
 # 	touch $@
 
-.targets/hosts: | .targets/brew/commands
+hosts: .targets/hosts-update .targets/hosts-install
+
+.targets/hosts-dependencies:
+	python3 -m pip install lxml --user
+	python3 -m pip install bs4 --user
+
+.targets/hosts-update: .targets/hosts-install .targets/hosts-dependencies
+	cd ~/src/hosts && python3 updateHostsFile.py --auto --replace --extensions gambling porn fakenews social
+
+.targets/hosts-install: | .targets/brew/commands
 	git clone git@github.com:StevenBlack/hosts.git ~/src/hosts
 	pip3 install lxml bs4
 	cd ~/src/hosts && python3 updateHostsFile.py --auto --replace --extensions gambling porn fakenews social
@@ -57,6 +68,7 @@ gitconfig: ~/.gitconfig
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$PATH"' >> ~/.bash_profile
 
 .targets/brew: \
+    .targets/brew/taps \
     .targets/brew/upgrade \
     .targets/brew/fonts \
     .targets/brew/apps
@@ -64,9 +76,9 @@ gitconfig: ~/.gitconfig
 .targets/brew/upgrade:
 	brew update || brew update
 	brew upgrade
-	brew cask upgrade
+	brew upgrade --cask
 
-.targets/brew/commands: brew/commands.dat .targets/brew/upgrade | .targets
+.targets/brew/commands: brew/commands.dat .targets/brew/upgrade .targets/brew/taps | .targets
 	xargs brew install <$<
 	touch $@
 
@@ -76,6 +88,10 @@ gitconfig: ~/.gitconfig
 
 .targets/brew/apps: brew/apps.dat .targets/brew/upgrade | .targets
 	xargs brew cask install <$<
+	touch $@
+
+.targets/brew/taps: brew/taps.dat .targets/brew/upgrade | .targets
+	xargs -0 -n 1 brew tap < <(tr \\n \\0 <$<)
 	touch $@
 
 .targets/bash: | .targets/brew/commands
