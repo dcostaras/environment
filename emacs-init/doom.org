@@ -206,6 +206,7 @@ use-package! evil-lispy
 ;; TODO turn "_" into the vim action to comment with #_ an object
 ;; TODO turn "p" into the vim action to comment with #p an object
 ;; TODO set C-M-\ to nil to train self to use indentation evil verb "="
+;; TODO create command to set repl buffer point to end of buffer
 #+END_SRC
 
 * init
