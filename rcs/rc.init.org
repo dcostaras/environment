@@ -282,7 +282,7 @@
  ("doomacs" . ((user-emacs-directory . "~/fakehome/doom-emacs"))))
 #+end_src
 
-*** emacsen
+** emacsen
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/spacemacs
   open /Applications/Emacs-alt-icon.app -n --args --with-profile spacemacs
