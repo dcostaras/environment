@@ -301,11 +301,11 @@
 #+end_src
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doomacs
-  DOOMDIR=~/fakehome/doom-emacs-config EMACSDIR=~/fakehome/doom-emacs open /Applications/Emacs.app -n --args --with-profile doomacs
+  DOOMDIR=~/.config/doom-emacs EMACSDIR=~/.doom-emacs open /Applications/Emacs.app -n --args --with-profile doomacs
 #+end_src
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doomsync
-  DOOMDIR=~/fakehome/doom-emacs-config EMACSDIR=~/fakehome/doom-emacs ./doom sync
+  DOOMDIR=~/.config/doom-emacs EMACSDIR=~/.doom-emacs ./doom sync
 #+end_src
 
 * shell
