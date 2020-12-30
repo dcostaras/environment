@@ -4,8 +4,7 @@
 * Clojure environemnt
 ** Inject CIDER dependencies and middleware boot task
 
-:tangle ~/.boot/profile.boot :ns 'nil
-#+BEGIN_SRC clojure 
+#+BEGIN_SRC clojure :tangle ~/.boot/profile.boot :ns 'nil
 (require 'boot.repl)
 
 (swap! boot.repl/*default-dependencies*
@@ -27,8 +26,8 @@
    #+END_SRC
 
 ** taps
-   :tangle ~/.boot/profile.boot :ns 'nil
-   #+BEGIN_SRC clojure 
+
+   #+BEGIN_SRC clojure :tangle ~/.boot/profile.boot :ns 'nil
      (require '[puget.printer :as puget])
 
      (intern 'clojure.core 'pp puget.printer/cprint)
@@ -45,8 +44,8 @@
    #+END_SRC
 
 ** Add spyscope to local projects
-   :tangle ~/.boot/profile.boot :ns 'nil
-   #+BEGIN_SRC clojure
+
+   #+BEGIN_SRC clojure :tangle ~/.boot/profile.boot :ns 'nil
      ;; (require 'spyscope.core)
      ;; (boot.core/load-data-readers!)
    #+END_SRC
@@ -66,8 +65,8 @@
    (println (str ~naked-msg ":") kvs#)))))
 
 ** deps
-:tangle ~/.clojure/deps.edn :ns 'nil
-#+BEGIN_SRC clojure 
+
+#+BEGIN_SRC clojure :tangle ~/.clojure/deps.edn :ns 'nil
 ;; see https://github.com/seancorfield/dot-clojure
 {:mvn/repos {"sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}
  :aliases
@@ -268,7 +267,6 @@
 ** theme
 
   #+BEGIN_SRC sh :tangle ~/.zshrc
-    source /usr/local/share/antigen/antigen.zsh
     autoload antigen
 
     source ~/.spacemacs.d/antigen.zsh
@@ -472,8 +470,8 @@
    #+end_src
 
 *** boot
-  :tangle ~/bin/boot
-  #+begin_src sh :shebang "#!/bin/bash" 
+
+  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/boot
     . aws_creds
     /usr/local/bin/boot $*
   #+end_src
@@ -550,8 +548,8 @@ sudo xattr -rd com.apple.quarantine $0
 #+BEGIN_SRC
 mkdir -p ~/.config/next
 #+END_SRC
-:tangle ~/.config/next/init.lisp
-  #+BEGIN_SRC lisp 
+
+  #+BEGIN_SRC lisp :tangle ~/.config/next/init.lisp
     (in-package :next)
     (define-key *global-map* (key "C-x o") #'function-example)
     ;; (add-to-default-list 'vi-normal-mode 'buffer 'default-modes)
@@ -655,19 +653,13 @@ mkdir -p ~/.config/next
     Host github github.com
     User git
     Hostname github.com
-    identityfile ~/.ssh/github
+    identityfile ~/.ssh/donavan
     IdentitiesOnly yes
 
     Host bitbucket bitbucket.org
     User git
     Hostname bitbucket.org
     identityfile ~/.ssh/bitbucket
-    IdentitiesOnly yes
-
-    Host old-mac
-    User donavan
-    Hostname 192.168.1.114
-    identityfile ~/.ssh/old-air
     IdentitiesOnly yes
 
     Host proxy
@@ -1020,8 +1012,8 @@ export -f sync_movies
     #+END_SRC
 
 * karabiner
-:tangle ~/.config/karabiner/assets/complex_modifications/control-delete.json
-#+BEGIN_SRC json 
+
+#+BEGIN_SRC json :tangle ~/.config/karabiner/assets/complex_modifications/control-delete.json
 {
     "title": "Control delete to backward delete word",
     "rules": [

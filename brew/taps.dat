@@ -1,4 +1,3 @@
 railwaycat/emacsmacport
-d12frosted/emacs-plus
-homebrew/cask-versions
-homebrew/cask-fonts
+caskroom/fonts
+caskroom/versions

@@ -1,5 +1,6 @@
 adr-tools
 angband
+antigen
 aspell
 autoconf
 automake
@@ -13,9 +14,11 @@ cataclysm
 borkdude/brew/clj-kondo
 borkdude/brew/jet
 clojure
-emacs-plus
+coreutils
+fd
 ffmpeg
 flac
+git-annex
 gnupg
 gnutls
 gnu-typist
@@ -33,15 +36,14 @@ pkg-config
 postgres
 pwgen
 python3
+rclone
 rlwrap
+ripgrep
 siege
 texinfo
-the_silver_searcher
 trash
 unnethack
 watch
 wget
-wine
-winetricks
 wireguard-tools
 youtube-dl
