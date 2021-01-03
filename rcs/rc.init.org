@@ -269,9 +269,8 @@
 
   #+BEGIN_SRC sh :tangle ~/.zshrc
     source /usr/local/share/antigen/antigen.zsh
-    autoload antigen
 
-    source ~/.spacemacs.d/antigen.zsh
+    autoload antigen
 
     antigen use oh-my-zsh
     antigen bundle git
@@ -279,21 +278,20 @@
     antigen bundle zdharma/fast-syntax-highlighting
     antigen bundle zsh-users/zsh-autosuggestions
     antigen bundle zsh-users/zsh-history-substring-search
-    antigen bundle marzocchi/zsh-notify
     antigen bundle agkozak/zsh-z
 
     SPACESHIP_PROMPT_ORDER=(
-	user          # Username section
-	dir           # Current directory section
-	host          # Hostname section
-	git           # Git section (git_branch + git_status)
-	hg            # Mercurial section (hg_branch  + hg_status)
-	exec_time     # Execution time
-	line_sep      # Line break
-	vi_mode       # Vi-mode indicator
-	jobs          # Background jobs indicator
-	exit_code     # Exit code section
-	char          # Prompt character
+        user          # Username section
+        dir           # Current directory section
+        host          # Hostname section
+        git           # Git section (git_branch + git_status)
+        hg            # Mercurial section (hg_branch  + hg_status)
+        exec_time     # Execution time
+        line_sep      # Line break
+        vi_mode       # Vi-mode indicator
+        jobs          # Background jobs indicator
+        exit_code     # Exit code section
+        char          # Prompt character
     )
     SPACESHIP_PROMPT_ADD_NEWLINE=false
     SPACESHIP_CHAR_SYMBOL="❯"
@@ -301,7 +299,6 @@
     antigen theme denysdovhan/spaceship-prompt
 
     antigen apply
-
   #+END_SRC
 
 ** config
@@ -327,7 +324,7 @@
     setopt inc_append_history # save history entries as soon as they are entered
     setopt share_history # share history between different instances of the shell
     setopt auto_cd # cd by typing directory name if it's not a command
-    setopt correct_all # autocorrect commands
+    # setopt correct_all # autocorrect commands
     setopt auto_list # automatically list choices on ambiguous completion
     setopt auto_menu # automatically use menu completion
     setopt always_to_end # move cursor to end if word had one match
@@ -386,7 +383,8 @@
    #+END_SRC
 
 ** GPG setup
-  #+BEGIN_SRC sh :tangle ~/.zshrc
+ :tangle ~/.zshrc
+  #+BEGIN_SRC sh
      GPG_TTY=$(tty)
      export GPG_TTY
 
@@ -579,7 +577,7 @@ mkdir -p ~/.config/next
 * Hosts file
 
 #+BEGIN_SRC conf :tangle ~/src/hosts/myhosts
-192.168.0.14 media
+192.168.1.57 desktop
 #+END_SRC
 
 * brew
@@ -664,14 +662,20 @@ mkdir -p ~/.config/next
     identityfile ~/.ssh/bitbucket
     IdentitiesOnly yes
 
-    Host old-mac
+    Host desktop
+    User dcost
+    Hostname 192.168.1.57
+    Identityfile ~/.ssh/desktop
+    IdentitiesOnly yes
+
+    Host pro2019
     User donavan
     Hostname 192.168.1.114
     identityfile ~/.ssh/old-air
     IdentitiesOnly yes
 
     Host proxy
-           User root
+    User root
     Hostname 134.209.87.117
     Identityfile ~/.ssh/donavan
     IdentitiesOnly yes
@@ -755,14 +759,14 @@ machine smtp.gmail.com login d.costaras@gmail.com password
   #+END_SRC
 
 * isync
-
-  #+BEGIN_SRC text :tangle ~/.mbsyncrc
+:tangle ~/.mbsyncrc
+  #+BEGIN_SRC text
 Create Both
 # Expunge Both
 SyncState *
   #+END_SRC
-
-  #+BEGIN_SRC text :tangle ~/.mbsyncrc
+ :tangle ~/.mbsyncrc
+  #+BEGIN_SRC text
 IMAPAccount personal
 Host imap.gmail.com
 User d.costaras@gmail.com
@@ -806,8 +810,8 @@ Channel personal-trash
 # "Starred"
 # "Trash"
   #+END_SRC
-
-  #+BEGIN_SRC text :tangle ~/.mbsyncrc
+:tangle ~/.mbsyncrc
+  #+BEGIN_SRC text
 IMAPAccount work
 Host imap.gmail.com
 User donavan@englishlanguageitutoring.com
