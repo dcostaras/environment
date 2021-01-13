@@ -11,7 +11,7 @@
 (swap! boot.repl/*default-dependencies*
        concat '[[cider/cider-nrepl "0.25.0"]
                 [nrepl "0.7.0"]
-                [refactor-nrepl "2.5.0"]
+                [refactor-nrepl/refactor-nrepl "2.5.0"]
                 [clj-commons/pomegranate "1.2.0"]])
 
 (swap! boot.repl/*default-middleware*
@@ -66,12 +66,12 @@
    (println (str ~naked-msg ":") kvs#)))))
 
 ** deps
-:tangle ~/.clojure/deps.edn :ns 'nil
-#+BEGIN_SRC clojure 
+
+#+BEGIN_SRC clojure :tangle ~/.clojure/deps.edn :ns 'nil :mkdirp yes
 ;; see https://github.com/seancorfield/dot-clojure
 {:mvn/repos {"sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}
  :aliases
- {;; pull in specific versions of Clojure:
+ { ;; pull in specific versions of Clojure:
   :1.0 {:override-deps {org.clojure/clojure {:mvn/version "1.0.0"}}}
   :1.1 {:override-deps {org.clojure/clojure {:mvn/version "1.1.0"}}}
   :1.2 {:override-deps {org.clojure/clojure {:mvn/version "1.2.1"}}}
@@ -104,12 +104,12 @@
   ;; - see https://github.com/clojure-expectations/expectations
   ;; - and https://github.com/clojure-expectations/clojure-test
   ;; - run your expectations: clj -A:test:expect:runner
-  :expect {:extra-deps {expectations {:mvn/version "RELEASE"}
+  :expect {:extra-deps {expectations/expectations {:mvn/version "RELEASE"}
                         expectations/clojure-test {:mvn/version "RELEASE"}}}
   ;; - see https://github.com/hugoduncan/criterium/
   ;; - (require '[criterium.core :refer [bench]])
   ;; - (bench (your-expression))
-  :bench {:extra-deps {criterium {:mvn/version "RELEASE"}}}
+  :bench {:extra-deps {criterium/criterium {:mvn/version "RELEASE"}}}
   ;; - see https://github.com/clojure-goes-fast/clj-memory-meter
   ;; - (require '[clj-memory-meter.core :as mm])
   ;; - (mm/measure (your-expression))
@@ -120,7 +120,7 @@
 
   ;; REPL-related tools:
   ;; - start a modern nREPL server on a random available port:
-  :nrepl {:extra-deps {nrepl {:mvn/version "RELEASE"}}
+  :nrepl {:extra-deps {nrepl/nrepl {:mvn/version "RELEASE"}}
           :main-opts ["-m" "nrepl.cmdline"]}
   ;; - start a legacy nREPL server on port 60606:
   :nrepl/old {:extra-deps {org.clojure/tools.nrepl {:mvn/version "RELEASE"}}
@@ -131,7 +131,7 @@
   :prepl {:jvm-opts ["-Dclojure.server.repl={:port,40404,:accept,clojure.core.server/io-prepl}"]}
   ;; - see https://atom.io/packages/proto-repl
   ;; - for use with Atom/ProtoREPL: clj -A:proto:nrepl
-  :proto {:extra-deps {proto-repl {:mvn/version "RELEASE"}}}
+  :proto {:extra-deps {proto-repl/proto-repl {:mvn/version "RELEASE"}}}
   ;; - see https://github.com/bhauman/rebel-readline
   ;; - start a Rebel Readline REPL:
   :rebel {:extra-deps {com.bhauman/rebel-readline {:mvn/version "RELEASE"}}
@@ -206,7 +206,7 @@
                 org.openjfx/javafx-web      {:mvn/version "11.0.1"}}
    :main-opts ["-m" "cognitect.rebl"]}
 
-  :deps ; to get access to clojure.tools.deps.alpha.repl/add-lib
+  :deps           ; to get access to clojure.tools.deps.alpha.repl/add-lib
   ;; - now you can add new deps to a running REPL:
   ;; (require '[clojure.tools.deps.alpha.repl :refer [add-lib]])
   ;; (add-lib 'some/library {:mvn/version "RELEASE"})
@@ -220,7 +220,7 @@
   {:extra-deps {org.clojure/tools.deps.alpha
                 {:git/url "https://github.com/clojure/tools.deps.alpha"
                  :sha "148cab8f154711f8495bd632ebdc53a14dff7f09"}}}
-  :spec2 ; to get access to the latest spec-alpha2
+  :spec2                               ; to get access to the latest spec-alpha2
   {:extra-deps {org.clojure/spec-alpha2
                 {:git/url "https://github.com/clojure/spec-alpha2"
                  :sha "9dc3344bfe6d13213bdb15ca2e7680cd8eb439e3"}}}
@@ -261,7 +261,20 @@
   :pne {:main-opts,["-e","(defmacro,$,[&,body],(list,'while,(list,'when-let,'[$_,(read-line)],(let,[v,(gensym)],(list,'let,(vector,v,(list*,'do,body)),(list,'println,v))),'$_)))"]}
 
   :repl {:main-opts ["-e" "(require,'[clojure.main,:as,m])(m/repl,:init,#(apply,require,m/repl-requires),:eval,(fn,[form],(do,(require,'[clojure.pprint,:refer,[pp]])(eval,form))))"]}
-}}
+
+  :debug-tools {:extra-deps {hashp/hashp {:mvn/version "0.2.0"}
+                             com.gfredericks/debug-repl {:mvn/version "0.0.11"}}}
+
+  :cider-nrepl {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.6"}
+                             refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}}}
+
+  }}
+#+END_SRC
+
+** shadow
+
+#+BEGIN_SRC clojure :tangle ~/.shadow-cljs/config.edn :ns 'nil :mkdirp yes
+{:deps-aliases [:debug-tools :cider-nrepl]}
 #+END_SRC
 
 * shell
@@ -395,6 +408,12 @@
   #+END_SRC
 
 ** functions
+*** doom
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doom
+~/.emacs.d/bin/doom "$1"
+#+end_src
+
 *** aws
 
   #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/aws
@@ -417,7 +436,8 @@
     open /Applications/Emacs-alt-icon.app -n --args --with-profile spacemacs
   #+end_src
 
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs
+ ~/bin/emacs
+  #+begin_src sh :shebang "#!/bin/bash" :tangle no
     open /Applications/Emacs.app --args --with-profile emacs
   #+end_src
 

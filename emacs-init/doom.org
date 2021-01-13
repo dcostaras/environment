@@ -6,6 +6,9 @@ TODO turn "_" into the vim action to comment with #_ an object
 TODO turn "p" into the vim action to comment with #p an object
 TODO set C-M-\ to nil to train self to use indentation evil verb "="
 TODO org src buffers to be added to workspace
+TODO cider switch to last buffer from repl (C-c C-z) should do so across frames
+TODO how to manage the personal dictionary
+TODO C-h sometimes doesn't work as back level in counsel find file
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
@@ -117,6 +120,10 @@ TODO org src buffers to be added to workspace
   :config
   (auto-dim-other-buffers-mode t))
 
+;; Spelling
+(setq ispell-dictionary "en"
+      ispell-personal-dictionary "~/env/spelling/.pws")
+
 ;; Evil
 (setq evil-escape-unordered-key-sequence t)
 
@@ -196,7 +203,8 @@ TODO org src buffers to be added to workspace
      "(require '[com.gfredericks.debug-repl :refer [break! unbreak! unbreak!!]])
       (require '[hashp.core])"))
 
-  (setq cider-clojure-cli-global-options "-A:hashp")
+  (setq cider-clojure-cli-global-options "-A:debug-tools")
+  (setq cider-shadow-cljs-global-options "-A:debug-tools")
   (add-to-list 'cider-repl-init-code "(require,'hashp.core)")
   (add-to-list 'cider-jack-in-nrepl-middlewares "com.gfredericks.debug-repl/wrap-debug-repl")
 
@@ -357,7 +365,7 @@ If buffer-or-name is nil return current buffer's mode."
 
        :checkers
        syntax              ; tasing you for every semicolon you forget
-       spell             ; tasing you for misspelling mispelling
+       (spell +aspell +everywhere)             ; tasing you for misspelling mispelling
        grammar           ; tasing grammar mistake every you make
 
        :tools
@@ -371,11 +379,11 @@ If buffer-or-name is nil return current buffer's mode."
        ;;gist              ; interacting with github gists
        lookup              ; navigate your code and its documentation
        lsp
-       magit             ; a git porcelain for Emacs
-       make              ; run make tasks from Emacs
+       magit               ; a git porcelain for Emacs
+       make                ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
        ;;pdf               ; pdf enhancements
-       ;;prodigy           ; FIXME managing external services & code builders
+       prodigy             ; FIXME managing external services & code builders
        ;;rgb               ; creating color strings
        ;;taskrunner        ; taskrunner for all your projects
        ;;terraform         ; infrastructure as code
@@ -389,7 +397,7 @@ If buffer-or-name is nil return current buffer's mode."
        :lang
        ;;agda              ; types of types of types of types...
        ;;cc                ; C/C++/Obj-C madness
-       (clojure +lsp)           ; java with a lisp
+       (clojure +lsp)      ; java with a lisp
        ;;common-lisp       ; if you've seen one lisp, you've seen them all
        ;;coq               ; proofs-as-programs
        ;;crystal           ; ruby at the speed of c
@@ -518,4 +526,22 @@ If buffer-or-name is nil return current buffer's mode."
 (package! aggressive-indent)
 (package! auto-dim-other-buffers)
 (package! evil-lispy)
+#+end_src
+
+* services
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(prodigy-define-service
+  :name "fulcro template"
+  :command "npx"
+  :args '("shadow-cljs" "-A:cider-nrepl:debug-tools" "server")
+  :cwd "~/src/fulcro-template"
+  :tags '(work)
+  :stop-signal 'sigkill
+  :kill-process-buffer-on-stop t
+  :on-output (lambda (&rest args)
+               (let ((output (plist-get args :output))
+                     (service (plist-get args :service)))
+                 (when (s-matches? "shadow-cljs - nREPL server started on port 9000" output)
+                   (prodigy-set-status service 'ready)))))
 #+end_src

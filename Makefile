@@ -36,7 +36,7 @@ install-doom-emacs:
 ~/.zshenv: rcs/zsh/zshenv
 	$(call to-file,$<,$@)
 
-.targets/doom-config: emacs-init/emacs.init.org
+.targets/doom-config: emacs-init/doom.org
 	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
 
 # rclone
@@ -92,10 +92,10 @@ arm-homebrew:
 # TODO touchid sudo
 # TODO rclone and general config out of 1password
 
-.targets/emacs-init: emacs-init/emacs.init.org
+#.targets/emacs: emacs-init/emacs.init.org
 #	emacs --nw --batch --eval "(require 'org)" --eval '(org-babel-tangle-file "$<")'
-	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
-	touch $@
+#	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
+#	touch $@
 
 .targets/rc-init: rcs/rc.init.org
 	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
@@ -106,7 +106,7 @@ arm-homebrew:
 	pip3 install requests lxml bs4
 	touch $@
 
-.targets/hosts: .targets/hosts-install
+.targets/hosts: | .targets/hosts-install
 	cd ~/src/hosts && python3 updateHostsFile.py --auto --replace --extensions gambling porn fakenews social
 
 .targets/cellar-cask:
@@ -121,6 +121,7 @@ brew: \
 	brew update || brew update
 	brew upgrade
 	brew upgrade --cask
+	touch $@
 
 .targets/brew/commands: brew/commands.dat .targets/brew/upgrade | targets
 	xargs brew install <$<

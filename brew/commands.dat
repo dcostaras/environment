@@ -11,6 +11,7 @@ bash-completion
 bat
 boot-clj
 cataclysm
+cmake
 borkdude/brew/clj-kondo
 borkdude/brew/jet
 clojure
@@ -40,6 +41,7 @@ rclone
 rlwrap
 ripgrep
 siege
+shellcheck
 texinfo
 trash
 unnethack
