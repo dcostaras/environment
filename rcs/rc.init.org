@@ -1,7 +1,7 @@
 #+author: Donavan-Ross Costaras
 #+email: d.costaras@gmail.com
 
-* Clojure environemnt
+* Clojure environment
 ** Inject CIDER dependencies and middleware boot task
 
 :tangle ~/.boot/profile.boot :ns 'nil
