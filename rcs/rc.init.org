@@ -768,6 +768,9 @@ Compression yes
 Port 22
 EscapeChar ^y
 
+AddKeysToAgent yes
+UseKeychain yes
+
 #+END_SRC
 
 * authinfo
