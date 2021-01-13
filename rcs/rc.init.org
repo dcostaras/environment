@@ -669,106 +669,106 @@ mkdir -p ~/.config/next
 
 * ssh
 
-  #+BEGIN_SRC conf :tangle ~/.ssh/config
-    Host github github.com
-    User git
-    Hostname github.com
-    identityfile ~/.ssh/github
-    IdentitiesOnly yes
+#+BEGIN_SRC conf :tangle ~/.ssh/config
+Host github github.com
+User git
+Hostname github.com
+identityfile ~/.ssh/github
+IdentitiesOnly yes
 
-    Host bitbucket bitbucket.org
-    User git
-    Hostname bitbucket.org
-    identityfile ~/.ssh/bitbucket
-    IdentitiesOnly yes
+Host bitbucket bitbucket.org
+User git
+Hostname bitbucket.org
+identityfile ~/.ssh/bitbucket
+IdentitiesOnly yes
 
-    Host desktop
-    User dcost
-    Hostname 192.168.1.57
-    Identityfile ~/.ssh/desktop
-    IdentitiesOnly yes
+Host desktop
+User dcost
+Hostname 192.168.1.57
+Identityfile ~/.ssh/desktop
+IdentitiesOnly yes
 
-    Host pro2019
-    User donavan
-    Hostname 192.168.1.114
-    identityfile ~/.ssh/old-air
-    IdentitiesOnly yes
+Host pro2019
+User donavan
+Hostname 192.168.1.114
+identityfile ~/.ssh/old-air
+IdentitiesOnly yes
 
-    Host proxy
-    User root
-    Hostname 134.209.87.117
-    Identityfile ~/.ssh/donavan
-    IdentitiesOnly yes
+Host proxy
+User root
+Hostname 134.209.87.117
+Identityfile ~/.ssh/donavan
+IdentitiesOnly yes
 
-    Host analytics-importer
-    User ec2-user
-    ProxyCommand ssh -q jump nc $(aws ec2 describe-instances --filters "Name=tag:Name,Values=analytics-importer*" "Name=instance-state-name,Values=running" --query 'Reservations[0].Instances[0].NetworkInterfaces[0].PrivateIpAddress' --output text) 22
-    PreferredAuthentications publickey
-    IdentityFile ~/.ssh/elit-dev
-    StrictHostKeyChecking no
-    UserKnownHostsFile /dev/null
+Host analytics-importer
+User ec2-user
+ProxyCommand ssh -q jump nc $(aws ec2 describe-instances --filters "Name=tag:Name,Values=analytics-importer*" "Name=instance-state-name,Values=running" --query 'Reservations[0].Instances[0].NetworkInterfaces[0].PrivateIpAddress' --output text) 22
+PreferredAuthentications publickey
+IdentityFile ~/.ssh/elit-dev
+StrictHostKeyChecking no
+UserKnownHostsFile /dev/null
 
-    Host media
-    User media
-    Hostname 192.168.0.14
-    IdentityFile ~/.ssh/donavan
-    IdentitiesOnly yes
-    ForwardAgent yes
+Host media
+User media
+Hostname 192.168.0.14
+IdentityFile ~/.ssh/donavan
+IdentitiesOnly yes
+ForwardAgent yes
 
-    Host builder
-    User ec2-user
-    ForwardAgent yes
-    HostName 10.0.103.177
-    IdentityFile ~/.ssh/elit-dev.pem
-    ProxyCommand ssh -W %h:%p jump
+Host builder
+User ec2-user
+ForwardAgent yes
+HostName 10.0.103.177
+IdentityFile ~/.ssh/elit-dev.pem
+ProxyCommand ssh -W %h:%p jump
 
-    Host jump
-    User ec2-user
-    ForwardAgent yes
-    HostName 54.77.144.63
-    PreferredAuthentications publickey
-    IdentityFile ~/.ssh/elit-dev.pem
+Host jump
+User ec2-user
+ForwardAgent yes
+HostName 54.77.144.63
+PreferredAuthentications publickey
+IdentityFile ~/.ssh/elit-dev.pem
 
-    Host test
-    User ec2-user
-    ForwardAgent yes
-    HostName 10.0.103.185
-    IdentityFile ~/.ssh/elit-dev.pem
-    ProxyCommand ssh -W %h:%p jump
-    LocalForward 10001 0.0.0.0:10001
-    LocalForward 9000 0.0.0.0:9000
+Host test
+User ec2-user
+ForwardAgent yes
+HostName 10.0.103.185
+IdentityFile ~/.ssh/elit-dev.pem
+ProxyCommand ssh -W %h:%p jump
+LocalForward 10001 0.0.0.0:10001
+LocalForward 9000 0.0.0.0:9000
 
-    Host hupu-git
-    User gitolite
-    Hostname hupu-labs.linode
-    Identityfile ~/.ssh/donavan
-    IdentitiesOnly yes
+Host hupu-git
+User gitolite
+Hostname hupu-labs.linode
+Identityfile ~/.ssh/donavan
+IdentitiesOnly yes
 
-    Host ganet
-    Hostname 176.58.109.164
-    identityfile ~/.ssh/id_rsa_old
-    # IdentitiesOnly yes
+Host ganet
+Hostname 176.58.109.164
+identityfile ~/.ssh/id_rsa_old
+# IdentitiesOnly yes
 
-    Host * !bitbucket.org !github.com
+Host * !bitbucket.org !github.com
 
-    User donavan
+User donavan
 
-    # ForwardAgents no
-    ServerAliveInterval 60
+# ForwardAgents no
+ServerAliveInterval 60
 
-    TCPKeepAlive no
+TCPKeepAlive no
 
-    ControlMaster auto
-    ControlPath ~/.ssh/%r@%h:%p
-    ControlPersist 4h
+ControlMaster auto
+ControlPath ~/.ssh/%r@%h:%p
+ControlPersist 4h
 
-    ConnectionAttempts 3
+ConnectionAttempts 3
 
-    Compression yes
-    Port 22
-    EscapeChar ^y
+Compression yes
+Port 22
+EscapeChar ^y
 
-  #+END_SRC
+#+END_SRC
 
 * authinfo
 
