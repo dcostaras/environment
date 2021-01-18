@@ -35,6 +35,7 @@ pinentry
 pinentry-mac
 pkg-config
 postgres
+prettier
 pwgen
 python3
 rclone
