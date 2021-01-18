@@ -379,13 +379,12 @@
   #+END_SRC
 
 ** env setup
-   #+BEGIN_SRC sh :tangle ~/.zshenv
-    export JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
-    export JAVA_TOOL_OPTIONS="-XX:-OmitStackTraceInFastThrow"
-    export AWS_DEFAULT_REGION=eu-west-1
-    export AWS_REGION=eu-west-1
-   #+END_SRC
 
+#+BEGIN_SRC sh :tangle ~/.zshenv
+export JAVA_TOOL_OPTIONS="-XX:-OmitStackTraceInFastThrow"
+export AWS_DEFAULT_REGION=us-east-2
+export AWS_REGION=us-east-2
+#+END_SRC
 
 ** GPG setup
  :tangle ~/.zshrc
