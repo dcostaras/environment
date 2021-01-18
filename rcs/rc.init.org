@@ -142,7 +142,7 @@
                 {:git/url "https://github.com/stuarthalloway/reflector"
                  :sha "93a0c19b4526c1180959e940202928d35e5c3cef"}}}
   ;; - see https://github.com/bbatsov/compliment
-  :comp {:extra-deps {compliment {:mvn/version "RELEASE"}}}
+  :comp {:extra-deps {compliment/compliment {:mvn/version "RELEASE"}}}
   ;; - see https://github.com/cognitect-labs/REBL-distro
   ;; - you need to download the REBL JAR (and update the local/root below)
   ;; - you need to be using Clojure 1.10 and either
