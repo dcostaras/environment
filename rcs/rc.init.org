@@ -242,7 +242,9 @@
   ;;   - cd my-cool-lib
   ;;   - clj -A:test:runner # run the tests!
   :new {:extra-deps {seancorfield/clj-new {:mvn/version "RELEASE"}}
-        :main-opts ["-m" "clj-new.create"]}
+        :main-opts ["-m" "clj-new.create"]
+        :exec-fn clj-new/create
+        :exec-args {:template "app"}}
 
   ;; uberjar building:
   ;; - see https://github.com/seancorfield/depstar for a minimalist approach:
