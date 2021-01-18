@@ -386,14 +386,6 @@
     export AWS_REGION=eu-west-1
    #+END_SRC
 
-   #+BEGIN_SRC sh :tangle ~/.zshenv
-     function elit-docker-login {
-	 eval $(aws ecr get-login --no-include-email --region eu-west-1)
-	 #docker pull 689917379567.dkr.ecr.eu-west-1.amazonaws.com/fake-automatic-speech-recogniser:latest
-     }
-     function aws_creds {
-     }
-   #+END_SRC
 
 ** GPG setup
  :tangle ~/.zshrc
