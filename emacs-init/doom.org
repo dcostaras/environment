@@ -8,6 +8,7 @@ TODO set C-M-\ to nil to train self to use indentation evil verb "="
 TODO org src buffers to be added to workspace
 TODO cider switch to last buffer from repl (C-c C-z) should do so across frames
 TODO C-h sometimes doesn't work as back level in counsel find file
+TODO figure out how to have uncharged time in org clocktables
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
