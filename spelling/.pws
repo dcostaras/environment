@@ -1,17 +1,35 @@
-personal_ws-1.1 en 16
+personal_ws-1.1 en 34
 Costaras
+Datomic
 Donavan
-Donavan-Ross
+Ross
+Worklog
 arg
 args
+cli
+clj
 cljs
 config
+creds
 deps
+dev
+edn
+env
 gitignore
 gmail
 init
+joda
+js
+kondo
+localhost
+lsp
 magit
 middleware
+mouseover
 nrepl
+readme
 repl
+sha
 src
+tooltip
+uuid
