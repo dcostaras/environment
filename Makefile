@@ -9,19 +9,19 @@ endef
 
 all: \
 	.targets/hosts \
-        brew \
-	.targets/git \
+    brew \
+	~/.gitconfig \
+	.targets/rc-init \
+	.targets/doom-config \
+	| targets
 #	.targets/spacemacs \
 #	.targets/java8 \
 #	.targets/wireguard \
-	~/.gitconfig \
-	| targets
 
 #.targets/c-headers:
 #	sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
 #	touch $@
 
-gitconfig: ~/.gitconfig
 ~/.gitconfig: git/config
 	$(call to-file,git/config,$@)
 
@@ -97,11 +97,17 @@ arm-homebrew:
 #	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
 #	touch $@
 
+.targets/ql-stephen: | .targets/brew
+	xattr -cr ~/Library/QuickLook/QLStephen.qlgenerator
+	qlmanage -r
+	qlmanage -r cache
+	touch $@
+
 .targets/rc-init: rcs/rc.init.org
 	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
 	touch $@
 
-.targets/hosts-install: | .targets/brew/commands
+.targets/hosts-install: | .targets/brew
 	$(call git-clone,git@github.com:StevenBlack/hosts.git,~/src/hosts)
 	pip3 install requests lxml bs4
 	touch $@
@@ -112,38 +118,19 @@ arm-homebrew:
 .targets/cellar-cask:
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$PATH"' >> ~/.bash_profile
 
-brew: \
-    .targets/brew/upgrade \
-    .targets/brew/fonts \
-    .targets/brew/apps
-
-.targets/brew/upgrade:
-	brew update || brew update
-	brew upgrade
-	brew upgrade --cask
+brew: .targets/brew
+.targets/brew: Brewfile
+	brew bundle --file $<
 	touch $@
 
-.targets/brew/commands: brew/commands.dat .targets/brew/upgrade | targets
-	xargs brew install <$<
-	touch $@
+# .targets/bash: | .targets/brew
+# 	echo '/usr/local/bin/bash' | sudo tee -a /etc/shells > /dev/null
+# 	chsh -s /usr/local/bin/bash
+# 	touch $@
 
-.targets/brew/fonts: fonts/cask.dat .targets/brew/upgrade | targets
-	brew tap homebrew/cask-fonts
-	xargs brew install --cask <$<
-	touch $@
-
-.targets/brew/apps: brew/apps.dat .targets/brew/upgrade | targets
-	xargs brew install --cask <$<
-	touch $@
-
-.targets/bash: | .targets/brew/commands
-	echo '/usr/local/bin/bash' | sudo tee -a /etc/shells > /dev/null
-	chsh -s /usr/local/bin/bash
-	touch $@
-
-.targets/java8: .targets/brew/cask
-	brew install --cask java8
-	touch $@
+# .targets/java8: .targets/brew
+# 	brew install --cask java8
+# 	touch $@
 
 .targets/wireguard: | .targets/brew-commands
 	mkdir -p ~/.config/wireguard
@@ -151,8 +138,7 @@ brew: \
 	cd ~/.config/wireguard && sudo chmod -R og-rwx ~/.config/wireguard/*
 	touch $@
 
-targets: .targets/brew
-.targets/brew:
+targets:
 	mkdir -p $@
 
 ~/bin:

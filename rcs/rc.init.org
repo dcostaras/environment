@@ -69,7 +69,8 @@
 
 #+BEGIN_SRC clojure :tangle ~/.clojure/deps.edn :ns 'nil :mkdirp yes
 ;; see https://github.com/seancorfield/dot-clojure
-{:mvn/repos {"sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}}
+{:mvn/repos {"sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}
+             "cognitect-dev-tools" {:url "https://dev-tools.cognitect.com/maven/releases/"}}
  :aliases
  { ;; pull in specific versions of Clojure:
   :1.0 {:override-deps {org.clojure/clojure {:mvn/version "1.0.0"}}}
@@ -276,8 +277,21 @@
 ** shadow
 
 #+BEGIN_SRC clojure :tangle ~/.shadow-cljs/config.edn :ns 'nil :mkdirp yes
-{:deps-aliases [:debug-tools :cider-nrepl]}
+{:deps-aliases [:debug-tools :cider-nrepl]
+ :fs-watch {:watcher :polling}}
 #+END_SRC
+
+** datomic
+#+begin_src clojure :tangle ~/.datomic/dev-local.edn :mkdirp yes
+{:storage-dir "/Users/donavan/.datomic/data"}
+#+end_src
+
+** clj-kondo
+
+#+begin_src clojure :tangle ~/.config/clj-kondo/config.edn :mkdirp yes
+{:lint-as {com.fulcrologic.fulcro.components/defsc clojure.core/defn
+           com.fulcrologic.fulcro.mutations/defmutation clojure.core/defn}}
+#+end_src
 
 * shell
 ** theme
@@ -383,9 +397,12 @@
 ** env setup
 
 #+BEGIN_SRC sh :tangle ~/.zshenv
-export JAVA_TOOL_OPTIONS="-XX:-OmitStackTraceInFastThrow"
+export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -XX:-OmitStackTraceInFastThrow"
+export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Dapple.awt.UIElement=true"
+export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Xms512m -Xmx4g"
 export AWS_DEFAULT_REGION=us-east-2
 export AWS_REGION=us-east-2
+export AWS_PROFILE=jra
 #+END_SRC
 
 ** GPG setup
@@ -400,28 +417,47 @@ export AWS_REGION=us-east-2
      gpgconf --launch gpg-agent
   #+END_SRC
 
+** 1Password
+
+#+begin_src sh :tangle no
+eval $(op signin my)
+#+end_src
+
 ** functions
+*** 1password aws integration
+
+op get item 'JRA AWS' --fields "aws_access_key_id,aws_secret_access_key" | 1password-aws
+
+#+begin_src clojurescript :shebang #!/usr/bin/env bb :tangle ~/bin/1password-aws
+(require '[cheshire.core :as json])
+(require '[clojure.java.io :as io])
+(require '[clojure.set :refer [rename-keys]])
+
+(defn my-fn
+  [value]
+  (-> value
+      (assoc "Version" 1)
+      (rename-keys {"aws_access_key_id" "AccessKeyId"
+                    "aws_secret_access_key" "SecretAccessKey"})))
+
+;;One can do the following as well (note the last nil) without the -o arg to bb
+(-> *in*
+    json/parse-stream
+    my-fn
+    (json/generate-stream (io/writer *out*) {:pretty true}))
+nil
+
+;; (-> *in*
+;;     json/parse-stream
+;;     my-fn
+;;     (json/generate-string #_(io/writer *out*) {:pretty true}))
+#+end_src
+
 *** doom
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doom
 ~/.emacs.d/bin/doom "$1"
 #+end_src
-
-*** aws
-
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/aws
-    . aws_creds
-    /usr/local/bin/aws $*
-  #+end_src
-
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/aws_creds
-	 if [ -z "$AWS_ACCESS_KEY_ID" ]; then
-	     export AWS_ACCESS_KEY_ID=$(pass elit/aws/donavan/access-key)
-	     export AWS_SECRET_ACCESS_KEY=$(pass elit/aws/donavan/secret-key)
-	     export GRAFANA_TOKEN=$(pass elit/grafana/api-key)
-	     export ELIT_CLI_GITHUB_TOKEN=$(pass elit/github/token)
-	 fi
-  #+end_src
 
 *** emacsen
 
@@ -555,6 +591,13 @@ sudo xattr -rd com.apple.quarantine $0
       ffmpeg -f u16le -ar 44100 -ac 1 -i input.raw
   }
   #+END_SRC
+
+* AWS
+
+#+begin_src conf :tangle ~/.aws/config :mkdirp yes
+[profile jra]
+credential_process = sh -c "op get item 'JRA AWS' --fields 'aws_access_key_id,aws_secret_access_key' | 1password-aws"
+#+end_src
 
 * next
 

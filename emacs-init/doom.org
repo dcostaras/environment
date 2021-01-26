@@ -1,14 +1,33 @@
 #+TITLE: Doom
 
-* config
+* TODO turn "_" into the vim action to comment with #_ an object
+* TODO turn "p" into the vim action to comment with #p an object
+* TODO set C-M-\ to nil to train self to use indentation evil verb "="
+* TODO org src buffers to be added to workspace
+* TODO cider switch to last buffer from repl (C-c C-z) should do so across frames
+* TODO C-h sometimes doesn't work as back level in counsel find file
+* TODO figure out how to have uncharged time in org clocktables
+* TODO clj-kondo/clojure-lsp can't find reference if it's used a default destructuring arg
 
-TODO turn "_" into the vim action to comment with #_ an object
-TODO turn "p" into the vim action to comment with #p an object
-TODO set C-M-\ to nil to train self to use indentation evil verb "="
-TODO org src buffers to be added to workspace
-TODO cider switch to last buffer from repl (C-c C-z) should do so across frames
-TODO C-h sometimes doesn't work as back level in counsel find file
-TODO figure out how to have uncharged time in org clocktables
+currency-format is in the :or map of the next function
+#+begin_src clojure
+(defn currency-format [value]
+  (ft/format-number value {:currency? true
+                           :round-to  0
+                           :dash?     false}))
+
+(defn unroll-row [content key & {:keys [format-fn classes style]
+                                 :or   {format-fn currency-format
+                                        classes   []
+                                        style     {}}}]
+  (map
+   (fn [x] (dom/td {:classes classes :style style}
+                   (format-fn (key x))))
+   content))
+#+end_src
+
+
+* config
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
@@ -69,6 +88,9 @@ TODO figure out how to have uncharged time in org clocktables
  ;; More common use-case
  evil-ex-substitute-global t)
 
+;; More modern fill column length
+(setq-default fill-column 100)
+
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
 ;; - `load!' for loading external *.el files relative to this one
@@ -93,7 +115,45 @@ TODO figure out how to have uncharged time in org clocktables
 
 ;; Org
 (after! org
-  (setq org-src-window-setup 'current-window))
+  (setq org-src-window-setup 'current-window)
+  (setq org-time-clocksum-use-effort-durations t)
+  (setq org-duration-format '(
+                              ;; ("d" . nil)
+                              ("h" . nil) ("min" . t)))
+
+  (setq org-effort-durations
+        `(("min" . 1)
+          ("h" . 60)
+          ;; eight-hour days
+          ;; ("d" . ,(* 60 8))
+          ;; five-day work week
+          ;; ("w" . ,(* 60 8 5))
+          ;; four weeks in a month
+          ;; ("m" . ,(* 60 8 5 4))
+          ;; work a total of 12 months a year --
+          ;; this is independent of holiday and sick time taken
+          ;; ("y" . ,(* 60 8 5 4 12))
+          ))
+  (use-package! worf)
+
+  (defun bjm/worf-insert-internal-link ()
+    "Use ivy to insert a link to a heading in the current `org-mode' document. Code is based on `worf-goto'."
+    (interactive)
+    (let ((cands (worf--goto-candidates)))
+      (ivy-read "Heading: " cands
+                :action 'bjm/worf-insert-internal-link-action)))
+
+  (defun bjm/worf-insert-internal-link-action (x)
+    "Insert link for `bjm/worf-insert-internal-link'"
+    ;; go to heading
+    (save-excursion
+      (goto-char (cdr x))
+      ;; store link
+      (call-interactively 'org-store-link))
+    ;; return to original point and insert link
+    (org-insert-last-stored-link 1)
+    ;; org-insert-last-stored-link adds a newline so delete this
+    (delete-backward-char 1)))
 
 ;; (setq org-directory "~/org")
 ;; (setq org-agenda-files (list "~/org/inbox.org"))
@@ -143,11 +203,14 @@ TODO figure out how to have uncharged time in org clocktables
 (map! :nv "p" #'hydra-paste/evil-paste-after
       :nv "P" #'hydra-paste/evil-paste-before)
 
+;; (setq evil-search-module 'evil-search)
+;; (evil-select-search-module 'evil-search-module 'evil-search)
+
 ;; Ivy
 (after! ivy
-  (map! "C-h"
-        :map ivy-minibuffer-map
-        'counsel-up-directory)
+
+  (map! "C-h" :map ivy-minibuffer-map #'counsel-up-directory)
+  (map! :n "/" #'+default/search-buffer)
 
   (defun ivy-yank-action (x)
     (kill-new x))
@@ -180,14 +243,17 @@ TODO figure out how to have uncharged time in org clocktables
 
 ;; Lisps
 (after! clojure
-  (put-clojure-indent 'context 2)
-  (put-clojure-indent 'POST 2)
-  (put-clojure-indent 'GET 2)
-  (put-clojure-indent 'PUT 2)
 
   (after! aggressive-indent
     (add-hook! clojure-mode
-      (aggressive-indent-mode 1))))
+      (aggressive-indent-mode 1)))
+
+  ;; TODO test this
+  ;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
+  ;; (use-package! cider
+  ;;   :config
+  ;;   (set-lookup-handlers! 'cider-mode nil))
+  )
 
 ;; Clojure
 (after! (:and clojure-mode cider)
@@ -210,7 +276,25 @@ TODO figure out how to have uncharged time in org clocktables
   (add-to-list 'cider-jack-in-nrepl-middlewares "com.gfredericks.debug-repl/wrap-debug-repl")
 
   (setq cider-auto-select-test-report-buffer nil)
-  (setq cider-save-file-on-load t))
+  (setq cider-save-file-on-load t)
+  (setq clojure-toplevel-inside-comment-form t)
+  (setq org-babel-clojure-backend 'cider)
+  (setq lsp-lens-enable t)
+  ;; TODO test this
+  ;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
+  ;; (use-package! clj-refactor
+  ;;   :after clojure-mode
+  ;;   :config
+  ;;   (set-lookup-handlers! 'clj-refactor-mode nil))
+
+  (define-clojure-indent
+    (>defn :defn)
+    (defmutation [2 :form :form [1]])
+
+    (context 2)
+    (POST 2)
+    (GET 2)
+    (PUT 2)))
 
 ;; Lispyville
 (lispyville-set-key-theme
@@ -236,7 +320,7 @@ TODO figure out how to have uncharged time in org clocktables
 
 ;; Dired
 (defun my-buffer-mode (&optional buffer-or-name)
-  "Returns the major mode associated with a buffer.
+  "Return the major mode associated with a buffer.
 If buffer-or-name is nil return current buffer's mode."
   (interactive)
   (buffer-local-value
@@ -249,7 +333,7 @@ If buffer-or-name is nil return current buffer's mode."
   (file-name-directory (or  (buffer-file-name) default-directory)))
 
 (defun eshell-cwd ()
-  "Sets the eshell directory to the current buffer
+  "Set the eshell directory to the current buffer.
 
   Usage: M-x eshell-cwd"
   (interactive)
@@ -306,55 +390,55 @@ If buffer-or-name is nil return current buffer's mode."
        ;;layout            ; auie,ctsrnm is the superior home row
 
        :completion
-       company           ; the ultimate code completion backend
+       company            ; the ultimate code completion backend
        ;;helm              ; the *other* search engine for love and life
        ;;ido               ; the other *other* search engine...
-       ivy               ; a search engine for love and life
+       ivy                ; a search engine for love and life
 
        :ui
        ;;deft              ; notational velocity for Emacs
-       doom              ; what makes DOOM look the way it does
-       doom-dashboard    ; a nifty splash screen for Emacs
-       doom-quit         ; DOOM quit-message prompts when you quit Emacs
+       doom                   ; what makes DOOM look the way it does
+       doom-dashboard         ; a nifty splash screen for Emacs
+       doom-quit              ; DOOM quit-message prompts when you quit Emacs
        ;;(emoji +unicode)  ; 🙂
-       ;;fill-column       ; a `fill-column' indicator
-       hl-todo           ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
+       fill-column       ; a `fill-column' indicator
+       hl-todo                ; highlight TODO/FIXME/NOTE/DEPRECATED/HACK/REVIEW
        hydra
        ;;indent-guides     ; highlighted indent columns
        ;;ligatures         ; ligatures and symbols to make your code pretty again
        ;;minimap           ; show a map of the code on the side
-       modeline          ; snazzy, Atom-inspired modeline, plus API
+       modeline    ; snazzy, Atom-inspired modeline, plus API
        ;;nav-flash         ; blink cursor line after big motions
        ;;neotree           ; a project drawer, like NERDTree for vim
-       ophints           ; highlight the region an operation acts on
-       (popup +defaults)   ; tame sudden yet inevitable temporary windows
+       ophints                    ; highlight the region an operation acts on
+       (popup +defaults)          ; tame sudden yet inevitable temporary windows
        ;;tabs              ; a tab bar for Emacs
        ;;treemacs          ; a project drawer, like neotree but cooler
        ;;unicode           ; extended unicode support for various languages
-       vc-gutter         ; vcs diff in the fringe
-       vi-tilde-fringe   ; fringe tildes to mark beyond EOB
-       window-select     ; visually switch windows
-       workspaces        ; tab emulation, persistence & separate workspaces
+       vc-gutter        ; vcs diff in the fringe
+       vi-tilde-fringe  ; fringe tildes to mark beyond EOB
+       window-select    ; TODO check +numbers visually switch windows
+       workspaces       ; tab emulation, persistence & separate workspaces
        ;;zen               ; distraction-free coding or writing
 
        :editor
-       (evil +everywhere); come to the dark side, we have cookies
-       file-templates    ; auto-snippets for empty files
-       fold              ; (nigh) universal code folding
+       (evil +everywhere)             ; come to the dark side, we have cookies
+       file-templates                 ; auto-snippets for empty files
+       fold                           ; (nigh) universal code folding
        ;;(format +onsave)  ; automated prettiness
        ;;god               ; run Emacs commands without modifier keys
-       lispy             ; vim for lisp, for people who don't like vim
+       lispy ; vim for lisp, for people who don't like vim
        ;;multiple-cursors  ; editing in many places at once
        ;;objed             ; text object editing for the innocent
        ;;parinfer          ; turn lisp into python, sort of
        ;;rotate-text       ; cycle region at point between text candidates
-       snippets          ; my elves. They type so I don't have to
-       word-wrap         ; soft wrapping with language-aware indent
+       snippets                       ; my elves. They type so I don't have to
+       word-wrap                      ; soft wrapping with language-aware indent
 
        :emacs
        dired             ; making dired pretty [functional]
        electric          ; smarter, keyword-based electric-indent
-       ibuffer         ; interactive buffer management
+       ibuffer           ; interactive buffer management
        undo              ; persistent, smarter undo for your inevitable mistakes
        vc                ; version-control and Emacs, sitting in a tree
 
@@ -362,12 +446,12 @@ If buffer-or-name is nil return current buffer's mode."
        eshell            ; the elisp shell that works everywhere
        ;;shell             ; simple shell REPL for Emacs
        ;;term              ; basic terminal emulator for Emacs
-       vterm             ; the best terminal emulation in Emacs
+       vterm                            ; the best terminal emulation in Emacs
 
        :checkers
-       syntax              ; tasing you for every semicolon you forget
-       (spell +aspell +everywhere)             ; tasing you for misspelling mispelling
-       grammar           ; tasing grammar mistake every you make
+       syntax                        ; tasing you for every semicolon you forget
+       (spell +aspell +everywhere)   ; tasing you for misspelling mispelling
+       grammar                       ; tasing grammar mistake every you make
 
        :tools
        ;;ansible
@@ -376,15 +460,15 @@ If buffer-or-name is nil return current buffer's mode."
        ;;docker
        ;;editorconfig      ; let someone else argue about tabs vs spaces
        ;;ein               ; tame Jupyter notebooks with emacs
-       (eval +overlay)     ; run code, run (also, repls)
+       (eval +overlay)       ; run code, run (also, repls)
        ;;gist              ; interacting with github gists
-       lookup              ; navigate your code and its documentation
+       lookup                         ; navigate your code and its documentation
        lsp
-       magit               ; a git porcelain for Emacs
-       make                ; run make tasks from Emacs
+       magit      ; a git porcelain for Emacs
+       make       ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
        ;;pdf               ; pdf enhancements
-       prodigy             ; FIXME managing external services & code builders
+       prodigy    ; FIXME managing external services & code builders
        ;;rgb               ; creating color strings
        ;;taskrunner        ; taskrunner for all your projects
        ;;terraform         ; infrastructure as code
@@ -392,13 +476,13 @@ If buffer-or-name is nil return current buffer's mode."
        ;;upload            ; map local to remote projects via ssh/ftp
 
        :os
-       (:if IS-MAC macos)  ; improve compatibility with macOS
+       (:if IS-MAC macos)               ; improve compatibility with macOS
        ;;tty               ; improve the terminal Emacs experience
 
        :lang
        ;;agda              ; types of types of types of types...
        ;;cc                ; C/C++/Obj-C madness
-       (clojure +lsp)      ; java with a lisp
+       (clojure +lsp)                   ; java with a lisp
        ;;common-lisp       ; if you've seen one lisp, you've seen them all
        ;;coq               ; proofs-as-programs
        ;;crystal           ; ruby at the speed of c
@@ -407,7 +491,7 @@ If buffer-or-name is nil return current buffer's mode."
        ;;(dart +flutter)   ; paint ui and not much else
        ;;elixir            ; erlang done right
        ;;elm               ; care for a cup of TEA?
-       emacs-lisp          ; drown in parentheses
+       emacs-lisp                       ; drown in parentheses
        ;;erlang            ; an elegant language for a more civilized age
        ;;ess               ; emacs speaks statistics
        ;;faust             ; dsp, but you get to keep your soul
@@ -428,11 +512,11 @@ If buffer-or-name is nil return current buffer's mode."
        ;;factor
        ;;ledger            ; an accounting system in Emacs
        ;;lua               ; one-based indices? one-based indices
-       markdown            ; writing docs for people to ignore
+       markdown         ; writing docs for people to ignore
        ;;nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
-       (org +pomodoro)     ; organize your plain life in plain text
+       (org +pomodoro)  ; organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
@@ -446,13 +530,13 @@ If buffer-or-name is nil return current buffer's mode."
        ;;rust              ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala             ; java, but good
        ;;scheme            ; a fully conniving family of lisps
-       sh                  ; she sells {ba,z,fi}sh shells on the C xor
+       sh     ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml
        ;;solidity          ; do you need a blockchain? No.
        ;;swift             ; who asked for emoji variables?
        ;;terra             ; Earth and Moon in alignment for performance.
-       (web +css)               ; the tubes
-       ;;yaml              ; JSON, but readable
+       (web +css)                       ; the tubes
+       yaml                ; JSON, but readable
 
        :email
        ;;(mu4e +gmail)
@@ -527,6 +611,8 @@ If buffer-or-name is nil return current buffer's mode."
 (package! aggressive-indent)
 (package! auto-dim-other-buffers)
 (package! evil-lispy)
+(package! worf)
+(unpin! lsp-mode)
 #+end_src
 
 * services
@@ -537,7 +623,7 @@ If buffer-or-name is nil return current buffer's mode."
   :command "npx"
   :args '("shadow-cljs" "-A:cider-nrepl:debug-tools" "server")
   :cwd "~/src/fulcro-template"
-  :tags '(work)
+  :tags '(work fulcro)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t
   :on-output (lambda (&rest args)
@@ -545,4 +631,31 @@ If buffer-or-name is nil return current buffer's mode."
                      (service (plist-get args :service)))
                  (when (s-matches? "shadow-cljs - nREPL server started on port 9000" output)
                    (prodigy-set-status service 'ready)))))
+
+(prodigy-define-service
+  :name "JRA frontend"
+  :command "npx"
+  :args '("shadow-cljs" "-A:cider-nrepl:debug-tools" "server")
+  :cwd "~/src/jra"
+  :tags '(work fulcro)
+  :stop-signal 'sigkill
+  :kill-process-buffer-on-stop t
+  :on-output (lambda (&rest args)
+               (let ((output (plist-get args :output))
+                     (service (plist-get args :service)))
+                 (when (s-matches? "shadow-cljs - nREPL server started on port 9000" output)
+                   (prodigy-set-status service 'ready)))))
+
+(prodigy-define-service
+  :name "JRA SOCKS proxy"
+  :command "datomic"
+  :command "printenv"
+  :args '("client" "access" "jra-storage" "-p" "jra")
+  ;; :args '("$AWS_ACCESS_KEY_ID")
+  :cwd "~/src/jra/bin"
+  ;; :env '(("LANG" "en_US.UTF-8")
+  ;;        ("LC_ALL" "en_US.UTF-8"))
+  :tags '(work fulcro)
+  :stop-signal 'sigkill
+  :kill-process-buffer-on-stop t)
 #+end_src
