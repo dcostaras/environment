@@ -1,8 +1,11 @@
-personal_ws-1.1 en 64
+personal_ws-1.1 en 72
 Costaras
 Datomic
 Donavan
+MacOS
 Ross
+Specmonstah
+Spectmonstah
 Unhedged
 Worklog
 accessToken
@@ -30,10 +33,12 @@ env
 fn
 fs
 fulcro
+fulcro's
 getValueByKeys
 gitignore
 gmail
 https
+ident
 init
 joda
 jra
@@ -46,6 +51,7 @@ lsp
 magit
 mem
 memdb
+memoize
 middleware
 mousemove
 mouseover
@@ -54,6 +60,7 @@ nrepl
 readme
 rebl
 repl
+repo
 setTimeout
 sha
 signInUserSession
@@ -63,3 +70,4 @@ tooltip
 ui
 uncomment
 uuid
+workspaces

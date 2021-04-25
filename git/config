@@ -3,3 +3,5 @@
 	email = d.costaras@gmail.com
 [protocol "keybase"]
 	allow = always
+[github]
+	user = dcostaras

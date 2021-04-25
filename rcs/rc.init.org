@@ -121,8 +121,12 @@
 
   ;; REPL-related tools:
   ;; - start a modern nREPL server on a random available port:
-  :nrepl {:extra-deps {nrepl/nrepl {:mvn/version "RELEASE"}}
-          :main-opts ["-m" "nrepl.cmdline"]}
+  :nrepl {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}
+                       refactor-nrepl {:mvn/version "2.5.0"}
+                       cider/cider-nrepl {:mvn/version "0.25.5"}}
+          :main-opts ["-m" "nrepl.cmdline"
+                      "--middleware"
+                      "[com.gfredericks.debug-repl/wrap-debug-repl,refactor-nrepl.middleware/wrap-refactor,cider.nrepl/cider-middleware]"]}
   ;; - start a legacy nREPL server on port 60606:
   :nrepl/old {:extra-deps {org.clojure/tools.nrepl {:mvn/version "RELEASE"}}
               :main-opts ["-e" "(require,'[clojure.tools.nrepl.server,:refer,[start-server]]),(start-server,:port,60606)"]}
@@ -271,6 +275,7 @@
   :cider-nrepl {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.6"}
                              refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}}}
 
+  :local-fulcro {:override-deps {com.fulcrologic/fulcro {:local/root "~/src/fulcro"}}}
   }}
 #+END_SRC
 
@@ -278,7 +283,8 @@
 
 #+BEGIN_SRC clojure :tangle ~/.shadow-cljs/config.edn :ns 'nil :mkdirp yes
 {:deps-aliases [:debug-tools :cider-nrepl]
- :fs-watch {:watcher :polling}}
+ :fs-watch {:watcher :polling
+            :hawk false}}
 #+END_SRC
 
 ** datomic
@@ -297,7 +303,7 @@
 ** theme
 
   #+BEGIN_SRC sh :tangle ~/.zshrc
-    source /usr/local/share/antigen/antigen.zsh
+    source "$(brew --prefix antigen)/share/antigen/antigen.zsh"
 
     autoload antigen
 
@@ -383,16 +389,19 @@
 
   #+BEGIN_SRC sh :tangle ~/.zshrc
      alias cat="bat"
+     alias p="prettybat"
   #+END_SRC
 
 ** path
 
-  #+BEGIN_SRC sh :tangle ~/.zshrc
-     export PATH="/users/donavan/.composer/vendor/bin:$PATH"
-     export PATH="/users/donavan/.cargo/bin:$PATH"
-     export PATH="/users/donavan/bin:$PATH"
-     export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
-  #+END_SRC
+#+BEGIN_SRC sh :tangle ~/.zshrc
+export PATH="$PATH:/users/donavan/bin"
+export PATH="$PATH:/opt/local/bin" # Intel homebrew
+export PATH="$PATH:/opt/local/sbin"
+export PATH="$PATH:/Library/TeX/texbin"
+
+export PATH="/opt/homebrew/bin:$PATH" # ARM homebrew
+#+END_SRC
 
 ** env setup
 
@@ -400,9 +409,11 @@
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -XX:-OmitStackTraceInFastThrow"
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Dapple.awt.UIElement=true"
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Xms512m -Xmx4g"
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home"
 export AWS_DEFAULT_REGION=us-east-2
 export AWS_REGION=us-east-2
 export AWS_PROFILE=jra
+source ~/.zprofile
 #+END_SRC
 
 ** GPG setup
@@ -563,6 +574,22 @@ sudo xattr -rd com.apple.quarantine $0
      (string/join)
      (edn/read-string)
      (pprint))
+#+end_src
+
+*** JRA dev
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/jra-backend
+cd ~/src/jra && \
+    /opt/homebrew/bin/clojure \
+    -Sdeps '{:deps {nrepl/nrepl {:mvn/version "0.8.3"} refactor-nrepl {:mvn/version "2.5.0"} cider/cider-nrepl {:mvn/version "0.25.5"}}}' \
+    -A:dev:test:kondo:debug-tools \
+    -J-Dtrace -J-Dghostwheel.enabled=true \
+    -m nrepl.cmdline\
+    --middleware '["com.gfredericks.debug-repl/wrap-debug-repl","refactor-nrepl.middleware/wrap-refactor","cider.nrepl/cider-middleware"]'
+#+end_src
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/jra-frontend
+cd ~/src/jra && npm run shadow-server
 #+end_src
 
 ** audio conversion
@@ -1115,3 +1142,49 @@ export -f sync_movies
     ]
 }
 #+END_SRC
+
+* TODO Quicklook plugins
+Works: --------------------
+  # Preview source code files with syntax highlighting (like colored .JS files)
+  brew install qlcolorcode
+
+  # Preview Markdown files
+  brew install qlstephen
+
+  # Preview JSON files with syntax highlighting
+  brew install quicklook-json
+
+  # Preview plaintext files with unknown extensions, like README, CHANGELOG, etc.
+  brew install qlstephen
+
+  # Preview the content of .IPA files
+  # Installs inside /Applications folder
+  brew install suspicious-package
+
+  # Preview iOS/macOS provisioning information for .ipa and .xcarchive
+  # For 'mobileprovision' files, Xcode has Quick Look plugin collision:
+  # https://github.com/ealeksandrov/ProvisionQL/issues/20
+  brew install provisionql
+
+  # Preview the content of macOS apps
+  # Installs inside /Applications folder
+  brew install apparency
+
+  # Preview WebP images
+  brew install webpquicklook
+
+Broken: --------------------
+  # Display image size and resolution in windo titlebar of Quick Look
+  # Doesn't work due to API change from Apple
+  # https://github.com/Nyx0uf/qlImageSize/issues/45#issuecomment-610852166
+  #brew install qlimagesize
+
+  # Preview Adobe ASE color swatch files from Photoshop, Illustrator
+  # Doesn't work in macOS Catalina
+  #brew install quicklookase
+
+  # Preview the content of Android .APK files
+  # Doesn't work in macOS Catalina
+  #brew install quicklookapk
+
+  https://github.com/spiritphyz/Save-the-Environment/blob/main/User/quicklook-plugins/install-quicklook-plugins.sh

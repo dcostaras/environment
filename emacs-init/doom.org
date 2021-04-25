@@ -26,11 +26,19 @@ currency-format is in the :or map of the next function
    content))
 #+end_src
 
+* TODO clj-kondo/clojure-lsp clean-ns doesn't see aliases used in keywords as usage and removes the entries
+* TODO clj-kondo/clojure-lsp can't autocomplete locals
+* TODO auto complete refers in ns forms
+* TODO auto complete should support symbols in refer blocks
+* TODO eval last/current sexp text object
+so one can yank eval last sexp
 
 * config
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 ;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
+
+(setq lexical-binding t)
 
 ;; Place your private configuration here! Remember, you do not need to run 'doom
 ;; sync' after modifying this file!
@@ -63,16 +71,12 @@ currency-format is in the :or map of the next function
 ;; change `org-directory'. It must be set before org loads!
 (setq org-directory "~/org/")
 
-;; This determines the style of line numbers in effect. If set to `nil', line
-;; numbers are disabled. For relative line numbers, set this to `relative'.
-(setq display-line-numbers-type 'relative)
 
 (setq doom-font (font-spec :family "Fira Code" :size 14))
 
 (setq
- ;; Line numbers are pretty slow all around. The performance boost of
- ;; disabling them outweighs the utility of always keeping them on.
- display-line-numbers-type nil
+
+ display-line-numbers-type 'relative
 
  ;; IMO, modern editors have trained a bad habit into us all: a burning
  ;; need for completion all the time -- as we type, as we breathe, as we
@@ -90,6 +94,8 @@ currency-format is in the :or map of the next function
 
 ;; More modern fill column length
 (setq-default fill-column 100)
+
+(setq ns-use-native-fullscreen nil)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
@@ -116,13 +122,18 @@ currency-format is in the :or map of the next function
 ;; Org
 (after! org
   (setq org-src-window-setup 'current-window)
-  (setq org-time-clocksum-use-effort-durations t)
+  ;; (setq org-time-clocksum-use-effort-durations t)
+  (setq org-time-clocksum-use-effort-durations nil)
   (setq org-duration-format '(
                               ;; ("d" . nil)
-                              ("h" . nil) ("min" . t)))
+                              ("h" . nil)
+                              (special . 2)
+                              ;; ("min" . t)
+                              ))
 
   (setq org-effort-durations
-        `(("min" . 1)
+        `(
+          ;; ("min" . 1)
           ("h" . 60)
           ;; eight-hour days
           ;; ("d" . ,(* 60 8))
@@ -134,7 +145,13 @@ currency-format is in the :or map of the next function
           ;; this is independent of holiday and sick time taken
           ;; ("y" . ,(* 60 8 5 4 12))
           ))
+  (setq org-startup-folded t)
   (use-package! worf)
+  (use-package! ob-http)
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t)
+     (http . t)))
 
   (defun bjm/worf-insert-internal-link ()
     "Use ivy to insert a link to a heading in the current `org-mode' document. Code is based on `worf-goto'."
@@ -153,7 +170,15 @@ currency-format is in the :or map of the next function
     ;; return to original point and insert link
     (org-insert-last-stored-link 1)
     ;; org-insert-last-stored-link adds a newline so delete this
-    (delete-backward-char 1)))
+    (delete-backward-char 1))
+
+
+  (map! :map org-src-mode-map
+        "C-c C-c" nil
+        "C-c '" #'org-edit-src-exit)
+
+  )
+
 
 ;; (setq org-directory "~/org")
 ;; (setq org-agenda-files (list "~/org/inbox.org"))
@@ -232,6 +257,9 @@ currency-format is in the :or map of the next function
   :config (add-hook! emacs-lisp-mode
             (aggressive-indent-mode 1)))
 
+;; Magit
+(setq auth-sources '("~/.authinfo"))
+
 ;; LSP
 (after! lsp-mode
   (push "\\.shadow-cljs" lsp-file-watch-ignored)
@@ -239,9 +267,23 @@ currency-format is in the :or map of the next function
   (push "\\.lsp" lsp-file-watch-ignored)
   (push "\\.cpcache" lsp-file-watch-ignored)
   (push "resources" lsp-file-watch-ignored)
+
+  (setq lsp-ui-peek-always-show t)
+  (setq lsp-ui-sideline-show-hover t)
+
+
   )
 
 ;; Lisps
+(after! racket
+  (map! :map racket-mode-map "C-c C-c" #'racket-send-definition)
+
+  )
+
+(defun mit-scheme ()
+  (interactive)
+  (run-scheme "/Applications/scheme.app/Contents/Resources/mit-scheme"))
+
 (after! clojure
 
   (after! aggressive-indent
@@ -253,15 +295,32 @@ currency-format is in the :or map of the next function
   ;; (use-package! cider
   ;;   :config
   ;;   (set-lookup-handlers! 'cider-mode nil))
-  )
+  ;;
+  (after! lsp-mode
+    (after! lsp-ui-mode
+      (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+      (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))))
+
 
 ;; Clojure
 (after! (:and clojure-mode cider)
 
+  ;; Not used
+  ;; (defconst my-clojure-def-and-name-regex
+  ;;   (rx
+  ;;    (seq bol
+  ;;         (* blank) "(" (* blank)
+  ;;         (group
+  ;;          (or
+  ;;           "specification"
+  ;;           (and "def" (* (syntax word))))))))
+
+
+
   (defun my-cider-wandi-reset ()
     (interactive)
     (projectile-save-project-buffers)
-    (cider-interactive-eval "(user/reset-app)"))
+    (cider-interactive-eval "(user/restart)"))
   (map! "C-c C-i" #'my-cider-wandi-reset)
 
   (defun my-cider-load-debug-tools ()
@@ -280,6 +339,7 @@ currency-format is in the :or map of the next function
   (setq clojure-toplevel-inside-comment-form t)
   (setq org-babel-clojure-backend 'cider)
   (setq lsp-lens-enable t)
+
   ;; TODO test this
   ;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
   ;; (use-package! clj-refactor
@@ -288,13 +348,130 @@ currency-format is in the :or map of the next function
   ;;   (set-lookup-handlers! 'clj-refactor-mode nil))
 
   (define-clojure-indent
+    ;; Fulcro
     (>defn :defn)
-    (defmutation [2 :form :form [1]])
+    (defmutation [1 :form :form [1]])
+    ;; (pc/defmutation [2 :form :form [1]])
+
+    ;; Fulcro-spec
+    (specification [1])
+    (when-mocking '(0))
+    (assertions [0])
+
+    (swap!-> [1])
 
     (context 2)
     (POST 2)
     (GET 2)
-    (PUT 2)))
+    (PUT 2))
+
+  (setq cider-test-defining-forms '("deftest" "defspec" "specification"))
+
+  (defun tdd-test ()
+    "Thin wrapper around `cider-test-run-tests'."
+    (when (cider-connected-p)
+      (let ((cider-auto-select-test-report-buffer nil)
+            (cider-test-show-report-on-success nil))
+        (cider-test-run-ns-tests nil 'soft))))
+
+  (defun my-run-test ()
+    "Run Clojure test at point.
+
+Supports the fulcro-spec `specification' macro"
+    (interactive)
+    (message "running test")
+    (let* ((ns  (clojure-find-ns)))
+      (when ns
+        (cider-interactive-eval
+         (concat "(clojure.core/let [{:keys [name test]} (clojure.core/meta "
+                 (cider-defun-at-point)
+                 ")] (clojure.core/when test name))")
+         (nrepl-make-response-handler
+          (current-buffer)
+          (lambda (_buffer var)
+            (if var
+                (progn
+                  (cider-test-update-last-test ns (list var))
+                  (cider-test-execute ns (list var)))
+              (message "No test at point")))
+          nil
+          nil
+          (lambda (buffer)))))))
+
+  (define-minor-mode tdd-mode
+    "Run all tests whenever a file is loaded."
+    nil nil nil
+    :global t
+    (if tdd-mode
+        (progn
+          (advice-add 'cider-eval-defun-at-point :after #'my-run-test)
+          (add-hook 'cider-file-loaded-hook #'tdd-test))
+      (progn
+        (advice-remove 'cider-eval-defun-at-point #'foo)
+        (remove-hook 'cider-file-loaded-hook #'tdd-test))))
+
+  (define-minor-mode pprint-eval-mode
+    "When active swaps `cider-eval-defun-at-point' with `cider-pprint-eval-defun-at-point'"
+    nil nil nil
+    :global t
+    (if pprint-eval-mode
+        (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
+              [remap cider-eval-defun-at-point] #'cider-pprint-eval-defun-at-point
+              [remap cider-eval-last-sexp] #'cider-pprint-eval-last-sexp)
+      (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
+            [remap cider-pprint-eval-defun-at-point] #'cider-eval-defun-at-point
+            [remap cider-pprint-eval-last-sexp] #'cider-eval-last-sexp)))
+
+  (advice-add 'cider-pprint-eval-last-sexp :around 'evil-collection-cider-last-sexp)
+
+  (defun jet ()
+    (interactive)
+    (shell-command-on-region
+     (region-beginning)
+     (region-end)
+     "jet --pretty --edn-reader-opts '{:default tagged-literal}'"
+     (current-buffer)
+     t
+     "*jet error buffer*"
+     t))
+
+  ;; waffletower  6:03 AM
+  ;; I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
+  ;; Untitled
+  ;; (ns repl-eval.nrepl
+  ;;     (:require [clojure.pprint :refer [pprint]]
+  ;;      [nrepl.server :as server]
+  ;;      [nrepl.core :as nrepl]
+  ;;      refactor-nrepl.middleware
+  ;;      cider.nrepl))
+  ;; ​
+  ;; (defn start
+  ;;   []
+  ;;   (let [server (server/start-server
+  ;;                 :handler (apply server/default-handler
+  ;;                                 (conj
+  ;;                                  (map #'cider.nrepl/resolve-or-fail cider.nrepl/cider-middleware)
+  ;;                                  #'refactor-nrepl.middleware/wrap-refactor)))
+  ;;                port (:port server)]
+  ;;     (with-open [cxn (nrepl/connect :port port)]
+  ;;                (-> (nrepl/client cxn 1000)
+  ;;                    (nrepl/message {:op "eval" :code "(require '[clojure.pprint :refer [pprint]])"})
+  ;;                    nrepl/response-values))
+  ;;     (spit ".nrepl-port" port)))
+  ;; Collapse
+  ;; 6:04
+  ;; The injection in this case is requiring pprint.
+  ;; waffletower  6:09 AM
+  ;; The code is easily referenced in a deps.edn alias:
+  ;; :inject {:extra-deps {waffletower/repl-eval {:local/root "../repl-eval/"}
+  ;; nrepl/nrepl {:mvn/version "0.7.0"}
+  ;; refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
+  ;; cider/cider-nrepl {:mvn/version "0.25.1"}}
+  ;; :main-opts ["-m" "repl-eval.nrepl"]}
+  ;; While I could refactor this to instrument variable middleware and injection forms, is there some hook I am missing here?  It was much much easier and cleaner to accomplish REPL initialization with leiningen.
+
+  )
+
 
 ;; Lispyville
 (lispyville-set-key-theme
@@ -364,6 +541,99 @@ If buffer-or-name is nil return current buffer's mode."
 #+end_src
 
 #+RESULTS:
+
+* Lispy bindings
+#+NAME: lispy-bindings
+| key | function                      | column   |
+|-----+-------------------------------+----------|
+| <   | lispy-barf                    |          |
+| A   | lispy-beginning-of-defun      |          |
+| j   | lispy-down                    |          |
+| Z   | lispy-edebug-stop             |          |
+| B   | lispy-ediff-regions           |          |
+| G   | lispy-goto-local              |          |
+| h   | lispy-left                    |          |
+| N   | lispy-narrow                  |          |
+| y   | lispy-occur                   |          |
+| o   | lispy-other-mode              |          |
+| J   | lispy-outline-next            |          |
+| K   | lispy-outline-prev            |          |
+| P   | lispy-paste                   |          |
+| l   | lispy-right                   |          |
+| I   | lispy-shifttab                |          |
+| >   | lispy-slurp                   |          |
+| SPC | lispy-space                   |          |
+| xB  | lispy-store-region-and-buffer |          |
+| u   | lispy-undo                    |          |
+| k   | lispy-up                      |          |
+| v   | lispy-view                    |          |
+| V   | lispy-visit                   |          |
+| W   | lispy-widen                   |          |
+| D   | pop-tag-mark                  |          |
+| x   | see                           |          |
+| L   | unbound                       |          |
+| U   | unbound                       |          |
+| X   | unbound                       |          |
+| Y   | unbound                       |          |
+| H   | lispy-ace-symbol-replace      | Edit     |
+| c   | lispy-clone                   | Edit     |
+| C   | lispy-convolute               | Edit     |
+| n   | lispy-new-copy                | Edit     |
+| O   | lispy-oneline                 | Edit     |
+| r   | lispy-raise                   | Edit     |
+| R   | lispy-raise-some              | Edit     |
+| \   | lispy-splice                  | Edit     |
+| S   | lispy-stringify               | Edit     |
+| i   | lispy-tab                     | Edit     |
+| xj  | lispy-debug-step-in           | Eval     |
+| xe  | lispy-edebug                  | Eval     |
+| xT  | lispy-ert                     | Eval     |
+| e   | lispy-eval                    | Eval     |
+| E   | lispy-eval-and-insert         | Eval     |
+| xr  | lispy-eval-and-replace        | Eval     |
+| p   | lispy-eval-other-window       | Eval     |
+| q   | lispy-ace-paren               | Move     |
+| z   | lispy-knight                  | Move     |
+| s   | lispy-move-down               | Move     |
+| w   | lispy-move-up                 | Move     |
+| t   | lispy-teleport                | Move     |
+| Q   | lispy-ace-char                | Nav      |
+| -   | lispy-ace-subword             | Nav      |
+| a   | lispy-ace-symbol              | Nav      |
+| b   | lispy-back                    | Nav      |
+| d   | lispy-different               | Nav      |
+| f   | lispy-flow                    | Nav      |
+| F   | lispy-follow                  | Nav      |
+| g   | lispy-goto                    | Nav      |
+| xb  | lispy-bind-variable           | Refactor |
+| xf  | lispy-flatten                 | Refactor |
+| xc  | lispy-to-cond                 | Refactor |
+| xd  | lispy-to-defun                | Refactor |
+| xi  | lispy-to-ifs                  | Refactor |
+| xl  | lispy-to-lambda               | Refactor |
+| xu  | lispy-unbind-variable         | Refactor |
+| M   | lispy-multiline               | Other    |
+| xh  | lispy-describe                | Other    |
+| m   | lispy-mark-list               | Other    |
+
+ #+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/config.el :var bindings=lispy-bindings :colnames yes=
+(eval
+ (append
+  '(defhydra my/lispy-cheat-sheet (:hint nil :foreign-keys run)
+     ("<f12>" nil :exit t))
+  (cl-loop for x in bindings
+           unless (string= "" (elt x 2))
+           collect
+           (list (car x)
+                 (intern (elt x 1))
+                 (when (string-match "lispy-\\(?:eval-\\)?\\(.+\\)"
+                                     (elt x 1))
+                   (match-string 1 (elt x 1)))
+                 :column
+                 (elt x 2)))))
+(with-eval-after-load "lispy"
+  (define-key lispy-mode-map (kbd "<f12>") 'my/lispy-cheat-sheet/body))
+   #+END_SRC
 
 * init
 
@@ -464,7 +734,7 @@ If buffer-or-name is nil return current buffer's mode."
        ;;gist              ; interacting with github gists
        lookup                         ; navigate your code and its documentation
        lsp
-       magit      ; a git porcelain for Emacs
+       (magit +forge)      ; a git porcelain for Emacs
        make       ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
        ;;pdf               ; pdf enhancements
@@ -516,13 +786,13 @@ If buffer-or-name is nil return current buffer's mode."
        ;;nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
-       (org +pomodoro)  ; organize your plain life in plain text
+       (org +pomodoro +dragndrop +pandoc)  ; organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
        ;;python            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
-       ;;racket            ; a DSL for DSLs
+       racket              ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
        ;;rest              ; Emacs as a REST client
        ;;rst               ; ReST in peace
@@ -566,52 +836,56 @@ If buffer-or-name is nil return current buffer's mode."
 
 
 ;; To install SOME-PACKAGE from MELPA, ELPA or emacsmirror:
-;(package! some-package)
+                                        ;(package! some-package)
 
 ;; To install a package directly from a remote git repo, you must specify a
 ;; `:recipe'. You'll find documentation on what `:recipe' accepts here:
 ;; https://github.com/raxod502/straight.el#the-recipe-format
-;(package! another-package
-;  :recipe (:host github :repo "username/repo"))
+                                        ;(package! another-package
+                                        ;  :recipe (:host github :repo "username/repo"))
 
 ;; If the package you are trying to install does not contain a PACKAGENAME.el
 ;; file, or is located in a subdirectory of the repo, you'll need to specify
 ;; `:files' in the `:recipe':
-;(package! this-package
-;  :recipe (:host github :repo "username/repo"
-;           :files ("some-file.el" "src/lisp/*.el")))
+                                        ;(package! this-package
+                                        ;  :recipe (:host github :repo "username/repo"
+                                        ;           :files ("some-file.el" "src/lisp/*.el")))
 
 ;; If you'd like to disable a package included with Doom, you can do so here
 ;; with the `:disable' property:
-;(package! builtin-package :disable t)
+                                        ;(package! builtin-package :disable t)
 
 ;; You can override the recipe of a built in package without having to specify
 ;; all the properties for `:recipe'. These will inherit the rest of its recipe
 ;; from Doom or MELPA/ELPA/Emacsmirror:
-;(package! builtin-package :recipe (:nonrecursive t))
-;(package! builtin-package-2 :recipe (:repo "myfork/package"))
+                                        ;(package! builtin-package :recipe (:nonrecursive t))
+                                        ;(package! builtin-package-2 :recipe (:repo "myfork/package"))
 
 ;; Specify a `:branch' to install a package from a particular branch or tag.
 ;; This is required for some packages whose default branch isn't 'master' (which
 ;; our package manager can't deal with; see raxod502/straight.el#279)
-;(package! builtin-package :recipe (:branch "develop"))
+                                        ;(package! builtin-package :recipe (:branch "develop"))
 
 ;; Use `:pin' to specify a particular commit to install.
-;(package! builtin-package :pin "1a2b3c4d5e")
+                                        ;(package! builtin-package :pin "1a2b3c4d5e")
 
 
 ;; Doom's packages are pinned to a specific commit and updated from release to
 ;; release. The `unpin!' macro allows you to unpin single packages...
-;(unpin! pinned-package)
+                                        ;(unpin! pinned-package)
 ;; ...or multiple packages
-;(unpin! pinned-package another-pinned-package)
+                                        ;(unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
-;(unpin! t)
+                                        ;(unpin! t)
 
 (package! aggressive-indent)
 (package! auto-dim-other-buffers)
 (package! evil-lispy)
 (package! worf)
+(package! ob-http)
+(package! org-download)
+(package! writeroom-mode)
+(package! pcre2el)
 (unpin! lsp-mode)
 #+end_src
 
@@ -623,6 +897,20 @@ If buffer-or-name is nil return current buffer's mode."
   :command "npx"
   :args '("shadow-cljs" "-A:cider-nrepl:debug-tools" "server")
   :cwd "~/src/fulcro-template"
+  :tags '(work fulcro)
+  :stop-signal 'sigkill
+  :kill-process-buffer-on-stop t
+  :on-output (lambda (&rest args)
+               (let ((output (plist-get args :output))
+                     (service (plist-get args :service)))
+                 (when (s-matches? "shadow-cljs - nREPL server started on port 9000" output)
+                   (prodigy-set-status service 'ready)))))
+
+(prodigy-define-service
+  :name "RAD demo"
+  :command "npx"
+  :args '("shadow-cljs" "-A:cider-nrepl:debug-tools" "server")
+  :cwd "~/src/rad-demo/"
   :tags '(work fulcro)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t
@@ -658,4 +946,14 @@ If buffer-or-name is nil return current buffer's mode."
   :tags '(work fulcro)
   :stop-signal 'sigkill
   :kill-process-buffer-on-stop t)
+#+end_src
+
+* .dir-locals
+
+#+begin_src emacs-lisp :tangle ~/src/jra/.dir-locals-2.el
+((nil . ((cider-clojure-cli-global-options . "-A:dev:test:kondo:debug-tools -J-Dtrace -J-Dghostwheel.enabled=true")
+         (cider-custom-cljs-repl-init-form . "(shadow/repl :main)")
+         (cider-default-cljs-repl . shadow-select)
+         (cider-known-endpoints . (("host-a" "10.10.10.1" "7888")
+                                   ("localhost" "9000"))))))
 #+end_src
