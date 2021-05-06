@@ -394,7 +394,6 @@ Supports the fulcro-spec `specification' macro"
             (if var
                 (progn
                   ;; Kaocha test
-                  (kaocha-runner-hide-windows)
                   (kaocha-runner--run-tests
                    (kaocha-runner--testable-sym ns var (eq major-mode 'clojurescript-mode))
                    nil
