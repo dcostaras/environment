@@ -355,6 +355,8 @@ so one can yank eval last sexp
 
     ;; Fulcro-spec
     (specification [1])
+    (component [1])
+    (behavior [1])
     (when-mocking '(0))
     (assertions [0])
 
