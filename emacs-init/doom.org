@@ -390,12 +390,12 @@ Supports the fulcro-spec `specification' macro"
                  ")] (clojure.core/when test name))")
          (nrepl-make-response-handler
           code-buffer
-          (lambda (_buffer var)
-            (if var
+          (lambda (_buffer test-var-name)
+            (if test-var-name
                 (progn
                   ;; Kaocha test
                   (kaocha-runner--run-tests
-                   (kaocha-runner--testable-sym ns var (eq major-mode 'clojurescript-mode))
+                   (kaocha-runner--testable-sym ns test-var-name (eq major-mode 'clojurescript-mode))
                    nil
                    t
                    code-buffer)
