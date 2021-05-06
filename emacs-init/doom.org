@@ -374,7 +374,17 @@ so one can yank eval last sexp
             (cider-test-show-report-on-success nil))
         (cider-test-run-ns-tests nil 'soft))))
 
-  ;; (setq lexical-binding t)
+  (setq lexical-binding t)
+
+  (defun kaocha-runner--show-details-window (original-buffer min-height)
+    "Show details from the test run with a MIN-HEIGHT, but switch back to ORIGINAL-BUFFER afterwards."
+    (save-excursion
+      (kaocha-runner--with-window kaocha-runner--out-buffer original-buffer
+        (visual-line-mode 1)
+        (goto-char (point-min))
+        (let ((case-fold-search nil))
+          (re-search-forward kaocha-runner--fail-re nil t))
+        (end-of-line))))
 
   (defun my-run-test ()
     "Run Clojure test at point.
