@@ -378,6 +378,66 @@ so one can yank eval last sexp
 
   (setq lexical-binding t)
 
+  (defun kaocha-runner--run-tests (testable-sym &optional run-all? background? original-buffer)
+    "Run kaocha tests.
+
+If RUN-ALL? is t, all tests are run, otherwise attempt a run with the provided
+TESTABLEY-SYM. In practice TESTABLEY-SYM can be a test id, an ns or an ns/test-fn.
+
+If BACKGROUND? is t, we don't message when the tests start running.
+
+Given an ORIGINAL-BUFFER, use that instead of (current-buffer) when switching back."
+    (interactive)
+    (kaocha-runner--clear-buffer kaocha-runner--out-buffer)
+    (kaocha-runner--clear-buffer kaocha-runner--err-buffer)
+    (kaocha-runner--eval-clojure-code
+     (format kaocha-runner-repl-invocation-template
+             (if run-all?
+                 (format "(kaocha.repl/run-all %s)" kaocha-runner-extra-configuration)
+               (format
+                "(kaocha.repl/run %s %s)"
+                testable-sym
+                kaocha-runner-extra-configuration)))
+     (let ((original-buffer (or original-buffer (current-buffer)))
+           (done? nil)
+           (any-errors? nil)
+           (shown-details? nil)
+           (the-value nil)
+           (start-time (float-time)))
+       (unless background?
+         (if run-all?
+             (message "Running all tests ...")
+           (message "[%s] Running tests ..." testable-sym)))
+       (lambda (response)
+         (nrepl-dbind-response response (value out err status)
+           (when out
+             (kaocha-runner--insert kaocha-runner--out-buffer out)
+             (when (let ((case-fold-search nil))
+                     (string-match-p kaocha-runner--fail-re out))
+               (setq any-errors? t))
+             (when (and (< kaocha-runner-long-running-seconds
+                           (- (float-time) start-time))
+                        (not shown-details?))
+               (setq shown-details? t)
+               (kaocha-runner--show-details-window original-buffer kaocha-runner-ongoing-tests-win-min-height)))
+           (when err
+             (kaocha-runner--insert kaocha-runner--err-buffer err))
+           (when value
+             (setq the-value value))
+           (when (and status (member "done" status))
+             (setq done? t))
+           (when done?
+             (if the-value
+                 (kaocha-runner--show-report the-value (unless run-all? testable-sym))
+               (unless (get-buffer-window kaocha-runner--err-buffer 'visible)
+                 (message "Kaocha run failed. See error window for details.")
+                 (switch-to-buffer-other-window kaocha-runner--err-buffer))))
+           (when done?
+             (if any-errors?
+                 (kaocha-runner--show-details-window original-buffer kaocha-runner-failure-win-min-height)
+               ;; (kaocha-runner--hide-window kaocha-runner--out-buffer)
+               )))))))
+
   (defun kaocha-runner--show-details-window (original-buffer min-height)
     "Show details from the test run with a MIN-HEIGHT, but switch back to ORIGINAL-BUFFER afterwards."
     (save-excursion
