@@ -448,6 +448,22 @@ Given an ORIGINAL-BUFFER, use that instead of (current-buffer) when switching ba
           (re-search-forward kaocha-runner--fail-re nil t))
         (end-of-line))))
 
+  (defvar my-test-runner 'kaocha)
+
+  (defun my-execute-test (ns test-var code-buffer)
+    (cond ((eq my-test-runner 'kaocha)
+           (kaocha-runner--run-tests
+            (kaocha-runner--testable-sym ns test-var (eq major-mode 'clojurescript-mode))
+            nil
+            t
+            code-buffer))
+          ((eq my-test-runner 'cider)
+           (progn
+             (cider-test-update-last-test ns (list test-var))
+             (cider-test-execute ns (list test-var))))))
+
+  (defvar my-last-executed-test nil)
+
   (defun my-run-test ()
     "Run Clojure test at point.
 
@@ -462,20 +478,16 @@ Supports the fulcro-spec `specification' macro"
                  ")] (clojure.core/when test name))")
          (nrepl-make-response-handler
           code-buffer
-          (lambda (_buffer test-var-name)
-            (if test-var-name
+          (lambda (_buffer test-var)
+            (if (not (string= "nil" test-var))
                 (progn
-                  ;; Kaocha test
-                  (kaocha-runner--run-tests
-                   (kaocha-runner--testable-sym ns test-var-name (eq major-mode 'clojurescript-mode))
-                   nil
-                   t
-                   code-buffer)
-                  ;; Cider test
-                  ;; (cider-test-update-last-test ns (list var))
-                  ;; (cider-test-execute ns (list var))
-                  )
-              (message "No test at point. Does your test var have ^:test meta?")))
+                  (setq my-last-executed-test (list ns test-var code-buffer))
+                  (my-execute-test ns test-var code-buffer))
+              (when my-last-executed-test
+                (my-execute-test
+                 (car my-last-executed-test)
+                 (cadr my-last-executed-test)
+                 (caddr my-last-executed-test)))))
           nil
           nil
           (lambda (_buffer)))))))
