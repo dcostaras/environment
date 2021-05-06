@@ -1,4 +1,4 @@
-personal_ws-1.1 en 73
+personal_ws-1.1 en 74
 Costaras
 Datomic
 Donavan
@@ -31,6 +31,7 @@ destructuring
 dev
 edn
 env
+evalling
 fn
 fs
 fulcro
