@@ -34,48 +34,42 @@ currency-format is in the :or map of the next function
 so one can yank eval last sexp
 
 * config
-
+** Settings
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-;;; $DOOMDIR/config.el -*- lexical-binding: t; -*-
-
+;;; -*- lexical-binding: t; -*-
 (setq lexical-binding t)
-
-;; Place your private configuration here! Remember, you do not need to run 'doom
-;; sync' after modifying this file!
-
-
-;; Some functionality uses this to identify you, e.g. GPG configuration, email
-;; clients, file templates and snippets.
-(setq user-full-name "Donavan-Ross Costaras"
-      user-mail-address "d.costaras@gmail.com")
-
-;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
-;; are the three important ones:
-;;
-;; + `doom-font'
-;; + `doom-variable-pitch-font'
-;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
-;;   presentations or streaming.
-;;
-;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
-;; font string. You generally only need these two:
-;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
-;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
-
-;; There are two ways to load a theme. Both assume the theme is installed and
-;; available. You can either set `doom-theme' or manually load a theme with the
-;; `load-theme' function. This is the default:
-(setq doom-theme 'doom-one)
-
-;; If you use `org' and don't want your org files in the default location below,
-;; change `org-directory'. It must be set before org loads!
-(setq org-directory "~/org/")
-
-
-(setq doom-font (font-spec :family "Fira Code" :size 14))
 
 (setq
 
+ ;; Place your private configuration here! Remember, you do not need to run 'doom
+ ;; sync' after modifying this file!
+
+ ;; Some functionality uses this to identify you, e.g. GPG configuration, email
+ ;; clients, file templates and snippets.
+ user-full-name "Donavan-Ross Costaras"
+ user-mail-address "d.costaras@gmail.com"
+
+ ;; Doom exposes five (optional) variables for controlling fonts in Doom. Here
+ ;; are the three important ones:
+ ;;
+ ;; + `doom-font'
+ ;; + `doom-variable-pitch-font'
+ ;; + `doom-big-font' -- used for `doom-big-font-mode'; use this for
+ ;;   presentations or streaming.
+ ;;
+ ;; They all accept either a font-spec, font string ("Input Mono-12"), or xlfd
+ ;; font string. You generally only need these two:
+ ;; (setq doom-font (font-spec :family "monospace" :size 12 :weight 'semi-light)
+ ;;       doom-variable-pitch-font (font-spec :family "sans" :size 13))
+
+ ;; There are two ways to load a theme. Both assume the theme is installed and
+ ;; available. You can either set `doom-theme' or manually load a theme with the
+ ;; `load-theme' function. This is the default:
+ doom-theme 'doom-one
+ ;; If you use `org' and don't want your org files in the default location below,
+ ;; change `org-directory'. It must be set before org loads!
+ org-directory "~/org/"
+ doom-font (font-spec :family "Fira Code" :size 14)
  display-line-numbers-type 'relative
 
  ;; IMO, modern editors have trained a bad habit into us all: a burning
@@ -114,12 +108,18 @@ so one can yank eval last sexp
 ;; You can also try 'gd' (or 'C-c c d') to jump to their definition and see how
 ;; they are implemented.
 ;;
+#+end_src
 
-;; macOS
+** MacOS
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (setq mac-option-modifier 'super)
 (setq mac-command-modifier 'meta)
+#+end_src
 
-;; Org
+** Org
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! org
   (setq org-src-window-setup 'current-window)
   ;; (setq org-time-clocksum-use-effort-durations t)
@@ -177,8 +177,6 @@ so one can yank eval last sexp
         "C-c C-c" nil
         "C-c '" #'org-edit-src-exit)
 
-  )
-
 
 ;; (setq org-directory "~/org")
 ;; (setq org-agenda-files (list "~/org/inbox.org"))
@@ -201,19 +199,33 @@ so one can yank eval last sexp
 ;;         (todo   . " ")
 ;;         (tags   . " %i %-12:c")
 ;;         (search . " %i %-12:c")))
+  )
+#+end_src
 
+** Auto dim other buffers
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (use-package! auto-dim-other-buffers
   :config
   (auto-dim-other-buffers-mode t))
+#+end_src
 
-;; Spelling
+** Spelling
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (setq ispell-dictionary "en"
       ispell-personal-dictionary "~/env/spelling/.pws")
+#+end_src
 
-;; Evil
+** Evil
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (setq evil-escape-unordered-key-sequence t)
+#+end_src
 
-;; Hydra paste
+*** Hydra paste
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (defhydra hydra-paste
   (:color red
    :hint nil)
@@ -228,11 +240,21 @@ so one can yank eval last sexp
 (map! :nv "p" #'hydra-paste/evil-paste-after
       :nv "P" #'hydra-paste/evil-paste-before)
 
-;; (setq evil-search-module 'evil-search)
-;; (evil-select-search-module 'evil-search-module 'evil-search)
+#+end_src
 
-;; Ivy
+*** Evil escape
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package! evil-escape
+  :init (setq evil-escape-key-sequence "jk"))
+#+end_src
+
+** Ivy
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! ivy
+
+  (setq ivy-extra-directories '())
 
   (map! "C-h" :map ivy-minibuffer-map #'counsel-up-directory)
   (map! :n "/" #'+default/search-buffer)
@@ -249,18 +271,25 @@ so one can yank eval last sexp
    t
    '(("i" ivy-copy-to-buffer-action "insert")
      ("y" ivy-yank-action "yank"))))
+#+end_src
 
-(setq ivy-extra-directories '())
+** Aggressive indent
 
-;; Emacs lisp
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (use-package! aggressive-indent
   :config (add-hook! emacs-lisp-mode
             (aggressive-indent-mode 1)))
+#+end_src
 
-;; Magit
+** Magit
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (setq auth-sources '("~/.authinfo"))
+#+end_src
 
-;; LSP
+** LSP
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! lsp-mode
   (push "\\.shadow-cljs" lsp-file-watch-ignored)
   (push "\\.clj-kondo" lsp-file-watch-ignored)
@@ -269,21 +298,23 @@ so one can yank eval last sexp
   (push "resources" lsp-file-watch-ignored)
 
   (setq lsp-ui-peek-always-show t)
-  (setq lsp-ui-sideline-show-hover t)
+  (setq lsp-ui-sideline-show-hover t))
+#+end_src
 
+** Scheme/Racket
 
-  )
-
-;; Lisps
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! racket
-  (map! :map racket-mode-map "C-c C-c" #'racket-send-definition)
-
-  )
+  (map! :map racket-mode-map "C-c C-c" #'racket-send-definition))
 
 (defun mit-scheme ()
   (interactive)
   (run-scheme "/Applications/scheme.app/Contents/Resources/mit-scheme"))
+#+end_src
 
+** Clojure
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! clojure
 
   (after! aggressive-indent
@@ -384,8 +415,6 @@ so one can yank eval last sexp
             (cider-test-show-report-on-success nil))
         (cider-test-run-ns-tests nil 'soft))))
 
-  (setq lexical-binding t)
-
   (defun kaocha-runner--run-tests (testable-sym &optional run-all? background? original-buffer)
     "Run kaocha tests.
 
@@ -450,11 +479,16 @@ Given an ORIGINAL-BUFFER, use that instead of (current-buffer) when switching ba
     "Show details from the test run with a MIN-HEIGHT, but switch back to ORIGINAL-BUFFER afterwards."
     (save-excursion
       (kaocha-runner--with-window kaocha-runner--out-buffer original-buffer
-        (visual-line-mode 1)
-        (goto-char (point-min))
-        (let ((case-fold-search nil))
-          (re-search-forward kaocha-runner--fail-re nil t))
-        (end-of-line))))
+        ;; (visual-line-mode 1)
+        ;; (goto-char (point-min))
+        ;; (let ((case-fold-search nil))
+        ;;   (re-search-forward kaocha-runner--fail-re nil t))
+        ;; (end-of-line)
+
+        ;; (goto-char (point-max))
+        ;; (other-frame 1)
+        ;; (goto-char (point-max))
+        )))
 
   (defvar my-test-runner 'kaocha)
 
@@ -489,13 +523,13 @@ Supports the fulcro-spec `specification' macro"
           (lambda (_buffer test-var)
             (if (not (string= "nil" test-var))
                 (progn
-                  (setq my-last-executed-test (list ns test-var code-buffer))
+                  (setq my-last-executed-test (list ns test-var))
                   (my-execute-test ns test-var code-buffer))
               (when my-last-executed-test
                 (my-execute-test
                  (car my-last-executed-test)
                  (cadr my-last-executed-test)
-                 (caddr my-last-executed-test)))))
+                 code-buffer))))
           nil
           nil
           (lambda (_buffer)))))))
@@ -584,8 +618,11 @@ Supports the fulcro-spec `specification' macro"
 
   )
 
+#+end_src
 
-;; Lispyville
+** Lispy
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (lispyville-set-key-theme
  '(operators
    c-w
@@ -602,12 +639,11 @@ Supports the fulcro-spec `specification' macro"
     (self-insert-command arg)))
 
 (map! :map lispy-mode-map-special :i "p" #'my-insert-hash-print)
+#+end_src
 
-;; Evil escape
-(use-package! evil-escape
-  :init (setq evil-escape-key-sequence "jk"))
+** Dired/Eshell
 
-;; Dired
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (defun my-buffer-mode (&optional buffer-or-name)
   "Return the major mode associated with a buffer.
 If buffer-or-name is nil return current buffer's mode."
@@ -647,12 +683,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 (map! :n "-" #'dired-or-eshell
       :map dired-mode-map :n "-" #'dired-or-eshell)
-
-;; End
-;;(toggle-frame-fullscreen)
 #+end_src
-
-#+RESULTS:
 
 * Lispy bindings
 #+NAME: lispy-bindings
