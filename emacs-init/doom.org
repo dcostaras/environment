@@ -360,8 +360,16 @@ so one can yank eval last sexp
     (when-mocking '(0))
     (assertions [0])
 
+    (thrown-with-data? [1])
+    (not-thrown-with-data? [1])
+
+    ;; JRA
+    (system/let [1])
+    (clet [1])
+
     (swap!-> [1])
 
+    ;; compojure
     (context 2)
     (POST 2)
     (GET 2)
