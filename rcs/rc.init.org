@@ -737,8 +737,9 @@ mkdir -p ~/.config/next
 Host github github.com
 User git
 Hostname github.com
-identityfile ~/.ssh/github
+identityfile ~/.ssh/github-dcostaras.pub
 IdentitiesOnly yes
+IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
 
 Host bitbucket bitbucket.org
 User git
@@ -836,6 +837,12 @@ AddKeysToAgent yes
 UseKeychain yes
 
 #+END_SRC
+
+** public keys
+
+#+begin_src sh :tangle ~/.ssh/github-dcostaras.pub
+ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNWj37tatbBFb+KIghbp8gtBcOtQbiD1CzIsX6TK16CtYO3A9zeoXqEUbAn2F7dkTVSzmNGIUmCTgrH59T2J4/0= github-dcostaras@secretive.Donavan-Ross’s-MacBook-Air.local
+#+end_src
 
 * authinfo
 
