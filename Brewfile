@@ -92,6 +92,7 @@ cask "iterm2"
 cask "menumeters"
 cask "qlstephen"
 cask "racket"
+cask "rectangle"
 cask "vlc"
 
 # Fonts
