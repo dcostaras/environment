@@ -753,25 +753,11 @@ Hostname 192.168.1.57
 Identityfile ~/.ssh/desktop
 IdentitiesOnly yes
 
-Host pro2019
-User donavan
-Hostname 192.168.1.114
-identityfile ~/.ssh/old-air
-IdentitiesOnly yes
-
 Host proxy
 User root
 Hostname 134.209.87.117
 Identityfile ~/.ssh/donavan
 IdentitiesOnly yes
-
-Host analytics-importer
-User ec2-user
-ProxyCommand ssh -q jump nc $(aws ec2 describe-instances --filters "Name=tag:Name,Values=analytics-importer*" "Name=instance-state-name,Values=running" --query 'Reservations[0].Instances[0].NetworkInterfaces[0].PrivateIpAddress' --output text) 22
-PreferredAuthentications publickey
-IdentityFile ~/.ssh/elit-dev
-StrictHostKeyChecking no
-UserKnownHostsFile /dev/null
 
 Host media
 User media
@@ -779,40 +765,6 @@ Hostname 192.168.0.14
 IdentityFile ~/.ssh/donavan
 IdentitiesOnly yes
 ForwardAgent yes
-
-Host builder
-User ec2-user
-ForwardAgent yes
-HostName 10.0.103.177
-IdentityFile ~/.ssh/elit-dev.pem
-ProxyCommand ssh -W %h:%p jump
-
-Host jump
-User ec2-user
-ForwardAgent yes
-HostName 54.77.144.63
-PreferredAuthentications publickey
-IdentityFile ~/.ssh/elit-dev.pem
-
-Host test
-User ec2-user
-ForwardAgent yes
-HostName 10.0.103.185
-IdentityFile ~/.ssh/elit-dev.pem
-ProxyCommand ssh -W %h:%p jump
-LocalForward 10001 0.0.0.0:10001
-LocalForward 9000 0.0.0.0:9000
-
-Host hupu-git
-User gitolite
-Hostname hupu-labs.linode
-Identityfile ~/.ssh/donavan
-IdentitiesOnly yes
-
-Host ganet
-Hostname 176.58.109.164
-identityfile ~/.ssh/id_rsa_old
-# IdentitiesOnly yes
 
 Host * !bitbucket.org !github.com
 
