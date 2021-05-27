@@ -1,4 +1,5 @@
 #+TITLE: Doom
+#+PROPERTY: header-args:emacs-lisp :lexical t
 
 * TODO turn "_" into the vim action to comment with #_ an object
 * TODO turn "p" into the vim action to comment with #p an object
@@ -37,7 +38,6 @@ so one can yank eval last sexp
 ** Settings
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 ;;; -*- lexical-binding: t; -*-
-(setq lexical-binding t)
 
 (setq
 
