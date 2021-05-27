@@ -321,26 +321,7 @@ so one can yank eval last sexp
 ** Clojure
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(after! clojure
-
-  (after! aggressive-indent
-    (add-hook! clojure-mode
-      (aggressive-indent-mode 1)))
-
-  ;; TODO test this
-  ;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
-  ;; (use-package! cider
-  ;;   :config
-  ;;   (set-lookup-handlers! 'cider-mode nil))
-  ;;
-  (after! lsp-mode
-    (after! lsp-ui-mode
-      (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-      (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))))
-
-
-;; Clojure
-(after! (:and clojure-mode cider)
+(after! cider
 
   ;; Not used
   ;; (defconst my-clojure-def-and-name-regex
@@ -412,6 +393,10 @@ so one can yank eval last sexp
     (GET 2)
     (PUT 2))
 
+  (defvar kaocha-windows-rx (rx bol (* any) "kaocha" (* any)))
+
+  (setq display-buffer-alist '((kaocha-windows-rx (display-buffer-pop-up-frame display-buffer-reuse-window display-buffer-same-window))))
+
   (setq cider-test-defining-forms '("deftest" "defspec" "specification"))
 
   (defun tdd-test ()
@@ -421,7 +406,16 @@ so one can yank eval last sexp
             (cider-test-show-report-on-success nil))
         (cider-test-run-ns-tests nil 'soft))))
 
-  (defun kaocha-runner--run-tests (testable-sym &optional run-all? background? original-buffer)
+  (defun my-kaocha-runner--show-details-window (original-buffer min-height)
+    "Show details from the test run with a MIN-HEIGHT, but switch back to ORIGINAL-BUFFER afterwards."
+    (let ((window (get-buffer-window kaocha-runner--out-buffer t)))
+      (when (not window)
+        (let ((window (split-window-vertically -4)))
+          (select-window window)
+          (switch-to-buffer kaocha-runner--out-buffer)
+          (set-window-dedicated-p window t)))))
+
+  (defun my-kaocha-runner--run-tests (testable-sym &optional run-all? background? original-buffer)
     "Run kaocha tests.
 
 If RUN-ALL? is t, all tests are run, otherwise attempt a run with the provided
@@ -477,30 +471,13 @@ Given an ORIGINAL-BUFFER, use that instead of (current-buffer) when switching ba
                  (switch-to-buffer-other-window kaocha-runner--err-buffer))))
            (when done?
              (if any-errors?
-                 (kaocha-runner--show-details-window original-buffer kaocha-runner-failure-win-min-height)
-               ;; (kaocha-runner--hide-window kaocha-runner--out-buffer)
-               )))))))
-
-  (defun kaocha-runner--show-details-window (original-buffer min-height)
-    "Show details from the test run with a MIN-HEIGHT, but switch back to ORIGINAL-BUFFER afterwards."
-    (save-excursion
-      (kaocha-runner--with-window kaocha-runner--out-buffer original-buffer
-        ;; (visual-line-mode 1)
-        ;; (goto-char (point-min))
-        ;; (let ((case-fold-search nil))
-        ;;   (re-search-forward kaocha-runner--fail-re nil t))
-        ;; (end-of-line)
-
-        ;; (goto-char (point-max))
-        ;; (other-frame 1)
-        ;; (goto-char (point-max))
-        )))
+                 (my-kaocha-runner--show-details-window original-buffer kaocha-runner-failure-win-min-height))))))))
 
   (defvar my-test-runner 'kaocha)
 
   (defun my-execute-test (ns test-var code-buffer)
     (cond ((eq my-test-runner 'kaocha)
-           (kaocha-runner--run-tests
+           (my-kaocha-runner--run-tests
             (kaocha-runner--testable-sym ns test-var (eq major-mode 'clojurescript-mode))
             nil
             t
@@ -621,9 +598,24 @@ Supports the fulcro-spec `specification' macro"
   ;; cider/cider-nrepl {:mvn/version "0.25.1"}}
   ;; :main-opts ["-m" "repl-eval.nrepl"]}
   ;; While I could refactor this to instrument variable middleware and injection forms, is there some hook I am missing here?  It was much much easier and cleaner to accomplish REPL initialization with leiningen.
-
   )
 
+(after! clojure
+
+  (after! aggressive-indent
+    (add-hook! clojure-mode
+      (aggressive-indent-mode 1)))
+
+  ;; TODO test this
+  ;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
+  ;; (use-package! cider
+  ;;   :config
+  ;;   (set-lookup-handlers! 'cider-mode nil))
+  ;;
+  (after! lsp-mode
+    (after! lsp-ui-mode
+      (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+      (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))))
 #+end_src
 
 ** Lispy
