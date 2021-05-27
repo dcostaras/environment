@@ -249,6 +249,12 @@ so one can yank eval last sexp
   :init (setq evil-escape-key-sequence "jk"))
 #+end_src
 
+*** Motion trainer
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+;; (global-evil-motion-trainer-mode 1)
+(setq evil-motion-trainer-threshold 6)
+#+end_src
+
 ** Ivy
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
@@ -1030,6 +1036,9 @@ If buffer-or-name is nil return current buffer's mode."
 (package! writeroom-mode)
 ;; (package! pcre2el)
 (package! kaocha-runner)
+(package! evil-motion-trainer
+  :recipe (:host github :repo "martinbaillie/evil-motion-trainer"))
+
 (unpin! lsp-mode)
 #+end_src
 
