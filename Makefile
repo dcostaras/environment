@@ -120,7 +120,7 @@ arm-homebrew:
 
 brew: .targets/brew
 .targets/brew: Brewfile
-	brew bundle --file $<
+	-brew bundle --file $<
 	touch $@
 
 # .targets/bash: | .targets/brew
