@@ -1,3 +1,0 @@
-echo loading: ~/.zshenv
-export PATH=$PATH:~/bin
-export PATH=$PATH:~/.emacs.d/bin
