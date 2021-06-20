@@ -366,11 +366,47 @@ and switch to REPL"
   ;;           (and "def" (* (syntax word))))))))
 
 
+  (defun cider-interactive-eval-clj (form &optional callback bounds additional-params)
+    "Evaluate FORM and dispatch the response to CALLBACK.
+If the code to be evaluated comes from a buffer, it is preferred to use a
+nil FORM, and specify the code via the BOUNDS argument instead.
+
+This function is the main entry point in CIDER's interactive evaluation
+API.  Most other interactive eval functions should rely on this function.
+If CALLBACK is nil use `cider-interactive-eval-handler'.
+BOUNDS, if non-nil, is a list of two numbers marking the start and end
+positions of FORM in its buffer.
+ADDITIONAL-PARAMS is a map to be merged into the request message.
+
+If `cider-interactive-eval-override' is a function, call it with the same
+arguments and only proceed with evaluation if it returns nil."
+    (let ((form  (or form (apply #'buffer-substring-no-properties bounds)))
+          (start (car-safe bounds))
+          (end   (car-safe (cdr-safe bounds))))
+      (when (and start end)
+        (remove-overlays start end 'cider-temporary t))
+      (unless (and cider-interactive-eval-override
+                   (functionp cider-interactive-eval-override)
+                   (funcall cider-interactive-eval-override form callback bounds))
+        (message "foo")
+        (cider-map-repls :clj
+          (lambda (connection)
+            (cider--prep-interactive-eval form connection)
+            (cider-nrepl-request:eval
+             form
+             (or callback (cider-interactive-eval-handler nil bounds))
+             ;; always eval ns forms in the user namespace
+             ;; otherwise trying to eval ns form for the first time will produce an error
+             (if (cider-ns-form-p form) "user" (cider-current-ns))
+             (when start (line-number-at-pos start))
+             (when start (cider-column-number-at-pos start))
+             (seq-mapcat #'identity additional-params)
+             connection))))))
 
   (defun my-cider-wandi-reset ()
     (interactive)
     (projectile-save-project-buffers)
-    (cider-interactive-eval "(user/restart)"))
+    (cider-interactive-eval-clj "(user/restart-server)"))
   (map! "C-c C-i" #'my-cider-wandi-reset)
 
   (defun my-cider-load-debug-tools ()
@@ -409,6 +445,9 @@ and switch to REPL"
     (behavior [1])
     (when-mocking '(0))
     (assertions [0])
+
+    ;; Fulcro functions
+    (df/load! [3])
 
     (thrown-with-data? [1])
     (not-thrown-with-data? [1])
@@ -595,6 +634,29 @@ Supports the fulcro-spec `specification' macro"
      t
      "*jet error buffer*"
      t))
+
+  ;; Similar to C-x C-e, but sends to REBL
+  (defun rebl-eval-last-sexp ()
+    (interactive)
+    (let* ((bounds (cider-last-sexp 'bounds))
+           (s (cider-last-sexp))
+           (reblized (concat "(cognitect.rebl/inspect " s ")")))
+      (cider-interactive-eval reblized nil bounds (cider--nrepl-print-request-map))))
+
+  ;; Similar to C-M-x, but sends to REBL
+  (defun rebl-eval-defun-at-point ()
+    (interactive)
+    (let* ((bounds (cider-defun-at-point 'bounds))
+           (s (cider-defun-at-point))
+           (reblized (concat "(cognitect.rebl/inspect " s ")")))
+      (cider-interactive-eval reblized nil bounds (cider--nrepl-print-request-map))))
+
+  ;; C-S-x send defun to rebl
+  ;; C-x C-r send last sexp to rebl (Normally bound to "find-file-read-only"... Who actually uses that though?)
+  (add-hook 'cider-mode-hook
+            (lambda ()
+              (local-set-key (kbd "C-S-x") #'rebl-eval-defun-at-point)
+              (local-set-key (kbd "C-x C-r") #'rebl-eval-last-sexp)))
 
   ;; waffletower  6:03 AM
   ;; I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
