@@ -88,8 +88,8 @@
   :master {:override-deps {org.clojure/clojure {:mvn/version "1.11.0-master-SNAPSHOT"}}}
 
   ;; testing and debugging tools:
-  :test {:extra-paths ["test" "src/test/clojure"]
-         :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}}}
+  ;; :test {:extra-paths ["test" "src/test/clojure"]
+  ;;        :extra-deps {org.clojure/test.check {:mvn/version "RELEASE"}}}
   ;; - see https://github.com/cognitect-labs/test-runner
   ;; - run your tests: clj -A:test:runner
   :runner {:extra-deps {com.cognitect/test-runner
@@ -121,12 +121,12 @@
 
   ;; REPL-related tools:
   ;; - start a modern nREPL server on a random available port:
-  :nrepl {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}
-                       refactor-nrepl {:mvn/version "2.5.0"}
-                       cider/cider-nrepl {:mvn/version "0.25.5"}}
-          :main-opts ["-m" "nrepl.cmdline"
-                      "--middleware"
-                      "[com.gfredericks.debug-repl/wrap-debug-repl,refactor-nrepl.middleware/wrap-refactor,cider.nrepl/cider-middleware]"]}
+  ;; :nrepl {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}
+  ;;                      refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
+  ;;                      cider/cider-nrepl {:mvn/version "0.25.5"}}
+  ;;         :main-opts ["-m" "nrepl.cmdline"
+  ;;                     "--middleware"
+  ;;                     "[com.gfredericks.debug-repl/wrap-debug-repl,refactor-nrepl.middleware/wrap-refactor,cider.nrepl/cider-middleware]"]}
   ;; - start a legacy nREPL server on port 60606:
   :nrepl/old {:extra-deps {org.clojure/tools.nrepl {:mvn/version "RELEASE"}}
               :main-opts ["-e" "(require,'[clojure.tools.nrepl.server,:refer,[start-server]]),(start-server,:port,60606)"]}
@@ -269,22 +269,37 @@
 
   :repl {:main-opts ["-e" "(require,'[clojure.main,:as,m])(m/repl,:init,#(apply,require,m/repl-requires),:eval,(fn,[form],(do,(require,'[clojure.pprint,:refer,[pp]])(eval,form))))"]}
 
+  :rebl {:extra-deps {com.cognitect/rebl          {:mvn/version "0.9.242"}
+                      org.openjfx/javafx-fxml     {:mvn/version "15-ea+6"}
+                      org.openjfx/javafx-controls {:mvn/version "15-ea+6"}
+                      org.openjfx/javafx-swing    {:mvn/version "15-ea+6"}
+                      org.openjfx/javafx-base     {:mvn/version "15-ea+6"}
+                      org.openjfx/javafx-web      {:mvn/version "15-ea+6"}}
+         :main-opts ["-m" "cognitect.rebl"]}
+
+  :rebl-jdk8 {:extra-deps {com.cognitect/rebl {:mvn/version "0.9.242"}}
+              :main-opts ["-m" "cognitect.rebl"]}
+
   :debug-tools {:extra-deps {hashp/hashp {:mvn/version "0.2.0"}
                              com.gfredericks/debug-repl {:mvn/version "0.0.11"}}}
 
-  :cider-nrepl {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.6"}
-                             refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}}}
+  :cider {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.5"}
+                       nrepl/nrepl {:mvn/version "0.8.3"}
+                       refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}}
+          :main-opts ["-m" "nrepl.cmdline"
+                      "-p" "8000"
+                      "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,shadow.cljs.devtools.server.nrepl/middleware]"]}
 
-  :local-fulcro {:override-deps {com.fulcrologic/fulcro {:local/root "~/src/fulcro"}}}
+  :local-fulcro {:override-deps {com.fulcrologic/fulcro {:local/root "/Users/donavan/src/fulcro"}}}
+  :local-workshop {:override-deps {com.jordanrivertechnology/workshop {:local/root "/Users/donavan/src/workshop"}}}
+  :local-carpenter {:override-deps {com.jordanrivertechnology/carpenter {:local/root "/Users/donavan/src/carpenter"}}}
   }}
 #+END_SRC
 
 ** shadow
 
 #+BEGIN_SRC clojure :tangle ~/.shadow-cljs/config.edn :ns 'nil :mkdirp yes
-{:deps-aliases [:debug-tools :cider-nrepl]
- :fs-watch {:watcher :polling
-            :hawk false}}
+{:deps-aliases [:dev #_:local-fulcro :debug-tools]}
 #+END_SRC
 
 ** datomic
@@ -578,19 +593,15 @@ sudo xattr -rd com.apple.quarantine $0
 
 *** JRA dev
 
-#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/jra-backend
-export TAOENSSO_TIMBRE_MIN_LEVEL_EDN=':warn'
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/jra
+# export TAOENSSO_TIMBRE_MIN_LEVEL_EDN=':warn'
 cd ~/src/jra && \
     /opt/homebrew/bin/clojure \
-    -Sdeps '{:deps {nrepl/nrepl {:mvn/version "0.8.3"} refactor-nrepl {:mvn/version "2.5.0"} cider/cider-nrepl {:mvn/version "0.25.5"}}}' \
-    -A:dev:test:kondo:debug-tools \
-    -J-Dtrace -J-Dghostwheel.enabled=true \
-    -m nrepl.cmdline\
-    --middleware '["com.gfredericks.debug-repl/wrap-debug-repl","refactor-nrepl.middleware/wrap-refactor","cider.nrepl/cider-middleware"]'
+    -M:dev:test:kondo:debug-tools:emacs-cider:local-carpenter:local-workshop #:local-fulcro
 #+end_src
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/jra-frontend
-cd ~/src/jra && npm run shadow-server
+cd ~/src/jra && shadow-cljs server
 #+end_src
 
 ** audio conversion
