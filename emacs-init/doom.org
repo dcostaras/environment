@@ -1185,7 +1185,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 * .dir-locals
 
-#+begin_src emacs-lisp :tangle ~/src/jra/.dir-locals-2.el
+#+begin_src emacs-lisp
 ((nil . ((cider-clojure-cli-global-options . "-A:dev:test:kondo:debug-tools -J-Dtrace -J-Dghostwheel.enabled=true")
          (cider-custom-cljs-repl-init-form . "(shadow/repl :main)")
          (cider-default-cljs-repl . shadow-select)
