@@ -1833,12 +1833,7 @@ sudo xattr -rd com.apple.quarantine $0
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/jra
 # export TAOENSSO_TIMBRE_MIN_LEVEL_EDN=':warn'
 cd ~/src/jra && \
-    /opt/homebrew/bin/clojure \
-    -M:dev:test:kondo:debug-tools:emacs-cider:local-carpenter:local-workshop #:local-fulcro
-#+end_src
-
-#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/jra-frontend
-cd ~/src/jra && shadow-cljs server
+    bb start nrepl :local carpenter
 #+end_src
 
 ** audio conversion
@@ -1867,6 +1862,17 @@ cd ~/src/jra && shadow-cljs server
       ffmpeg -f u16le -ar 44100 -ac 1 -i input.raw
   }
   #+END_SRC
+
+** completion
+
+#+BEGIN_SRC sh :tangle ~/.zshrc
+_bb_tasks() {
+    local matches=(`bb tasks |tail -n +3 |cut -f1 -d ' '`)
+    compadd -a matches
+    _files # autocomplete filenames as well
+}
+compdef _bb_tasks bb
+#+END_SRC
 
 * AWS
 
