@@ -482,7 +482,7 @@ arguments and only proceed with evaluation if it returns nil."
 
     (swap!-> [1])
 
-    (comment [1])
+    (comment :defn)
 
     ;; compojure
     (context 2)
