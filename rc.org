@@ -1863,9 +1863,8 @@ sudo xattr -rd com.apple.quarantine $0
 *** JRA dev
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/jra
-# export TAOENSSO_TIMBRE_MIN_LEVEL_EDN=':warn'
-cd ~/src/jra && \
-    bb start nrepl :local carpenter
+cd ~/src/yarmouk && \
+    bb start --local carpenter --local workshop
 #+end_src
 
 ** audio conversion
