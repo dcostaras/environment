@@ -482,6 +482,8 @@ arguments and only proceed with evaluation if it returns nil."
 
     (swap!-> [1])
 
+    (comment [1])
+
     ;; compojure
     (context 2)
     (POST 2)
