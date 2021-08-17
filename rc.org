@@ -1180,6 +1180,7 @@ If buffer-or-name is nil return current buffer's mode."
 (package! kaocha-runner)
 (package! evil-motion-trainer
   :recipe (:host github :repo "martinbaillie/evil-motion-trainer"))
+(package! flycheck-projectile)
 
 (unpin! lsp-mode)
 #+end_src
