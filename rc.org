@@ -413,7 +413,6 @@ arguments and only proceed with evaluation if it returns nil."
       (unless (and cider-interactive-eval-override
                    (functionp cider-interactive-eval-override)
                    (funcall cider-interactive-eval-override form callback bounds))
-        (message "foo")
         (cider-map-repls :clj
           (lambda (connection)
             (cider--prep-interactive-eval form connection)
@@ -428,11 +427,11 @@ arguments and only proceed with evaluation if it returns nil."
              (seq-mapcat #'identity additional-params)
              connection))))))
 
-  (defun my-cider-wandi-reset ()
+  (defun my-cider-reset ()
     (interactive)
     (projectile-save-project-buffers)
     (cider-interactive-eval-clj "(user/restart-server)"))
-  (map! "C-c C-i" #'my-cider-wandi-reset)
+  (map! "C-c C-i" #'my-cider-reset)
 
   (defun my-cider-load-debug-tools ()
     (interactive)
