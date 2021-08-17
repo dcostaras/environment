@@ -684,6 +684,8 @@ Supports the fulcro-spec `specification' macro"
               (local-set-key (kbd "C-S-x") #'rebl-eval-defun-at-point)
               (local-set-key (kbd "C-x C-r") #'rebl-eval-last-sexp)))
 
+  (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+  (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
   ;; waffletower  6:03 AM
   ;; I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
   ;; Untitled
