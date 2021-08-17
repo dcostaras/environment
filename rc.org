@@ -1541,9 +1541,10 @@ If buffer-or-name is nil return current buffer's mode."
                       "-p" "8000"
                       "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,shadow.cljs.devtools.server.nrepl/middleware]"]}
 
-  :local-fulcro {:override-deps {com.fulcrologic/fulcro {:local/root "/Users/donavan/src/fulcro"}}}
-  :local-workshop {:override-deps {com.jordanrivertechnology/workshop {:local/root "/Users/donavan/src/workshop"}}}
-  :local-carpenter {:override-deps {com.jordanrivertechnology/carpenter {:local/root "/Users/donavan/src/carpenter"}}}
+  :local/fulcro {:override-deps {com.fulcrologic/fulcro {:local/root "/Users/donavan/src/fulcro"}}}
+  :local/pathom3 {:override-deps {com.wsscode/pathom3 {:local/root "/Users/donavan/src/pathom3"}}}
+  :local/workshop {:override-deps {com.jordanrivertechnology/workshop {:local/root "/Users/donavan/src/workshop"}}}
+  :local/carpenter {:override-deps {com.jordanrivertechnology/carpenter {:local/root "/Users/donavan/src/carpenter"}}}
   }}
 #+END_SRC
 
