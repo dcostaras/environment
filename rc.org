@@ -470,9 +470,6 @@ arguments and only proceed with evaluation if it returns nil."
     (when-mocking '(0))
     (assertions [0])
 
-    ;; Fulcro functions
-    (df/load! [3])
-
     (thrown-with-data? [1])
     (not-thrown-with-data? [1])
 
