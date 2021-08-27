@@ -431,7 +431,28 @@ arguments and only proceed with evaluation if it returns nil."
     (interactive)
     (projectile-save-project-buffers)
     (cider-interactive-eval-clj "(user/restart-server)"))
-  (map! "C-c C-i" #'my-cider-reset)
+
+  ;;; Three ways to eval a string:
+  ;; Evals in environment but doesn't print
+  ;; (cider-nrepl-sync-request:eval "(form)")
+  ;; Evals in environment and prints
+  ;; (cider-interactive-eval-clj "(form)")
+  ;; Inserts literal form into repl and eval (second arg)
+  ;; (cider-insert-in-repl "(form)" t)
+
+  (defun my-cider-start-system ()
+    (interactive)
+    (cider-connect-clj)
+    (cider-insert-in-repl "(start-server)" t)
+    (cider-connect-sibling-clj '())
+    (cider-repl-switch-to-other)
+    (cider-insert-in-repl "(start-client)" t))
+
+  (map! (:localleader
+         (:map (clojure-mode-map clojurescript-mode-map)
+          (:prefix ("r" . "repl")
+           "r" #'my-cider-reset
+           "s" #'my-cider-start-system))))
 
   (defun my-cider-load-debug-tools ()
     (interactive)
