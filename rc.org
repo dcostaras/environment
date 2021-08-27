@@ -832,7 +832,13 @@ If buffer-or-name is nil return current buffer's mode."
      ((eq 'dired-mode mode) (eshell-cwd))
      (t (eshell-cwd)))))
 
-(map! :n "-" #'dired-or-eshell
+(defun my-eshell ()
+  (interactive)
+  (unless (persp-with-name-exists-p "shell")
+    (+workspace/load "shell"))
+  (+workspace-switch "shell"))
+
+(map! :n "-" #'my-eshell
       :map dired-mode-map :n "-" #'dired-or-eshell)
 #+end_src
 
