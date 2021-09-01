@@ -744,10 +744,10 @@ Supports the fulcro-spec `specification' macro"
   (font-lock-add-keywords
    nil
    `((,(rx "("
-           (optional (+ (syntax whitespace)))
+           (* (syntax whitespace))
            (group ">def" (optional "n"))
            (+ (syntax whitespace))
-           (group (1+ (or (syntax word) (syntax symbol)))))
+           (group (+ (or (syntax word) (syntax symbol)))))
       (1 font-lock-keyword-face)
       (2 font-lock-function-name-face)))))
 
