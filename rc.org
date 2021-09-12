@@ -1799,6 +1799,14 @@ nil
 ;;     my-fn
 ;;     (json/generate-string #_(io/writer *out*) {:pretty true}))
 #+end_src
+*** git annex
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/annex-close
+git annex add .
+git annex lock .
+git annex copy --all --to=rsync
+git annex sync
+#+end_src
 
 *** doom
 
