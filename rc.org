@@ -453,7 +453,7 @@ arguments and only proceed with evaluation if it returns nil."
     (projectile-save-project-buffers)
     (cider-interactive-eval-clj "(user/restart-server)"))
 
-  ;;; Three ways to eval a string:
+;;; Three ways to eval a string:
   ;; Evals in environment but doesn't print
   ;; (cider-nrepl-sync-request:eval "(form)")
   ;; Evals in environment and prints
@@ -759,23 +759,22 @@ Supports the fulcro-spec `specification' macro"
   ;; cider/cider-nrepl {:mvn/version "0.25.1"}}
   ;; :main-opts ["-m" "repl-eval.nrepl"]}
   ;; While I could refactor this to instrument variable middleware and injection forms, is there some hook I am missing here?  It was much much easier and cleaner to accomplish REPL initialization with leiningen.
-  )
 
-(defun guardrails-font-lock ()
-  (font-lock-add-keywords
-   nil
-   `((,(rx "("
-           (* (syntax whitespace))
-           (group ">def" (optional "n"))
-           (+ (syntax whitespace))
-           (group (+ (or (syntax word) (syntax symbol)))))
-      (1 font-lock-keyword-face)
-      (2 font-lock-function-name-face)))))
+  (defun guardrails-font-lock ()
+    (font-lock-add-keywords
+     nil
+     `(((rx "("
+            (* (syntax whitespace))
+            (group ">def" (optional "n"))
+            (+ (syntax whitespace))
+            (group (+ (or (syntax word) (syntax symbol)))))
+        (1 font-lock-keyword-face)
+        (2 font-lock-function-name-face)))))
 
-(add-hook 'clojure-mode-hook #'guardrails-font-lock)
+  (add-hook 'clojure-mode-hook #'guardrails-font-lock)
 
-(after! clojure
   (global-subword-mode 1)
+
   (after! aggressive-indent
     (add-hook! clojure-mode
       (aggressive-indent-mode 1)))
@@ -790,6 +789,7 @@ Supports the fulcro-spec `specification' macro"
     (after! lsp-ui-mode
       (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
       (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))))
+
 #+end_src
 
 *** Lispy
@@ -798,8 +798,12 @@ Supports the fulcro-spec `specification' macro"
 (lispyville-set-key-theme
  '(operators
    c-w
-   (prettify insert)
-   paredit))
+   prettify
+   paredit
+   commentary
+   slurp/barf-lispy
+   additional
+   additional-wrap))
 
 (use-package! evil-lispy
   :config (add-hook! '(clojure-mode clojurec-mode clojurescript-mode) #'evil-lispy-mode))
@@ -814,7 +818,11 @@ Supports the fulcro-spec `specification' macro"
       (insert "#p ")
     (self-insert-command arg)))
 
-(map! :map lispy-mode-map-special :i "p" #'my-insert-hash-print)
+(map! :map lispy-mode-map-special :i
+      "p" #'my-insert-hash-print
+      ;; "f" #'lispy-flow
+      ;; "d" #'lispy-different
+      )
 (remove-hook! 'evil-escape-inhibit-functions #'+lispy-inhibit-evil-escape-fn)
 #+end_src
 
