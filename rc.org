@@ -253,10 +253,6 @@ so one can yank eval last sexp
 
 *** Evil
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(setq evil-escape-unordered-key-sequence t)
-#+end_src
-
 **** Hydra paste
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
@@ -280,10 +276,13 @@ so one can yank eval last sexp
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (use-package! evil-escape
-  :init (setq evil-escape-key-sequence "jk"))
+  :init (progn
+          (setq evil-escape-key-sequence "jk")
+          (setq evil-escape-unordered-key-sequence t)))
 #+end_src
 
 **** Motion trainer
+
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 ;; (global-evil-motion-trainer-mode 1)
 (setq evil-motion-trainer-threshold 6)
@@ -786,7 +785,7 @@ Supports the fulcro-spec `specification' macro"
   ;; (use-package! cider
   ;;   :config
   ;;   (set-lookup-handlers! 'cider-mode nil))
-  ;;
+
   (after! lsp-mode
     (after! lsp-ui-mode
       (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
@@ -805,6 +804,10 @@ Supports the fulcro-spec `specification' macro"
 (use-package! evil-lispy
   :config (add-hook! '(clojure-mode clojurec-mode clojurescript-mode) #'evil-lispy-mode))
 
+;; (add-hook! 'evil-escape-inhibit-functions
+;;   (defun +lispy-inhibit-evil-escape-fn ()
+;;     (and lispy-mode (evil-insert-state-p))))
+
 (defun my-insert-hash-print (arg)
   (interactive "p")
   (if (lispy-left-p)
@@ -812,6 +815,7 @@ Supports the fulcro-spec `specification' macro"
     (self-insert-command arg)))
 
 (map! :map lispy-mode-map-special :i "p" #'my-insert-hash-print)
+(remove-hook! 'evil-escape-inhibit-functions #'+lispy-inhibit-evil-escape-fn)
 #+end_src
 
 *** Dired/Eshell
