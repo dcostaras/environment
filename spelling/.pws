@@ -1,4 +1,4 @@
-personal_ws-1.1 en 87
+personal_ws-1.1 en 88
 APIs
 Babashka
 Costaras
@@ -27,6 +27,7 @@ clocktables
 cognitect
 cognito
 config
+cpcache
 creds
 customisable
 defn
