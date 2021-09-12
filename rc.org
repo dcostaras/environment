@@ -834,16 +834,22 @@ If buffer-or-name is nil return current buffer's mode."
 (defun my-buffer-path ()
   (file-name-directory (or  (buffer-file-name) default-directory)))
 
+(defun my-eshell ()
+  (interactive)
+  (unless (persp-with-name-exists-p "shell")
+    (+workspace/load "shell"))
+  (+workspace-switch "shell"))
+
 (defun eshell-cwd ()
   "Set the eshell directory to the current buffer.
 
   Usage: M-x eshell-cwd"
   (interactive)
   (let ((path (my-buffer-path)))
-    (print path)
+    (my-eshell)
     (switch-to-buffer "*eshell*")
     (cd path)
-    (eshell-emit-prompt)))
+    (eshell-send-input)))
 
 (defun dired-cwd ()
   (interactive)
@@ -854,18 +860,11 @@ If buffer-or-name is nil return current buffer's mode."
   (interactive)
   (let ((mode (my-buffer-mode)))
     (cond
-     ((eq 'eshell-mode mode) (dired-cwd))
+     ((eq 'eshell-mode mode) (+workspace/other))
      ((eq 'dired-mode mode) (eshell-cwd))
-     (t (eshell-cwd)))))
+     (t (my-eshell)))))
 
-(defun my-eshell ()
-  (interactive)
-  (unless (persp-with-name-exists-p "shell")
-    (+workspace/load "shell"))
-  (+workspace-switch "shell"))
-
-(map! :n "-" #'my-eshell
-      :map dired-mode-map :n "-" #'dired-or-eshell)
+(map! :n "-" #'dired-or-eshell)
 #+end_src
 
 *** Theme
