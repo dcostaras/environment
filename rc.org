@@ -2078,6 +2078,12 @@ identityfile ~/.ssh/github-dcostaras.pub
 IdentitiesOnly yes
 IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
 
+Host rsync rsync.net zh1784.rsync.net
+User zh1784
+identityfile ~/.ssh/rsync.net.pub
+IdentitiesOnly yes
+IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
+
 Host bitbucket bitbucket.org
 User git
 Hostname bitbucket.org
@@ -2129,8 +2135,12 @@ UseKeychain yes
 
 ** public keys
 
-#+begin_src sh :tangle ~/.ssh/github-dcostaras.pub
+#+begin_src conf :tangle ~/.ssh/github-dcostaras.pub
 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNWj37tatbBFb+KIghbp8gtBcOtQbiD1CzIsX6TK16CtYO3A9zeoXqEUbAn2F7dkTVSzmNGIUmCTgrH59T2J4/0= github-dcostaras@secretive.Donavan-Ross’s-MacBook-Air.local
+#+end_src
+
+#+begin_src conf :tangle ~/.ssh/rsync.net.pub
+ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAAmex+/3fzVc6lCOnvlb6E1dIGenfinFKkadPp4dqRc/Ja58V8Y8GOm44hsvQgVlKpkSZ8sLwHHseAVPpQVvuA= rsync@secretive.Donavan-Ross’s-MacBook-Air.local
 #+end_src
 
 * authinfo
