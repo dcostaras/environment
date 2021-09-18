@@ -689,16 +689,31 @@ Supports the fulcro-spec `specification' macro"
                ("w" . kaocha-runner-show-warnings)
                ("h" . kaocha-runner-hide-windows)))
 
-  (defun jet ()
-    (interactive)
+
+  (defconst atom-rx
+    (rx (seq "#<Atom@" (1+ (in hex)) ": "
+             (group (*? anything))
+             ">")))
+
+  (defun jet (beginning end)
+    (interactive "r")
+    (narrow-to-region beginning end)
+
+    ;; Replace string representation of atoms with contents
+    (goto-char (point-min))
+    (while (re-search-forward atom-rx nil t)
+      (replace-match "\\1"))
+
     (shell-command-on-region
-     (region-beginning)
-     (region-end)
+     (point-min)
+     (point-max)
      "jet --pretty --edn-reader-opts '{:default tagged-literal}'"
      (current-buffer)
      t
      "*jet error buffer*"
-     t))
+     t)
+
+    (widen))
 
   ;; Similar to C-x C-e, but sends to REBL
   (defun rebl-eval-last-sexp ()
