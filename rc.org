@@ -333,18 +333,19 @@ so one can yank eval last sexp
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (use-package! magit
   :init
-  (setq auth-sources '("~/.authinfo"))
-  :config
-  (progn
-    (magit-todos-mode)))
+  (setq auth-sources '("~/.authinfo")))
+
+(use-package! magit-todos-mode
+  :disabled t
+  :after magit
+  :config (magit-todos-mode))
 
 (use-package! magit-delta
   :disabled t
   :after magit
   :config
-  (setq
-   magit-delta-default-dark-theme "OneHalfDark"
-   magit-delta-default-light-theme "OneHalfLight")
+  (setq magit-delta-default-dark-theme "OneHalfDark"
+        magit-delta-default-light-theme "OneHalfLight")
   (magit-delta-mode))
 #+end_src
 
