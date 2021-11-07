@@ -222,27 +222,27 @@ so one can yank eval last sexp
         "C-c '" #'org-edit-src-exit)
 
 
-;; (setq org-directory "~/org")
-;; (setq org-agenda-files (list "~/org/inbox.org"))
-;; (setq org-capture-templates
-;;       `(("i" "Inbox" entry  (file "inbox.org")
-;;          ,(concat "* TODO %?\n"
-;;                   "/Entered on/ %U"))))
-;; (map! "C-c c" 'org-capture)
-;; (defun org-capture-inbox ()
-;;   (interactive)
-;;   (call-interactively 'org-store-link)
-;;   (org-capture nil "i"))
+  ;; (setq org-directory "~/org")
+  ;; (setq org-agenda-files (list "~/org/inbox.org"))
+  ;; (setq org-capture-templates
+  ;;       `(("i" "Inbox" entry  (file "inbox.org")
+  ;;          ,(concat "* TODO %?\n"
+  ;;                   "/Entered on/ %U"))))
+  ;; (map! "C-c c" 'org-capture)
+  ;; (defun org-capture-inbox ()
+  ;;   (interactive)
+  ;;   (call-interactively 'org-store-link)
+  ;;   (org-capture nil "i"))
 
-;; (map! "C-c i" 'org-capture-inbox)
+  ;; (map! "C-c i" 'org-capture-inbox)
 
-;; (map! "C-c a" 'org-agenda)
-;; (setq org-agenda-hide-tags-regexp ".")
-;; (setq org-agenda-prefix-format
-;;       '((agenda . " %i %-12:c%?-12t% s")
-;;         (todo   . " ")
-;;         (tags   . " %i %-12:c")
-;;         (search . " %i %-12:c")))
+  ;; (map! "C-c a" 'org-agenda)
+  ;; (setq org-agenda-hide-tags-regexp ".")
+  ;; (setq org-agenda-prefix-format
+  ;;       '((agenda . " %i %-12:c%?-12t% s")
+  ;;         (todo   . " ")
+  ;;         (tags   . " %i %-12:c")
+  ;;         (search . " %i %-12:c")))
   )
 #+end_src
 
