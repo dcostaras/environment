@@ -466,7 +466,7 @@ arguments and only proceed with evaluation if it returns nil."
   (defun my-cider-reset ()
     (interactive)
     (projectile-save-project-buffers)
-    (cider-interactive-eval-clj "(user/restart-server)"))
+    (cider-interactive-eval-clj "(user/restart-system)"))
 
 ;;; Three ways to eval a string:
   ;; Evals in environment but doesn't print
@@ -479,7 +479,7 @@ arguments and only proceed with evaluation if it returns nil."
   (defun my-cider-start-system ()
     (interactive)
     (cider-connect-clj)
-    (cider-insert-in-repl "(start-server)" t)
+    (cider-insert-in-repl "(start-system)" t)
     (cider-connect-sibling-clj '())
     (cider-repl-switch-to-other)
     (cider-insert-in-repl "(start-client)" t))
