@@ -1628,21 +1628,23 @@ If buffer-or-name is nil return current buffer's mode."
                                   nrepl/nrepl {:mvn/version "0.8.3"}
                                   refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}}
                      :main-opts ["-m" "nrepl.cmdline"
-                                 "-p" "8000"
                                  "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor,shadow.cljs.devtools.server.nrepl/middleware]"]}
 
   :cider/clj {:extra-deps {cider/cider-nrepl {:mvn/version "0.25.5"}
                            nrepl/nrepl {:mvn/version "0.8.3"}
                            refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}}
               :main-opts ["-m" "nrepl.cmdline"
-                          "-p" "8000"
                           "--middleware" "[cider.nrepl/cider-middleware,refactor-nrepl.middleware/wrap-refactor]"]}
 
   :pathom/viz {:extra-deps {com.wsscode/pathom-viz-connector {:mvn/version "2021.07.15-1"}}}
-  :local/fulcro {:override-deps {com.fulcrologic/fulcro {:local/root "/Users/donavan/src/fulcro"}}}
-  :local/pathom3 {:override-deps {com.wsscode/pathom3 {:local/root "/Users/donavan/src/pathom3"}}}
-  :local/workshop {:override-deps {com.jordanrivertechnology/workshop {:local/root "/Users/donavan/src/workshop"}}}
-  :local/carpenter {:override-deps {com.jordanrivertechnology/carpenter {:local/root "/Users/donavan/src/carpenter"}}}
+
+  :local/fulcro {:override-deps {com.fulcrologic/fulcro {:local/root "../fulcro"}}}
+  :local/pathom3 {:override-deps {com.wsscode/pathom3 {:local/root "../pathom3"}}}
+  :local/workshop {:override-deps {com.jordanrivertechnology/workshop {:local/root "../workshop"}}}
+  :local/carpenter {:override-deps {com.jordanrivertechnology/carpenter {:local/root "../carpenter"}}}
+  :local/nexus {:override-deps {com.nivekuil/nexus {:local/root "../nexus"}}}
+  :local/fulcro-rad-datomic-ions-adapter {:override-deps {com.jordanrivertechnology/fulcro-rad-datomic-ions-adapter {:local/root "../fulcro-rad-datomic-ions-adapter"}}}
+
   }}
 #+END_SRC
 
