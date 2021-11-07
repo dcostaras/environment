@@ -421,6 +421,11 @@ and switch to REPL"
   ;;           "specification"
   ;;           (and "def" (* (syntax word))))))))
 
+  (defun cider-buffer-p (buffer)
+    (string-match-p "^\\*cider-" (buffer-name buffer)))
+
+  (push #'cider-buffer-p doom-real-buffer-functions)
+
 
   (defun cider-interactive-eval-clj (form &optional callback bounds additional-params)
     "Evaluate FORM and dispatch the response to CALLBACK.
