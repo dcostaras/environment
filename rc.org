@@ -157,6 +157,14 @@ so one can yank eval last sexp
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! org
+
+  ;; Org src buffers are real
+  (defun org-buffer-p (buffer)
+    (string-match-p "^\\*Org Src" (buffer-name buffer)))
+  (push #'org-buffer-p doom-real-buffer-functions)
+
+  ;; Open org src buffers in same windwo
+  (set-popup-rule! "^\\*Org Src" :ignore t)
   (setq org-src-window-setup 'current-window)
   ;; (setq org-time-clocksum-use-effort-durations t)
   (setq org-time-clocksum-use-effort-durations nil)
