@@ -1,4 +1,4 @@
-personal_ws-1.1 en 88
+personal_ws-1.1 en 90
 APIs
 Babashka
 Costaras
@@ -54,6 +54,7 @@ jra
 js
 jwt
 jwtToken
+keypair
 kondo
 localhost
 lsp
@@ -65,6 +66,7 @@ middleware
 mousemove
 mouseover
 myfarms
+namespace
 nrepl
 readme
 rebl
