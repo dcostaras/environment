@@ -695,6 +695,7 @@ Supports the fulcro-spec `specification' macro"
   (advice-add 'cider-pprint-eval-last-sexp :around 'evil-collection-cider-last-sexp)
 
   (use-package kaocha-runner
+    :disabled t
     :init
     (bind-keys :prefix-map ar-emacs-kaocha-prefix-map
                :prefix "C-c k"
