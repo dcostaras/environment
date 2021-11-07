@@ -705,7 +705,6 @@ Supports the fulcro-spec `specification' macro"
                ("w" . kaocha-runner-show-warnings)
                ("h" . kaocha-runner-hide-windows)))
 
-
   (defconst atom-rx
     (rx (seq "#<Atom@" (1+ (in hex)) ": "
              (group (*? anything))
