@@ -2368,6 +2368,7 @@ IdentitiesOnly yes
 IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
 
 Host rsync rsync.net zh1784.rsync.net
+Hostname zh1784.rsync.net
 User zh1784
 identityfile ~/.ssh/rsync.net.pub
 IdentitiesOnly yes
