@@ -524,6 +524,43 @@ Sexp is obtained by exiting the list ARG times."
 (setq evil-motion-trainer-threshold 6)
 #+end_src
 
+*** Doom modeline
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package! doom-modeline
+  :config
+  (setq doom-modeline-modal-icon t)
+  (setq doom-modeline-bar-width 3)
+
+  (setq-default
+   evil-emacs-state-tag        (propertize "[E]" 'face '(:background "SkyBlue2" :foreground "black"))
+   evil-evilified-state-tag    (propertize "<E>" 'face '(:background "green" :foreground "black"))
+   evil-hybrid-state-tag       (propertize "[H]" 'face '(:background "chartreuse3" :foreground "white"))
+   ;; evil-iedit-insert-state-tag (propertize "<I>" 'face '(:background "green" :foreground "black"))
+   ;; evil-iedit-state-tag        (propertize "<N>" 'face '(:background "green" :foreground "black"))
+   evil-insert-state-tag       (propertize "[I]" 'face '(:background "chartreuse3" :foreground "white"))
+   evil-lisp-state-tag         (propertize "[L]" 'face '(:background "green" :foreground "black"))
+   evil-motion-state-tag       (propertize "[M]" 'face '(:background "plum3" :foreground "white"))
+   evil-normal-state-tag       (propertize "[N]" 'face '(:background "DarkGoldenrod2" :foreground "black"))
+   evil-operator-state-tag     (propertize "[O]" 'face '(:background "purple" :foreground "black"))
+   evil-replace-state-tag      (propertize "[R]" 'face '(:background "green" :foreground "black"))
+   evil-visual-state-tag       (propertize "[V]" 'face '(:background "gray" :foreground "black")))
+
+  (doom-modeline-def-segment evil-state
+    "The current evil state.  Requires `evil-mode' to be enabled."
+    (when (bound-and-true-p evil-local-mode)
+      (concat
+       (doom-modeline-spc)
+       (s-trim-right (evil-state-property evil-state :tag t)))))
+
+  (doom-modeline-def-modeline 'main
+    '(bar workspace-name window-number
+          ;; modals
+          evil-state
+          matches buffer-info remote-host buffer-position word-count parrot selection-info)
+    '(objed-state misc-info persp-name battery grip irc mu4e gnus github debug repl lsp minor-modes input-method indent-info buffer-encoding major-mode process vcs checker)))
+#+end_src
+
 *** Ivy
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
@@ -1140,18 +1177,21 @@ If buffer-or-name is nil return current buffer's mode."
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (setq doom-theme 'doom-monokai-pro)
-(load-theme 'doom-monokai-pro t)
 
 (custom-theme-set-faces! '(doom-monokai-pro)
   `(line-number :foreground ,(doom-color 'green))
   `(line-number-current-line :foreground ,(doom-color 'red))
+  `(doom-modeline-bar :background ,(doom-color 'black) :foreground ,(doom-color 'black))
+
   ;; `(mode-line :foreground ,(doom-color 'blue))
-                                        ;`(mode-line-buffer-id :foreground ,(doom-color 'fg) :background "#000000")
+  ;; `(mode-line-buffer-id :foreground ,(doom-color 'fg) :background "#000000")
   ;; '(mode-line-success-highlight :background \"#00FF00\")
   ;; '(org-tag :background \"#4499FF\")
   ;; '(org-ellipsis :inherit org-tag)
   ;; '(which-key-docstring-face :inherit font-lock-comment-face)
   )
+
+(load-theme 'doom-monokai-pro t)
 #+end_src
 
 ** Lispy bindings
