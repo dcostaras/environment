@@ -337,8 +337,26 @@ so one can yank eval last sexp
    "j" 'symex-go-up
    "k" 'symex-go-down
    "l" 'symex-go-forward
-   "gj" 'symex-next-visual-line
-   "gk" 'symex-previous-visual-line
+
+   ("0" "M-h") 'symex-goto-first
+   ("$" "M-l") 'symex-goto-last
+   "M-j" 'symex-goto-highest
+   "M-k" 'symex-goto-lowest
+
+   "f" 'symex-traverse-forward
+   "b" 'symex-traverse-backward
+   "C-f" 'symex-traverse-forward-more
+   "C-b" 'symex-traverse-backward-more
+   "F" 'symex-traverse-forward-skip
+   "B" 'symex-traverse-backward-skip
+
+   "{" 'symex-leap-backward
+   "}" 'symex-leap-forward
+   "M-{" 'symex-soar-backward
+   "M-}" 'symex-soar-forward
+   "C-j" 'symex-climb-branch
+   "C-k" 'symex-descend-branch
+
    "(" 'symex-create-round
    "[" 'symex-create-square
    ")" 'symex-wrap-round
@@ -347,18 +365,7 @@ so one can yank eval last sexp
    "C-," 'symex-cycle-unquote
    "`" 'symex-add-quoting-level
    "C-`" 'symex-remove-quoting-level
-   "f" 'symex-traverse-forward
-   "b" 'symex-traverse-backward
-   "C-f" 'symex-traverse-forward-more
-   "C-b" 'symex-traverse-backward-more
-   "F" 'symex-traverse-forward-skip
-   "B" 'symex-traverse-backward-skip
-   "{" 'symex-leap-backward
-   "}" 'symex-leap-forward
-   "M-{" 'symex-soar-backward
-   "M-}" 'symex-soar-forward
-   "C-j" 'symex-climb-branch
-   "C-k" 'symex-descend-branch
+
    "y" 'symex-yank
    "Y" 'symex-yank-remaining
    "p" 'symex-paste-after
@@ -366,7 +373,7 @@ so one can yank eval last sexp
 
    "d" 'symex-delete
    "D" 'symex-delete-remaining
-   ;; "X" 'symex-delete-backwards
+   "X" 'symex-delete-backwards
 
    "c" 'symex-change
    "C" 'symex-change-remaining
@@ -380,9 +387,8 @@ so one can yank eval last sexp
    "K" 'paredit-raise-sexp
 
    "C-h" 'symex-capture-backward
-   "C-S-h" 'symex-emit-backward
-
    "C-l" 'symex-capture-forward
+   "C-S-h" 'symex-emit-backward
    "C-S-l" 'symex-emit-forward
 
    "z" 'symex-swallow
@@ -417,12 +423,7 @@ so one can yank eval last sexp
    "M->" 'symex-unfurl
    "C-M-<" 'symex-collapse-remaining
    "C-M->" 'symex-unfurl-remaining
-   "0" 'symex-goto-first
-   "M-h" 'symex-goto-first
-   "$" 'symex-goto-last
-   "M-l" 'symex-goto-last
-   "M-j" 'symex-goto-highest
-   "M-k" 'symex-goto-lowest
+
    "=" 'symex-tidy
    "<tab>" 'symex-tidy
    "C-=" 'symex-tidy-remaining
