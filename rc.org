@@ -881,8 +881,6 @@ arguments and only proceed with evaluation if it returns nil."
 
   (setq cider-clojure-cli-global-options "-A:debug-tools")
   (setq cider-shadow-cljs-global-options "-A:debug-tools")
-  (add-to-list 'cider-repl-init-code "(require,'hashp.core)")
-  (add-to-list 'cider-jack-in-nrepl-middlewares "com.gfredericks.debug-repl/wrap-debug-repl")
 
   (setq cider-auto-select-test-report-buffer nil)
   (setq cider-save-file-on-load t)
