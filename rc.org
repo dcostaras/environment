@@ -154,48 +154,61 @@ so one can yank eval last sexp
 #+end_src
 
 *** Org
+**** Keybindings
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(after! org
+#+name: org-keybindings
+#+begin_src emacs-lisp
+(:keymaps 'org-src-mode-map
+ "C-c C-c" nil
+ "C-c '" #'org-edit-src-exit)
+#+end_src
 
-  ;; Org src buffers are real
-  (defun org-buffer-p (buffer)
-    (string-match-p "^\\*Org Src" (buffer-name buffer)))
-  (push #'org-buffer-p doom-real-buffer-functions)
+**** Settings
 
-  ;; Open org src buffers in same windwo
-  (set-popup-rule! "^\\*Org Src" :ignore t)
-  (setq org-src-window-setup 'current-window)
-  ;; (setq org-time-clocksum-use-effort-durations t)
-  (setq org-time-clocksum-use-effort-durations nil)
-  (setq org-duration-format '(
-                              ;; ("d" . nil)
-                              ("h" . nil)
-                              (special . 2)
-                              ;; ("min" . t)
-                              ))
+#+name: org-settings
+#+begin_src emacs-lisp
+(setq org-time-clocksum-use-effort-durations nil)
+(setq org-duration-format '(("h" . nil) (special . 2)))
+(setq org-effort-durations `(("h" . 60)))
 
-  (setq org-effort-durations
-        `(
-          ;; ("min" . 1)
-          ("h" . 60)
-          ;; eight-hour days
-          ;; ("d" . ,(* 60 8))
-          ;; five-day work week
-          ;; ("w" . ,(* 60 8 5))
-          ;; four weeks in a month
-          ;; ("m" . ,(* 60 8 5 4))
-          ;; work a total of 12 months a year --
-          ;; this is independent of holiday and sick time taken
-          ;; ("y" . ,(* 60 8 5 4 12))
-          ))
-  (setq org-startup-folded t)
-  (use-package! worf)
-  (use-package! ob-http)
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t)
-     (http . t)))
+(setq org-startup-folded t)
+
+(setq org-directory "~/Documents/org")
+(setq org-agenda-files (list "~/Documents/org/inbox.org"))
+#+end_src
+
+**** Org buffers
+
+#+name: org-buffers
+#+begin_src emacs-lisp
+;; Org src buffers are real
+(defun org-buffer-p (buffer)
+  (string-match-p "^\\*Org Src" (buffer-name buffer)))
+(push #'org-buffer-p doom-real-buffer-functions)
+
+;; Open org src buffers in same windwo
+(set-popup-rule! "^\\*Org Src" :ignore t)
+(setq org-src-window-setup 'current-window)
+#+end_src
+
+**** Tangling and exporting
+
+#+name: org-tangling-and-exporting
+#+begin_src emacs-lisp
+(use-package! ob-http)
+(org-babel-do-load-languages
+ 'org-babel-load-languages
+ '((emacs-lisp . t)
+   (http . t)))
+#+end_src
+
+**** Worf
+
+#+name: org-worf
+#+begin_src emacs-lisp
+(use-package! worf
+  :disabled t
+  :config
 
   (defun bjm/worf-insert-internal-link ()
     "Use ivy to insert a link to a heading in the current `org-mode' document. Code is based on `worf-goto'."
@@ -214,36 +227,48 @@ so one can yank eval last sexp
     ;; return to original point and insert link
     (org-insert-last-stored-link 1)
     ;; org-insert-last-stored-link adds a newline so delete this
-    (delete-backward-char 1))
+    (delete-backward-char 1)))
+#+end_src
 
+**** Agenda
 
-  (map! :map org-src-mode-map
-        "C-c C-c" nil
-        "C-c '" #'org-edit-src-exit)
+#+name: org-agenda
+#+begin_src emacs-lisp
+(setq org-capture-templates
+      `(("i" "Inbox" entry  (file "inbox.org")
+         ,(concat "* TODO %?\n"
+                  "/Entered on/ %U"))))
+(map! "C-c c" 'org-capture)
 
+(defun org-capture-inbox ()
+  (interactive)
+  (call-interactively 'org-store-link)
+  (org-capture nil "i"))
 
-  ;; (setq org-directory "~/org")
-  ;; (setq org-agenda-files (list "~/org/inbox.org"))
-  ;; (setq org-capture-templates
-  ;;       `(("i" "Inbox" entry  (file "inbox.org")
-  ;;          ,(concat "* TODO %?\n"
-  ;;                   "/Entered on/ %U"))))
-  ;; (map! "C-c c" 'org-capture)
-  ;; (defun org-capture-inbox ()
-  ;;   (interactive)
-  ;;   (call-interactively 'org-store-link)
-  ;;   (org-capture nil "i"))
+(map! "C-c i" 'org-capture-inbox)
 
-  ;; (map! "C-c i" 'org-capture-inbox)
+(map! "C-c a" 'org-agenda)
+(setq org-agenda-hide-tags-regexp ".")
+(setq org-agenda-prefix-format
+      '((agenda . " %i %-12:c%?-12t% s")
+        (todo   . " ")
+        (tags   . " %i %-12:c")
+        (search . " %i %-12:c")))
+#+end_src
 
-  ;; (map! "C-c a" 'org-agenda)
-  ;; (setq org-agenda-hide-tags-regexp ".")
-  ;; (setq org-agenda-prefix-format
-  ;;       '((agenda . " %i %-12:c%?-12t% s")
-  ;;         (todo   . " ")
-  ;;         (tags   . " %i %-12:c")
-  ;;         (search . " %i %-12:c")))
-  )
+**** Package
+
+#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
+(use-package org
+  :general
+  <<org-keybindings>>
+
+  :config
+  <<org-settings>>
+  <<org-buffers>>
+  <<org-agenda>>
+  <<org-tangling-and-exporting>>
+  <<org-worf>>)
 #+end_src
 
 *** Auto dim other buffers
