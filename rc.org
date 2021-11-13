@@ -1654,7 +1654,8 @@ If buffer-or-name is nil return current buffer's mode."
 (package! ob-http)
 (package! org-download)
 (package! writeroom-mode)
-;; (package! pcre2el)
+(package! key-chord)
+(package! pcre2el)
 (package! magit-delta)
 (package! kaocha-runner)
 (package! evil-motion-trainer
