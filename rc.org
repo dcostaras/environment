@@ -284,7 +284,209 @@ so one can yank eval last sexp
       ispell-personal-dictionary "~/env/spelling/.pws")
 #+end_src
 
-*** Evil
+*** evil
+**** Default states
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(setq evil-symex-state-modes '(clojure-mode
+                               clojurec-mode
+                               clojurescript-mode))
+
+#+end_src
+
+**** general
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package general)
+#+end_src
+
+**** key-chord
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package key-chord
+  :config (key-chord-mode 1))
+#+end_src
+
+**** Symex
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package symex
+  :hook ((clojure-mode clojurescript-mode clojurec-mode) . my-symex-activation-hook)
+
+  :general
+
+  ("M-;" 'symex-mode-interface)
+
+  (:states '(normal insert)
+   "<escape>" 'symex-mode-interface
+   (general-chord "jk") 'symex-mode-interface)
+
+  (:states '(normal)
+   "<enter>" 'symex-mode-interface)
+
+  (:keymaps 'symex-editing-mode-map
+   :states '(symex)
+   (general-chord "jk") 'evil-normal-state
+   ",p" 'lispy-ace-paren
+   ",s" 'my-lispy-ace-symbol
+
+   "h" 'symex-go-backward
+   "j" 'symex-go-up
+   "k" 'symex-go-down
+   "l" 'symex-go-forward
+   "gj" 'symex-next-visual-line
+   "gk" 'symex-previous-visual-line
+   "(" 'symex-create-round
+   "[" 'symex-create-square
+   ")" 'symex-wrap-round
+   "]" 'symex-wrap-square
+   "C-'" 'symex-cycle-quote
+   "C-," 'symex-cycle-unquote
+   "`" 'symex-add-quoting-level
+   "C-`" 'symex-remove-quoting-level
+   "f" 'symex-traverse-forward
+   "b" 'symex-traverse-backward
+   "C-f" 'symex-traverse-forward-more
+   "C-b" 'symex-traverse-backward-more
+   "F" 'symex-traverse-forward-skip
+   "B" 'symex-traverse-backward-skip
+   "{" 'symex-leap-backward
+   "}" 'symex-leap-forward
+   "M-{" 'symex-soar-backward
+   "M-}" 'symex-soar-forward
+   "C-j" 'symex-climb-branch
+   "C-k" 'symex-descend-branch
+   "y" 'symex-yank
+   "Y" 'symex-yank-remaining
+   "p" 'symex-paste-after
+   "P" 'symex-paste-before
+
+   "d" 'symex-delete
+   "D" 'symex-delete-remaining
+   ;; "X" 'symex-delete-backwards
+
+   "c" 'symex-change
+   "C" 'symex-change-remaining
+   "C--" 'symex-clear
+   "s" 'symex-replace
+   "S" 'symex-change-delimiter
+   "H" 'symex-shift-backward
+   "L" 'symex-shift-forward
+   "M-H" 'symex-shift-backward-most
+   "M-L" 'symex-shift-forward-most
+   "K" 'paredit-raise-sexp
+
+   "C-h" 'symex-capture-backward
+   "C-S-h" 'symex-emit-backward
+
+   "C-l" 'symex-capture-forward
+   "C-S-l" 'symex-emit-forward
+
+   "z" 'symex-swallow
+   "Z" 'symex-swallow-tail
+
+   "e" 'symex-evaluate
+   "e" 'symex-evaluate-definition
+   "E" 'symex-evaluate-remaining
+   "C-M-e" 'symex-evaluate-pretty
+   "M-e" 'symex-eval-recursive
+   "T" 'symex-evaluate-thunk
+   "R" 'symex-repl
+   "r" 'symex-run
+
+   ":" 'evil-ex
+
+   "t" 'symex-switch-to-scratch-buffer
+   "M" 'symex-switch-to-messages-buffer
+   "|" 'symex-split
+   "&" 'symex-join
+   "-" 'symex-splice
+   "o" 'symex-open-line-after
+   "O" 'symex-open-line-before
+   ">" 'symex-insert-newline
+   "<" 'symex-join-lines-backwards
+   "C->" 'symex-append-newline
+   "C-<" 'symex-join-lines
+   "C-S-o" 'symex-append-newline
+   "J" 'symex-join-lines
+   "M-J" 'symex-collapse
+   "M-<" 'symex-collapse
+   "M->" 'symex-unfurl
+   "C-M-<" 'symex-collapse-remaining
+   "C-M->" 'symex-unfurl-remaining
+   "0" 'symex-goto-first
+   "M-h" 'symex-goto-first
+   "$" 'symex-goto-last
+   "M-l" 'symex-goto-last
+   "M-j" 'symex-goto-highest
+   "M-k" 'symex-goto-lowest
+   "=" 'symex-tidy
+   "<tab>" 'symex-tidy
+   "C-=" 'symex-tidy-remaining
+   "C-<tab>" 'symex-tidy-remaining
+   "M-=" 'symex-tidy-proper
+   "M-<tab>" 'symex-tidy-proper
+   "A" 'symex-append-after
+   "a" 'symex-insert-at-end
+   "i" 'symex-insert-at-beginning
+   "I" 'symex-insert-before
+   "w" 'symex-wrap
+   "W" 'symex-wrap-and-append
+   "C-d" 'symex--evil-scroll-down
+   ";" 'symex-comment
+   "M-;" 'symex-comment-remaining
+   "C-;" 'symex-eval-print
+   "s-;" 'symex-evaluate
+   "H-h" 'symex--toggle-highlight
+   "C-?" 'symex-describe
+   "<return>" 'symex-enter-lower
+   "<escape>" 'symex-escape-higher)
+
+  :config
+
+  (defun my-symex-initialize ()
+    "Initialize symex mode.
+This registers symex mode for use in all recognized Lisp modes, and also
+advises functions to enable or disable features based on user configuration."
+    ;; enable the symex minor mode in all recognized lisp modes
+    (dolist (mode-name symex-lisp-modes)
+      (let ((mode-hook (intern (concat (symbol-name mode-name)
+                                       "-hook"))))
+        (add-hook mode-hook 'symex-mode)))
+    ;; advise functions to enable or disable configured features
+    (when symex-remember-branch-positions-p
+      (advice-add #'symex-go-down :around #'symex--remember-branch-position)
+      (advice-add #'symex-go-up :around #'symex--return-to-branch-position)
+      (advice-add #'symex-go-backward :around #'symex--forget-branch-positions)
+      (advice-add #'symex-go-forward :around #'symex--forget-branch-positions))
+    (symex--add-selection-advice))
+
+  (defun my-lispy-ace-symbol (arg)
+    "Jump to a symbol within the current sexp and mark it.
+Sexp is obtained by exiting the list ARG times."
+    (interactive "p")
+    (message "%s" arg)
+    (symex-go-down 1)
+    (let ((avy-keys lispy-avy-keys)
+          res)
+      (avy-with lispy-ace-symbol
+        (let ((avy--overlay-offset (if (eq lispy-avy-style-symbol 'at) -1 0)))
+          (setq res (lispy--avy-do
+                     "[([{ ]\\(?:\\sw\\|\\s_\\|[\"'`#~,@]\\)"
+                     (lispy--bounds-dwim)
+                     (lambda ()
+                       (not (save-excursion
+                              (forward-char -1)
+                              (lispy--in-string-or-comment-p))))
+                     lispy-avy-style-symbol))))))
+
+  (defun my-symex-activation-hook ()
+    (symex-mode-interface))
+
+  (setq evil-symex-state-cursor '(box "orange"))
+
+  (my-symex-initialize))
+#+end_src
 
 **** Hydra paste
 
@@ -309,6 +511,7 @@ so one can yank eval last sexp
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (use-package! evil-escape
+  :disabled t
   :init (progn
           (setq evil-escape-key-sequence "jk")
           (setq evil-escape-unordered-key-sequence t)))
@@ -1282,6 +1485,9 @@ If buffer-or-name is nil return current buffer's mode."
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
                                         ;(unpin! t)
 
+(package! symex
+  :recipe (:type git :host github :repo "countvajhula/symex.el"
+           :fork (:host github :protocol ssh :repo "dcostaras/symex.el")))
 (package! aggressive-indent)
 (package! auto-dim-other-buffers)
 (package! evil-lispy)
