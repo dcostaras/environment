@@ -758,6 +758,9 @@ arguments and only proceed with evaluation if it returns nil."
     (thrown-with-data? [1])
     (not-thrown-with-data? [1])
 
+    ;; Datomic
+    (not-join 1)
+
     ;; JRA
     (system/let [1])
     (clet [1])
