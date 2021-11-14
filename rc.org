@@ -338,8 +338,10 @@ so one can yank eval last sexp
    "k" 'symex-go-down
    "l" 'symex-go-forward
 
-   ("0" "M-h") 'symex-goto-first
-   ("$" "M-l") 'symex-goto-last
+   "0" 'symex-goto-first
+   "M-h" 'symex-goto-first
+   "$" 'symex-goto-last
+   "M-l" 'symex-goto-last
    "M-j" 'symex-goto-highest
    "M-k" 'symex-goto-lowest
 
