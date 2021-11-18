@@ -704,14 +704,18 @@ Sexp is obtained by exiting the list ARG times."
                     (rigpa-enter-mode "word"))))
 #+end_src
 
-*** Ivy
+*** Ivy/Vertico
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(after! vertico
+  (map! :map vertico-map
+        "C-h" #'vertico-directory-delete-char
+        "C-l" #'vertico-insert))
+
 (after! ivy
 
   (setq ivy-extra-directories '())
 
-  (map! "C-h" :map ivy-minibuffer-map #'counsel-up-directory)
   (map! :n "/" #'+default/search-buffer)
 
   (defun ivy-yank-action (x)
@@ -1451,7 +1455,8 @@ If buffer-or-name is nil return current buffer's mode."
 
        :completion
        company             ; the ultimate code completion backend
-       ivy                 ; a search engine for love and life
+       (vertico +icons)
+       ;ivy                 ; a search engine for love and life
 
        :ui
        ;;deft              ; notational velocity for Emacs
