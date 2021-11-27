@@ -80,6 +80,7 @@ brew "shellcheck"
 brew "siege"
 # Doesn't work
 # brew "sshfs"
+brew "svn"
 brew "texinfo"
 brew "trash"
 brew "unnethack"
@@ -98,15 +99,19 @@ brew "yubikey-personalization"
 cask "1password-cli"
 cask "chromium"
 cask "dwarf-fortress-lmp"
+cask "emacs-mac"
 cask "iterm2"
 cask "menumeters"
-cask "osxfuse"
+# no bottle
+# cask "osxfuse"
 # Already installed?
 # cask "qlstephen"
 cask "racket"
 cask "rectangle"
 cask "secretive"
+cask "slack"
 cask "vlc"
+cask "yacreader"
 
 # Fonts
 cask "font-fira-code"
