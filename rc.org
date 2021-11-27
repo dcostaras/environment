@@ -331,6 +331,7 @@ so one can yank eval last sexp
    (general-chord "fd") 'evil-normal-state)
 
   (:keymaps 'symex-editing-mode-map
+   :states '(symex)
    ",p" 'lispy-ace-paren
    ",s" 'my-lispy-ace-symbol
 
@@ -400,7 +401,7 @@ so one can yank eval last sexp
    "Z" 'symex-swallow-tail
 
    ;; Evaluation
-   "e" 'symex-evaluate
+   ;; "e" 'symex-evaluate
    "e" 'symex-evaluate-definition
    "E" 'symex-evaluate-remaining
    "C-M-e" 'symex-evaluate-pretty
@@ -458,20 +459,6 @@ so one can yank eval last sexp
    "<escape>" 'symex-escape-higher)
 
   :config
-
-  (defun symex-clojure-comment-remaining-reader-macro ()
-    "Comment out remaining symexes at this level using clojure(script)'s comment reader macro."
-    (interactive)
-    (let ((count (symex--remaining-length)))
-      (my-symex-comment-reader-macro count)))
-
-  (defun symex-clojure-comment-reader-macro (count)
-    "Comment symex using clojure(script)'s comment reader macro"
-    (interactive "p")
-    (dotimes (_ count)
-      (insert "#_")
-      (when (not (symex--go-forward))
-        (backward-char 2))))
 
   (defun my-symex-initialize ()
     "Initialize symex mode.
