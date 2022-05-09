@@ -847,25 +847,44 @@ and switch to REPL"
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! cider
+#+end_src
 
-  ;; Not used
-  ;; (defconst my-clojure-def-and-name-regex
-  ;;   (rx
-  ;;    (seq bol
-  ;;         (* blank) "(" (* blank)
-  ;;         (group
-  ;;          (or
-  ;;           "specification"
-  ;;           (and "def" (* (syntax word))))))))
+**** my-clojure-def-and-name-regex
 
-  (defun cider-buffer-p (buffer)
-    (string-match-p "^\\*cider-" (buffer-name buffer)))
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+;; Not used
+;; (defconst my-clojure-def-and-name-regex
+;;   (rx
+;;    (seq bol
+;;         (* blank) "(" (* blank)
+;;         (group
+;;          (or
+;;           "specification"
+;;           (and "def" (* (syntax word))))))))
+#+end_src
 
-  (push #'cider-buffer-p doom-real-buffer-functions)
+**** cider report mode
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defhydra my-cider-report-hydra ()
+  "zoom"
+  ("g" text-scale-increase "in")
+  ("l" text-scale-decrease "out"))
+
+;; (add-hook 'cider-test-report-mode-hook #'my-cider-report-hydra/body)
+#+end_src
+
+**** other
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun cider-buffer-p (buffer)
+  (string-match-p "^\\*cider-" (buffer-name buffer)))
+
+(push #'cider-buffer-p doom-real-buffer-functions)
 
 
-  (defun cider-interactive-eval-clj (form &optional callback bounds additional-params)
-    "Evaluate FORM and dispatch the response to CALLBACK.
+(defun cider-interactive-eval-clj (form &optional callback bounds additional-params)
+  "Evaluate FORM and dispatch the response to CALLBACK.
 If the code to be evaluated comes from a buffer, it is preferred to use a
 nil FORM, and specify the code via the BOUNDS argument instead.
 
@@ -878,146 +897,144 @@ ADDITIONAL-PARAMS is a map to be merged into the request message.
 
 If `cider-interactive-eval-override' is a function, call it with the same
 arguments and only proceed with evaluation if it returns nil."
-    (let ((form  (or form (apply #'buffer-substring-no-properties bounds)))
-          (start (car-safe bounds))
-          (end   (car-safe (cdr-safe bounds))))
-      (when (and start end)
-        (remove-overlays start end 'cider-temporary t))
-      (unless (and cider-interactive-eval-override
-                   (functionp cider-interactive-eval-override)
-                   (funcall cider-interactive-eval-override form callback bounds))
-        (cider-map-repls :clj
-          (lambda (connection)
-            (cider--prep-interactive-eval form connection)
-            (cider-nrepl-request:eval
-             form
-             (or callback (cider-interactive-eval-handler nil bounds))
-             ;; always eval ns forms in the user namespace
-             ;; otherwise trying to eval ns form for the first time will produce an error
-             (if (cider-ns-form-p form) "user" (cider-current-ns))
-             (when start (line-number-at-pos start))
-             (when start (cider-column-number-at-pos start))
-             (seq-mapcat #'identity additional-params)
-             connection))))))
+  (let ((form  (or form (apply #'buffer-substring-no-properties bounds)))
+        (start (car-safe bounds))
+        (end   (car-safe (cdr-safe bounds))))
+    (when (and start end)
+      (remove-overlays start end 'cider-temporary t))
+    (unless (and cider-interactive-eval-override
+                 (functionp cider-interactive-eval-override)
+                 (funcall cider-interactive-eval-override form callback bounds))
+      (cider-map-repls :clj
+        (lambda (connection)
+          (cider--prep-interactive-eval form connection)
+          (cider-nrepl-request:eval
+           form
+           (or callback (cider-interactive-eval-handler nil bounds))
+           ;; always eval ns forms in the user namespace
+           ;; otherwise trying to eval ns form for the first time will produce an error
+           (if (cider-ns-form-p form) "user" (cider-current-ns))
+           (when start (line-number-at-pos start))
+           (when start (cider-column-number-at-pos start))
+           (seq-mapcat #'identity additional-params)
+           connection))))))
 
-  (setq my-cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
+(setq my-cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
 
-  (defun my-kill-cider-repls ()
-    (interactive)
-    (kill-matching-buffers my-cider-repl-name-rx nil t))
+(defun my-kill-cider-repls ()
+  (interactive)
+  (kill-matching-buffers my-cider-repl-name-rx nil t))
 
-  (defun my-cider-reset ()
-    (interactive)
-    (projectile-save-project-buffers)
-    (cider-interactive-eval-clj "(do (in-ns 'user) (restart-system))"))
+(defun my-cider-reset ()
+  (interactive)
+  (projectile-save-project-buffers)
+  (cider-interactive-eval-clj "(do (in-ns 'user) (restart-system))"))
 
 ;;; Three ways to eval a string:
-  ;; Evals in environment but doesn't print
-  ;; (cider-nrepl-sync-request:eval "(form)")
-  ;; Evals in environment and prints
-  ;; (cider-interactive-eval-clj "(form)")
-  ;; Inserts literal form into repl and eval (second arg)
-  ;; (cider-insert-in-repl "(form)" t)
+;; Evals in environment but doesn't print
+;; (cider-nrepl-sync-request:eval "(form)")
+;; Evals in environment and prints
+;; (cider-interactive-eval-clj "(form)")
+;; Inserts literal form into repl and eval (second arg)
+;; (cider-insert-in-repl "(form)" t)
 
-  (defun my-cider-start-system ()
-    (interactive)
-    (my-kill-cider-repls)
-    (cider-connect-clj)
-    (cider-insert-in-repl "(start-system)" t)
-    (cider-connect-sibling-clj '())
-    (cider-repl-switch-to-other)
-    (cider-insert-in-repl "(start-client)" t))
+(defun my-cider-start-system ()
+  (interactive)
+  (my-kill-cider-repls)
+  (cider-connect-clj)
+  (cider-insert-in-repl "(start-system)" t)
+  (cider-connect-sibling-clj '())
+  (cider-repl-switch-to-other)
+  (cider-insert-in-repl "(start-client)" t))
 
-  (map! (:localleader
-         (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
-          (:prefix ("r" . "repl")
-           "r" #'my-cider-reset
-           "s" #'my-cider-start-system))))
+(map! (:localleader
+       (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
+        (:prefix ("r" . "repl")
+         "r" #'my-cider-reset
+         "s" #'my-cider-start-system))))
 
-  (defun my-cider-load-debug-tools ()
-    (interactive)
-    (cider-interactive-eval
-     "(require '[com.gfredericks.debug-repl :refer [break! unbreak! unbreak!!]])
+(defun my-cider-load-debug-tools ()
+  (interactive)
+  (cider-interactive-eval
+   "(require '[com.gfredericks.debug-repl :refer [break! unbreak! unbreak!!]])
       (require '[hashp.core])"))
 
-  (setq cider-clojure-cli-global-options "-A:debug-tools")
-  (setq cider-shadow-cljs-global-options "-A:debug-tools")
+(setq cider-clojure-cli-global-options "-A:debug-tools")
+(setq cider-shadow-cljs-global-options "-A:debug-tools")
+(setq cider-save-file-on-load t)
+(setq clojure-toplevel-inside-comment-form t)
+(setq org-babel-clojure-backend 'cider)
+(setq lsp-lens-enable t)
 
-  (setq cider-auto-select-test-report-buffer nil)
-  (setq cider-save-file-on-load t)
-  (setq clojure-toplevel-inside-comment-form t)
-  (setq org-babel-clojure-backend 'cider)
-  (setq lsp-lens-enable t)
+;; TODO test this
+;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
+;; (use-package! clj-refactor
+;;   :after clojure-mode
+;;   :config
+;;   (set-lookup-handlers! 'clj-refactor-mode nil))
 
-  ;; TODO test this
-  ;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
-  ;; (use-package! clj-refactor
-  ;;   :after clojure-mode
-  ;;   :config
-  ;;   (set-lookup-handlers! 'clj-refactor-mode nil))
+(define-clojure-indent
+  ;; Fulcro
+  (>defn :defn)
+  (defmutation [1 :form :form [1]])
+  ;; (pc/defmutation [2 :form :form [1]])
 
-  (define-clojure-indent
-    ;; Fulcro
-    (>defn :defn)
-    (defmutation [1 :form :form [1]])
-    ;; (pc/defmutation [2 :form :form [1]])
+  ;; Fulcro-spec
+  (specification [1])
+  (component [1])
+  (behavior [1])
+  (when-mocking '(0))
+  (assertions [0])
 
-    ;; Fulcro-spec
-    (specification [1])
-    (component [1])
-    (behavior [1])
-    (when-mocking '(0))
-    (assertions [0])
+  (thrown-with-data? [1])
+  (not-thrown-with-data? [1])
 
-    (thrown-with-data? [1])
-    (not-thrown-with-data? [1])
+  ;; Datomic
+  (not-join 1)
 
-    ;; Datomic
-    (not-join 1)
+  ;; JRA
+  (system/let [1])
+  (clet [1])
+  (sp/collected? 1)
+  (sp/cond-path :defn)
+  (sp/recursive-path :defn)
 
-    ;; JRA
-    (system/let [1])
-    (clet [1])
-    (sp/collected? 1)
-    (sp/cond-path :defn)
-    (sp/recursive-path :defn)
+  (swap!-> [1])
 
-    (swap!-> [1])
+  (comment :defn)
 
-    (comment :defn)
+  (m/search 1)
 
-    (m/search 1)
+  ;; compojure
+  (context 2)
+  (POST 2)
+  (GET 2)
+  (PUT 2))
 
-    ;; compojure
-    (context 2)
-    (POST 2)
-    (GET 2)
-    (PUT 2))
+(defvar kaocha-windows-rx (rx bol (* any) "kaocha" (* any)))
 
-  (defvar kaocha-windows-rx (rx bol (* any) "kaocha" (* any)))
+(setq display-buffer-alist '((kaocha-windows-rx (display-buffer-pop-up-frame display-buffer-reuse-window display-buffer-same-window))))
 
-  (setq display-buffer-alist '((kaocha-windows-rx (display-buffer-pop-up-frame display-buffer-reuse-window display-buffer-same-window))))
+(setq cider-test-defining-forms '("deftest" "defspec" "specification"))
 
-  (setq cider-test-defining-forms '("deftest" "defspec" "specification"))
+(defun tdd-test ()
+  "Thin wrapper around `cider-test-run-tests'."
+  (when (cider-connected-p)
+    (let ((cider-auto-select-test-report-buffer nil)
+          (cider-test-show-report-on-success nil))
+      (cider-test-run-ns-tests nil 'soft))))
 
-  (defun tdd-test ()
-    "Thin wrapper around `cider-test-run-tests'."
-    (when (cider-connected-p)
-      (let ((cider-auto-select-test-report-buffer nil)
-            (cider-test-show-report-on-success nil))
-        (cider-test-run-ns-tests nil 'soft))))
+(defun my-kaocha-runner--show-details-window (original-buffer min-height)
+  "Show details from the test run with a MIN-HEIGHT, but switch back to ORIGINAL-BUFFER afterwards."
+  (let ((window (get-buffer-window kaocha-runner--out-buffer t)))
+    (when (not window)
+      (let ((window (split-window-vertically -4)))
+        (select-window window)
+        (switch-to-buffer kaocha-runner--out-buffer)
+        (set-window-dedicated-p window t)))))
 
-  (defun my-kaocha-runner--show-details-window (original-buffer min-height)
-    "Show details from the test run with a MIN-HEIGHT, but switch back to ORIGINAL-BUFFER afterwards."
-    (let ((window (get-buffer-window kaocha-runner--out-buffer t)))
-      (when (not window)
-        (let ((window (split-window-vertically -4)))
-          (select-window window)
-          (switch-to-buffer kaocha-runner--out-buffer)
-          (set-window-dedicated-p window t)))))
-
-  (defun my-kaocha-runner--run-tests (testable-sym &optional run-all? background? original-buffer)
-    "Run kaocha tests.
+(defun my-kaocha-runner--run-tests (testable-sym &optional run-all? background? original-buffer)
+  "Run kaocha tests.
 
 If RUN-ALL? is t, all tests are run, otherwise attempt a run with the provided
 TESTABLEY-SYM. In practice TESTABLEY-SYM can be a test id, an ns or an ns/test-fn.
@@ -1025,249 +1042,249 @@ TESTABLEY-SYM. In practice TESTABLEY-SYM can be a test id, an ns or an ns/test-f
 If BACKGROUND? is t, we don't message when the tests start running.
 
 Given an ORIGINAL-BUFFER, use that instead of (current-buffer) when switching back."
-    (interactive)
-    (kaocha-runner--clear-buffer kaocha-runner--out-buffer)
-    (kaocha-runner--clear-buffer kaocha-runner--err-buffer)
-    (kaocha-runner--eval-clojure-code
-     (format kaocha-runner-repl-invocation-template
-             (if run-all?
-                 (format "(kaocha.repl/run-all %s)" kaocha-runner-extra-configuration)
-               (format
-                "(kaocha.repl/run %s %s)"
-                testable-sym
-                kaocha-runner-extra-configuration)))
-     (let ((original-buffer (or original-buffer (current-buffer)))
-           (done? nil)
-           (any-errors? nil)
-           (shown-details? nil)
-           (the-value nil)
-           (start-time (float-time)))
-       (unless background?
-         (if run-all?
-             (message "Running all tests ...")
-           (message "[%s] Running tests ..." testable-sym)))
-       (lambda (response)
-         (nrepl-dbind-response response (value out err status)
-           (when out
-             (kaocha-runner--insert kaocha-runner--out-buffer out)
-             (when (let ((case-fold-search nil))
-                     (string-match-p kaocha-runner--fail-re out))
-               (setq any-errors? t))
-             (when (and (< kaocha-runner-long-running-seconds
-                           (- (float-time) start-time))
-                        (not shown-details?))
-               (setq shown-details? t)
-               (kaocha-runner--show-details-window original-buffer kaocha-runner-ongoing-tests-win-min-height)))
-           (when err
-             (kaocha-runner--insert kaocha-runner--err-buffer err))
-           (when value
-             (setq the-value value))
-           (when (and status (member "done" status))
-             (setq done? t))
-           (when done?
-             (if the-value
-                 (kaocha-runner--show-report the-value (unless run-all? testable-sym))
-               (unless (get-buffer-window kaocha-runner--err-buffer 'visible)
-                 (message "Kaocha run failed. See error window for details.")
-                 (switch-to-buffer-other-window kaocha-runner--err-buffer))))
-           (when done?
-             (if any-errors?
-                 (my-kaocha-runner--show-details-window original-buffer kaocha-runner-failure-win-min-height))))))))
+  (interactive)
+  (kaocha-runner--clear-buffer kaocha-runner--out-buffer)
+  (kaocha-runner--clear-buffer kaocha-runner--err-buffer)
+  (kaocha-runner--eval-clojure-code
+   (format kaocha-runner-repl-invocation-template
+           (if run-all?
+               (format "(kaocha.repl/run-all %s)" kaocha-runner-extra-configuration)
+             (format
+              "(kaocha.repl/run %s %s)"
+              testable-sym
+              kaocha-runner-extra-configuration)))
+   (let ((original-buffer (or original-buffer (current-buffer)))
+         (done? nil)
+         (any-errors? nil)
+         (shown-details? nil)
+         (the-value nil)
+         (start-time (float-time)))
+     (unless background?
+       (if run-all?
+           (message "Running all tests ...")
+         (message "[%s] Running tests ..." testable-sym)))
+     (lambda (response)
+       (nrepl-dbind-response response (value out err status)
+         (when out
+           (kaocha-runner--insert kaocha-runner--out-buffer out)
+           (when (let ((case-fold-search nil))
+                   (string-match-p kaocha-runner--fail-re out))
+             (setq any-errors? t))
+           (when (and (< kaocha-runner-long-running-seconds
+                         (- (float-time) start-time))
+                      (not shown-details?))
+             (setq shown-details? t)
+             (kaocha-runner--show-details-window original-buffer kaocha-runner-ongoing-tests-win-min-height)))
+         (when err
+           (kaocha-runner--insert kaocha-runner--err-buffer err))
+         (when value
+           (setq the-value value))
+         (when (and status (member "done" status))
+           (setq done? t))
+         (when done?
+           (if the-value
+               (kaocha-runner--show-report the-value (unless run-all? testable-sym))
+             (unless (get-buffer-window kaocha-runner--err-buffer 'visible)
+               (message "Kaocha run failed. See error window for details.")
+               (switch-to-buffer-other-window kaocha-runner--err-buffer))))
+         (when done?
+           (if any-errors?
+               (my-kaocha-runner--show-details-window original-buffer kaocha-runner-failure-win-min-height))))))))
 
-  (defvar my-test-runner 'kaocha)
+(defvar my-test-runner 'kaocha)
 
-  (defun my-execute-test (ns test-var code-buffer)
-    (cond ((eq my-test-runner 'kaocha)
-           (my-kaocha-runner--run-tests
-            (kaocha-runner--testable-sym ns test-var (eq major-mode 'clojurescript-mode))
-            nil
-            t
-            code-buffer))
-          ((eq my-test-runner 'cider)
-           (progn
-             (cider-test-update-last-test ns (list test-var))
-             (cider-test-execute ns (list test-var))))))
+(defun my-execute-test (ns test-var code-buffer)
+  (cond ((eq my-test-runner 'kaocha)
+         (my-kaocha-runner--run-tests
+          (kaocha-runner--testable-sym ns test-var (eq major-mode 'clojurescript-mode))
+          nil
+          t
+          code-buffer))
+        ((eq my-test-runner 'cider)
+         (progn
+           (cider-test-update-last-test ns (list test-var))
+           (cider-test-execute ns (list test-var))))))
 
-  (defvar my-last-executed-test nil)
+(defvar my-last-executed-test nil)
 
-  (defun my-run-test ()
-    "Run Clojure test at point.
+(defun my-run-test ()
+  "Run Clojure test at point.
 
 Supports the fulcro-spec `specification' macro"
-    (interactive)
-    (let* ((ns  (clojure-find-ns))
-           (code-buffer (current-buffer)))
-      (when ns
-        (cider-interactive-eval
-         (concat "(clojure.core/let [{:keys [name test]} (clojure.core/meta "
-                 (cider-defun-at-point)
-                 ")] (clojure.core/when test name))")
-         (nrepl-make-response-handler
-          code-buffer
-          (lambda (_buffer test-var)
-            (if (not (string= "nil" test-var))
-                (progn
-                  (setq my-last-executed-test (list ns test-var))
-                  (my-execute-test ns test-var code-buffer))
-              (when my-last-executed-test
-                (my-execute-test
-                 (car my-last-executed-test)
-                 (cadr my-last-executed-test)
-                 code-buffer))))
-          nil
-          nil
-          (lambda (_buffer)))))))
+  (interactive)
+  (let* ((ns  (clojure-find-ns))
+         (code-buffer (current-buffer)))
+    (when ns
+      (cider-interactive-eval
+       (concat "(clojure.core/let [{:keys [name test]} (clojure.core/meta "
+               (cider-defun-at-point)
+               ")] (clojure.core/when test name))")
+       (nrepl-make-response-handler
+        code-buffer
+        (lambda (_buffer test-var)
+          (if (not (string= "nil" test-var))
+              (progn
+                (setq my-last-executed-test (list ns test-var))
+                (my-execute-test ns test-var code-buffer))
+            (when my-last-executed-test
+              (my-execute-test
+               (car my-last-executed-test)
+               (cadr my-last-executed-test)
+               code-buffer))))
+        nil
+        nil
+        (lambda (_buffer)))))))
 
-  (define-minor-mode tdd-mode
-    "Run all tests whenever a file is loaded."
-    nil nil nil
-    :global t
-    (if tdd-mode
-        (progn
-          (advice-add 'cider-eval-defun-at-point :after #'my-run-test)
-          (add-hook 'cider-file-loaded-hook #'tdd-test))
+(define-minor-mode tdd-mode
+  "Run all tests whenever a file is loaded."
+  nil nil nil
+  :global t
+  (if tdd-mode
       (progn
-        (advice-remove 'cider-eval-defun-at-point #'my-run-test)
-        (remove-hook 'cider-file-loaded-hook #'tdd-test))))
+        (advice-add 'cider-eval-defun-at-point :after #'my-run-test)
+        (add-hook 'cider-file-loaded-hook #'tdd-test))
+    (progn
+      (advice-remove 'cider-eval-defun-at-point #'my-run-test)
+      (remove-hook 'cider-file-loaded-hook #'tdd-test))))
 
-  (define-minor-mode pprint-eval-mode
-    "When active swaps `cider-eval-defun-at-point' with `cider-pprint-eval-defun-at-point'"
-    nil nil nil
-    :global t
-    (if pprint-eval-mode
-        (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
-              [remap cider-eval-defun-at-point] #'cider-pprint-eval-defun-at-point
-              [remap cider-eval-last-sexp] #'cider-pprint-eval-last-sexp)
+(define-minor-mode pprint-eval-mode
+  "When active swaps `cider-eval-defun-at-point' with `cider-pprint-eval-defun-at-point'"
+  nil nil nil
+  :global t
+  (if pprint-eval-mode
       (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
-            [remap cider-pprint-eval-defun-at-point] #'cider-eval-defun-at-point
-            [remap cider-pprint-eval-last-sexp] #'cider-eval-last-sexp)))
+            [remap cider-eval-defun-at-point] #'cider-pprint-eval-defun-at-point
+            [remap cider-eval-last-sexp] #'cider-pprint-eval-last-sexp)
+    (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
+          [remap cider-pprint-eval-defun-at-point] #'cider-eval-defun-at-point
+          [remap cider-pprint-eval-last-sexp] #'cider-eval-last-sexp)))
 
-  (advice-add 'cider-pprint-eval-last-sexp :around 'evil-collection-cider-last-sexp)
+(advice-add 'cider-pprint-eval-last-sexp :around 'evil-collection-cider-last-sexp)
 
-  (use-package kaocha-runner
-    :init
-    (bind-keys :prefix-map ar-emacs-kaocha-prefix-map
-               :prefix "C-c k"
-               ("t" . kaocha-runner-run-test-at-point)
-               ("r" . kaocha-runner-run-tests)
-               ("a" . kaocha-runner-run-all-tests)
-               ("w" . kaocha-runner-show-warnings)
-               ("h" . kaocha-runner-hide-windows)))
+(use-package kaocha-runner
+  :init
+  (bind-keys :prefix-map ar-emacs-kaocha-prefix-map
+             :prefix "C-c k"
+             ("t" . kaocha-runner-run-test-at-point)
+             ("r" . kaocha-runner-run-tests)
+             ("a" . kaocha-runner-run-all-tests)
+             ("w" . kaocha-runner-show-warnings)
+             ("h" . kaocha-runner-hide-windows)))
 
-  (defconst atom-rx
-    (rx (seq "#<Atom@" (1+ (in hex)) ": "
-             (group (*? anything))
-             ">")))
+(defconst atom-rx
+  (rx (seq "#<Atom@" (1+ (in hex)) ": "
+           (group (*? anything))
+           ">")))
 
-  (defun jet (beginning end)
-    (interactive "r")
-    (narrow-to-region beginning end)
+(defun jet (beginning end)
+  (interactive "r")
+  (narrow-to-region beginning end)
 
-    ;; Replace string representation of atoms with contents
-    (goto-char (point-min))
-    (while (re-search-forward atom-rx nil t)
-      (replace-match "\\1"))
+  ;; Replace string representation of atoms with contents
+  (goto-char (point-min))
+  (while (re-search-forward atom-rx nil t)
+    (replace-match "\\1"))
 
-    (shell-command-on-region
-     (point-min)
-     (point-max)
-     "jet --pretty --edn-reader-opts '{:default tagged-literal}'"
-     (current-buffer)
-     t
-     "*jet error buffer*"
-     t)
+  (shell-command-on-region
+   (point-min)
+   (point-max)
+   "jet --pretty --edn-reader-opts '{:default tagged-literal}'"
+   (current-buffer)
+   t
+   "*jet error buffer*"
+   t)
 
-    (widen))
+  (widen))
 
-  ;; Similar to C-x C-e, but sends to REBL
-  (defun rebl-eval-last-sexp ()
-    (interactive)
-    (let* ((bounds (cider-last-sexp 'bounds))
-           (s (cider-last-sexp))
-           (reblized (concat "(cognitect.rebl/inspect " s ")")))
-      (cider-interactive-eval reblized nil bounds (cider--nrepl-print-request-map))))
+;; Similar to C-x C-e, but sends to REBL
+(defun rebl-eval-last-sexp ()
+  (interactive)
+  (let* ((bounds (cider-last-sexp 'bounds))
+         (s (cider-last-sexp))
+         (reblized (concat "(cognitect.rebl/inspect " s ")")))
+    (cider-interactive-eval reblized nil bounds (cider--nrepl-print-request-map))))
 
-  ;; Similar to C-M-x, but sends to REBL
-  (defun rebl-eval-defun-at-point ()
-    (interactive)
-    (let* ((bounds (cider-defun-at-point 'bounds))
-           (s (cider-defun-at-point))
-           (reblized (concat "(cognitect.rebl/inspect " s ")")))
-      (cider-interactive-eval reblized nil bounds (cider--nrepl-print-request-map))))
+;; Similar to C-M-x, but sends to REBL
+(defun rebl-eval-defun-at-point ()
+  (interactive)
+  (let* ((bounds (cider-defun-at-point 'bounds))
+         (s (cider-defun-at-point))
+         (reblized (concat "(cognitect.rebl/inspect " s ")")))
+    (cider-interactive-eval reblized nil bounds (cider--nrepl-print-request-map))))
 
-  ;; C-S-x send defun to rebl
-  ;; C-x C-r send last sexp to rebl (Normally bound to "find-file-read-only"... Who actually uses that though?)
-  (add-hook 'cider-mode-hook
-            (lambda ()
-              (local-set-key (kbd "C-S-x") #'rebl-eval-defun-at-point)
-              (local-set-key (kbd "C-x C-r") #'rebl-eval-last-sexp)))
+;; C-S-x send defun to rebl
+;; C-x C-r send last sexp to rebl (Normally bound to "find-file-read-only"... Who actually uses that though?)
+(add-hook 'cider-mode-hook
+          (lambda ()
+            (local-set-key (kbd "C-S-x") #'rebl-eval-defun-at-point)
+            (local-set-key (kbd "C-x C-r") #'rebl-eval-last-sexp)))
 
-  (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
-  (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
-  ;; waffletower  6:03 AM
-  ;; I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
-  ;; Untitled
-  ;; (ns repl-eval.nrepl
-  ;;     (:require [clojure.pprint :refer [pprint]]
-  ;;      [nrepl.server :as server]
-  ;;      [nrepl.core :as nrepl]
-  ;;      refactor-nrepl.middleware
-  ;;      cider.nrepl))
-  ;; ​
-  ;; (defn start
-  ;;   []
-  ;;   (let [server (server/start-server
-  ;;                 :handler (apply server/default-handler
-  ;;                                 (conj
-  ;;                                  (map #'cider.nrepl/resolve-or-fail cider.nrepl/cider-middleware)
-  ;;                                  #'refactor-nrepl.middleware/wrap-refactor)))
-  ;;                port (:port server)]
-  ;;     (with-open [cxn (nrepl/connect :port port)]
-  ;;                (-> (nrepl/client cxn 1000)
-  ;;                    (nrepl/message {:op "eval" :code "(require '[clojure.pprint :refer [pprint]])"})
-  ;;                    nrepl/response-values))
-  ;;     (spit ".nrepl-port" port)))
-  ;; Collapse
-  ;; 6:04
-  ;; The injection in this case is requiring pprint.
-  ;; waffletower  6:09 AM
-  ;; The code is easily referenced in a deps.edn alias:
-  ;; :inject {:extra-deps {waffletower/repl-eval {:local/root "../repl-eval/"}
-  ;; nrepl/nrepl {:mvn/version "0.7.0"}
-  ;; refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
-  ;; cider/cider-nrepl {:mvn/version "0.25.1"}}
-  ;; :main-opts ["-m" "repl-eval.nrepl"]}
-  ;; While I could refactor this to instrument variable middleware and injection forms, is there some hook I am missing here?  It was much much easier and cleaner to accomplish REPL initialization with leiningen.
+(add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+(add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
+;; waffletower  6:03 AM
+;; I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
+;; Untitled
+;; (ns repl-eval.nrepl
+;;     (:require [clojure.pprint :refer [pprint]]
+;;      [nrepl.server :as server]
+;;      [nrepl.core :as nrepl]
+;;      refactor-nrepl.middleware
+;;      cider.nrepl))
+;; ​
+;; (defn start
+;;   []
+;;   (let [server (server/start-server
+;;                 :handler (apply server/default-handler
+;;                                 (conj
+;;                                  (map #'cider.nrepl/resolve-or-fail cider.nrepl/cider-middleware)
+;;                                  #'refactor-nrepl.middleware/wrap-refactor)))
+;;                port (:port server)]
+;;     (with-open [cxn (nrepl/connect :port port)]
+;;                (-> (nrepl/client cxn 1000)
+;;                    (nrepl/message {:op "eval" :code "(require '[clojure.pprint :refer [pprint]])"})
+;;                    nrepl/response-values))
+;;     (spit ".nrepl-port" port)))
+;; Collapse
+;; 6:04
+;; The injection in this case is requiring pprint.
+;; waffletower  6:09 AM
+;; The code is easily referenced in a deps.edn alias:
+;; :inject {:extra-deps {waffletower/repl-eval {:local/root "../repl-eval/"}
+;; nrepl/nrepl {:mvn/version "0.7.0"}
+;; refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
+;; cider/cider-nrepl {:mvn/version "0.25.1"}}
+;; :main-opts ["-m" "repl-eval.nrepl"]}
+;; While I could refactor this to instrument variable middleware and injection forms, is there some hook I am missing here?  It was much much easier and cleaner to accomplish REPL initialization with leiningen.
 
-  (defun guardrails-font-lock ()
-    (font-lock-add-keywords
-     nil
-     `((,(rx "("
-             (* (syntax whitespace))
-             (group ">def" (optional "n"))
-             (+ (syntax whitespace))
-             (group (+ (or (syntax word) (syntax symbol)))))
-        (1 font-lock-keyword-face)
-        (2 font-lock-function-name-face)))))
+(defun guardrails-font-lock ()
+  (font-lock-add-keywords
+   nil
+   `((,(rx "("
+           (* (syntax whitespace))
+           (group ">def" (optional "n"))
+           (+ (syntax whitespace))
+           (group (+ (or (syntax word) (syntax symbol)))))
+      (1 font-lock-keyword-face)
+      (2 font-lock-function-name-face)))))
 
-  (add-hook 'clojure-mode-hook #'guardrails-font-lock)
+(add-hook 'clojure-mode-hook #'guardrails-font-lock)
 
-  (global-subword-mode 1)
+(global-subword-mode 1)
 
-  (after! aggressive-indent
-    (add-hook! clojure-mode
-      (aggressive-indent-mode 1)))
+(after! aggressive-indent
+  (add-hook! clojure-mode
+    (aggressive-indent-mode 1)))
 
-  ;; TODO test this
-  ;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
-  ;; (use-package! cider
-  ;;   :config
-  ;;   (set-lookup-handlers! 'cider-mode nil))
+;; TODO test this
+;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
+;; (use-package! cider
+;;   :config
+;;   (set-lookup-handlers! 'cider-mode nil))
 
-  (after! lsp-mode
-    (after! lsp-ui-mode
-      (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-      (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))))
+(after! lsp-mode
+  (after! lsp-ui-mode
+    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))))
 #+end_src
 
 *** Lispy
