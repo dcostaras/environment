@@ -956,8 +956,9 @@ arguments and only proceed with evaluation if it returns nil."
 (defun my-cider-load-debug-tools ()
   (interactive)
   (cider-interactive-eval
-   "(require '[com.gfredericks.debug-repl :refer [break! unbreak! unbreak!!]])
-      (require '[hashp.core])"))
+   "(do
+      (require '[com.gfredericks.debug-repl :refer [break! unbreak! unbreak!!]])
+      (require '[hashp.core]))"))
 
 (setq cider-clojure-cli-global-options "-A:debug-tools")
 (setq cider-shadow-cljs-global-options "-A:debug-tools")
