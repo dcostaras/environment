@@ -921,10 +921,6 @@ arguments and only proceed with evaluation if it returns nil."
 
 (setq my-cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
 
-(defun my-kill-cider-repls ()
-  (interactive)
-  (kill-matching-buffers my-cider-repl-name-rx nil t))
-
 (defun my-cider-reset ()
   (interactive)
   (projectile-save-project-buffers)
@@ -937,6 +933,10 @@ arguments and only proceed with evaluation if it returns nil."
 ;; (cider-interactive-eval-clj "(form)")
 ;; Inserts literal form into repl and eval (second arg)
 ;; (cider-insert-in-repl "(form)" t)
+
+(defun my-kill-cider-repls ()
+  (interactive)
+  (kill-matching-buffers my-cider-repl-name-rx nil t))
 
 (defun my-cider-start-system ()
   (interactive)
