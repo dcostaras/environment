@@ -1,4 +1,4 @@
-personal_ws-1.1 en 94
+personal_ws-1.1 en 105
 APIs
 Babashka
 Costaras
@@ -11,11 +11,13 @@ Pathom
 Ross
 Specmonstah
 Spectmonstah
+StaticQuery
 Unhedged
 Worklog
 accessToken
 arg
 args
+attrs
 auth
 backend
 bigdec
@@ -32,25 +34,30 @@ cpcache
 creds
 customisable
 defn
+denormalize
 dep
 deps
 deref
 destructuring
 dev
+docstring
 edn
 env
 evalling
 fn
 frontend
 fs
+fsn
 fulcro
 fulcro's
 getValueByKeys
 gitignore
 gmail
+hoc
 https
 ident
 init
+instantiation
 joda
 jra
 js
@@ -70,6 +77,7 @@ mouseover
 myfarms
 namespace
 nrepl
+plc
 readme
 rebl
 repl
@@ -85,6 +93,8 @@ stateful
 symex
 symexes
 theming
+tilley
+timeously
 todo
 tooltip
 txs
@@ -92,4 +102,5 @@ ui
 uncomment
 upsert
 uuid
+varargs
 workspaces

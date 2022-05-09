@@ -146,6 +146,27 @@ so one can yank eval last sexp
 (add-hook! 'emacs-startup-hook #'toggle-frame-fullscreen)
 #+end_src
 
+**** Pulse
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+;; This is not disabled even if we do not load the nav-flash :ui module
+(remove-hook 'doom-switch-window-hook #'+nav-flash-blink-cursor-maybe-h)
+
+(defun pulse-line (&rest _)
+  "Pulse the current line."
+  (pulse-momentary-highlight-one-line (point)))
+
+(dolist (command '(evil-window-left
+                   evil-window-right
+                   evil-window-bottom
+                   evil-window-down
+                   evil-window-up
+                   evil-scroll-down
+                   evil-scroll-up
+                   other-window))
+  (advice-add command :after #'pulse-line))
+#+end_src
+
 *** MacOS
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
@@ -289,9 +310,9 @@ so one can yank eval last sexp
 **** Default states
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(setq evil-symex-state-modes '(clojure-mode
-                               clojurec-mode
-                               clojurescript-mode))
+;; (setq evil-symex-state-modes '(clojure-mode
+;;                                clojurec-mode
+;;                                clojurescript-mode))
 
 #+end_src
 
@@ -408,11 +429,15 @@ so one can yank eval last sexp
    "M-e" 'symex-eval-recursive
    "T" 'symex-evaluate-thunk
    "R" 'symex-repl
-   "r" 'symex-run
+   ;; "r" 'symex-run
+
+   ;; Testing
+   "t" 'cider-test-run-test
+   "r" 'cider-test-rerun-failed-tests
 
    ":" 'evil-ex
 
-   "t" 'symex-switch-to-scratch-buffer
+   ;; "t" 'symex-switch-to-scratch-buffer
    "M" 'symex-switch-to-messages-buffer
    "|" 'symex-split
    "&" 'symex-join
@@ -500,6 +525,7 @@ Sexp is obtained by exiting the list ARG times."
     (symex-mode-interface))
 
   (setq evil-symex-state-cursor '(box "orange"))
+  (setq evil-normal-state-cursor `(box ,(doom-color 'green)))
 
   (my-symex-initialize))
 #+end_src
@@ -703,7 +729,7 @@ Sexp is obtained by exiting the list ARG times."
 
   (setq ivy-extra-directories '())
 
-  (map! :n "/" #'+default/search-buffer)
+  ;; (map! :n "/" #'+default/search-buffer)
 
   (defun ivy-yank-action (x)
     (kill-new x))
@@ -758,6 +784,10 @@ Sexp is obtained by exiting the list ARG times."
   (push "\\.cpcache" lsp-file-watch-ignored)
   (push "resources" lsp-file-watch-ignored)
 
+  (setq lsp-ui-doc-enable nil)
+  (setq lsp-ui-doc-show-with-cursor nil)
+  (setq lsp-ui-doc-show-with-mouse nil)
+  (setq lsp-ui-sideline-show-code-actions nil)
   (setq lsp-ui-peek-always-show t)
   (setq lsp-ui-sideline-show-hover t))
 #+end_src
@@ -862,10 +892,16 @@ arguments and only proceed with evaluation if it returns nil."
              (seq-mapcat #'identity additional-params)
              connection))))))
 
+  (setq my-cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
+
+  (defun my-kill-cider-repls ()
+    (interactive)
+    (kill-matching-buffers my-cider-repl-name-rx nil t))
+
   (defun my-cider-reset ()
     (interactive)
     (projectile-save-project-buffers)
-    (cider-interactive-eval-clj "(user/restart-system)"))
+    (cider-interactive-eval-clj "(do (in-ns 'user) (restart-system))"))
 
 ;;; Three ways to eval a string:
   ;; Evals in environment but doesn't print
@@ -877,6 +913,7 @@ arguments and only proceed with evaluation if it returns nil."
 
   (defun my-cider-start-system ()
     (interactive)
+    (my-kill-cider-repls)
     (cider-connect-clj)
     (cider-insert-in-repl "(start-system)" t)
     (cider-connect-sibling-clj '())
@@ -884,7 +921,7 @@ arguments and only proceed with evaluation if it returns nil."
     (cider-insert-in-repl "(start-client)" t))
 
   (map! (:localleader
-         (:map (clojure-mode-map clojurescript-mode-map)
+         (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
           (:prefix ("r" . "repl")
            "r" #'my-cider-reset
            "s" #'my-cider-start-system))))
@@ -933,10 +970,15 @@ arguments and only proceed with evaluation if it returns nil."
     ;; JRA
     (system/let [1])
     (clet [1])
+    (sp/collected? 1)
+    (sp/cond-path :defn)
+    (sp/recursive-path :defn)
 
     (swap!-> [1])
 
     (comment :defn)
+
+    (m/search 1)
 
     ;; compojure
     (context 2)
@@ -1095,7 +1137,6 @@ Supports the fulcro-spec `specification' macro"
   (advice-add 'cider-pprint-eval-last-sexp :around 'evil-collection-cider-last-sexp)
 
   (use-package kaocha-runner
-    :disabled t
     :init
     (bind-keys :prefix-map ar-emacs-kaocha-prefix-map
                :prefix "C-c k"
@@ -1219,7 +1260,6 @@ Supports the fulcro-spec `specification' macro"
     (after! lsp-ui-mode
       (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
       (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))))
-
 #+end_src
 
 *** Lispy
@@ -1229,31 +1269,31 @@ Supports the fulcro-spec `specification' macro"
  '(operators
    c-w
    prettify
-   paredit
+   text-objects
    commentary
    slurp/barf-lispy
-   additional
-   additional-wrap))
+   ;; mark-special
+   ))
 
-(use-package! evil-lispy
-  :config (add-hook! '(clojure-mode clojurec-mode clojurescript-mode) #'evil-lispy-mode))
+;; (use-package! evil-lispy
+;;   :config (add-hook! '(clojure-mode clojurec-mode clojurescript-mode) #'evil-lispy-mode))
 
 ;; (add-hook! 'evil-escape-inhibit-functions
 ;;   (defun +lispy-inhibit-evil-escape-fn ()
 ;;     (and lispy-mode (evil-insert-state-p))))
 
-(defun my-insert-hash-print (arg)
-  (interactive "p")
-  (if (lispy-left-p)
-      (insert "#p ")
-    (self-insert-command arg)))
+;; (defun my-insert-hash-print (arg)
+;;   (interactive "p")
+;;   (if (lispy-left-p)
+;;       (insert "#p ")
+;;     (self-insert-command arg)))
 
-(map! :map lispy-mode-map-special :i
-      "p" #'my-insert-hash-print
-      ;; "f" #'lispy-flow
-      ;; "d" #'lispy-different
-      )
-(remove-hook! 'evil-escape-inhibit-functions #'+lispy-inhibit-evil-escape-fn)
+;; (map! :map lispy-mode-map-special :i
+;;       "p" #'my-insert-hash-print
+;;       ;; "f" #'lispy-flow
+;;       ;; "d" #'lispy-different
+;;       )
+;; (remove-hook! 'evil-escape-inhibit-functions #'+lispy-inhibit-evil-escape-fn)
 #+end_src
 
 *** Dired/Eshell
@@ -1324,6 +1364,121 @@ If buffer-or-name is nil return current buffer's mode."
   )
 
 (load-theme 'doom-monokai-pro t)
+#+end_src
+
+*** Functions
+**** JRT functions
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun my-process-cost-line-item ()
+  (interactive)
+  (goto-char (point-min))
+  (while (not (eobp))
+    (beginning-of-line)
+    (let* ((item (progn
+                   (kill-region (point)
+                                (- (search-forward "$") 1))
+                   (string-trim (current-kill 0 t))))
+           (amount (progn
+                     (beginning-of-line)
+                     (set-mark-command nil)
+                     (goto-char (re-search-forward "$"))
+                     (kill-region (region-beginning)
+                                  (region-end))
+                     (replace-regexp-in-string
+                      "\\$\\|\\."
+                      ""
+                      (string-trim (current-kill 0 t))))))
+      (insert "{")
+      (insert ":label \"" item  "\"\n")
+      (insert " :price " amount  "\n")
+      (insert " :max-price " (number-to-string (* (string-to-number amount) 2))  "\n")
+      (insert " :min-price 0" )
+      (insert "}")
+      (end-of-line 1)
+      (forward-line 1))))
+
+;; Excel file that Nick sent on 23 Jan 2022
+(defun my-process-cop-budgets-tool-excel ()
+  (interactive)
+  (goto-char (point-min))
+  (let ((columns '("Custom Work"
+                   "Fertilizer"
+                   "Chemicals"
+                   "Crop Ins."
+                   "Seed"
+                   "Labor"
+                   "Fuel"
+                   "Irrigation"
+                   "Repairs"
+                   "Misc."
+                   "Equip Cost."
+                   "Cash Rent"
+                   "Interest")))
+    (beginning-of-line)
+    (while (not (eobp))
+      (let* ((column (pop columns))
+             (item (progn
+                     (kill-region (line-beginning-position)
+                                  (+ 2 (line-beginning-position)))
+                     (kill-region (line-beginning-position)
+                                  (line-end-position))
+                     (string-trim (current-kill 0 t)))))
+        (message "%s %s" column item)
+        (insert "{")
+        (insert ":label \"" column  "\"\n")
+        (insert " :price " item  "\n")
+        (insert " :max-price " (number-to-string (* (string-to-number item) 2))  "\n")
+        (insert " :min-price 0" )
+        (insert "}")
+        (end-of-line 1)
+        (forward-line 1)))))
+#+end_src
+
+**** Music downloads fixer
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun my-file-fixer--bandcamp-buzzcut ()
+  "Remove artist and album from each song filename"
+  (interactive)
+  (kill-region (point)
+               (search-forward "- "))
+  (kill-region (point)
+               (search-forward "- "))
+  (kill-region (point)
+               (search-forward "- "))
+  (forward-char 3)
+  (kill-region (point)
+               (search-forward "- "))
+  (insert "- ")
+  (kill-region (point)
+               (line-end-position))
+  (message "%s" (current-kill 0 t))
+  (insert
+   (replace-regexp-in-string
+    " (Original Mix)"
+    ""
+    (string-trim (current-kill 0 t))))
+  (dired-goto-next-file))
+
+(defun my-file-fixer--move-key-after-track-number ()
+  "Move key after track number"
+  (interactive)
+  (kill-region (point)
+               (search-forward "- "))
+  (search-forward "- ")
+  (insert (string-trim (current-kill 0 t)))
+  (insert " ")
+  (dired-goto-next-file))
+
+(define-minor-mode my-music-download-fixer-mode
+  "Run all tests whenever a file is loaded."
+  :global t
+  :keymap (let ((map (make-sparse-keymap)))
+            (general-define-key
+             :keymaps map
+             "C-e" #'my-file-fixer--bandcamp-buzzcut)
+            map))
 #+end_src
 
 ** Lispy bindings
@@ -1681,7 +1836,8 @@ If buffer-or-name is nil return current buffer's mode."
   :recipe (:host github :repo "martinbaillie/evil-motion-trainer"))
 (package! flycheck-projectile)
 
-(unpin! lsp-mode)
+;; Cider bug https://github.com/hlissner/doom-emacs/issues/5537
+(package! map :pin "bb50dbaafc0f71743bd9ffd5784258a9fd682c20")
 #+end_src
 
 ** services
@@ -2095,39 +2251,39 @@ If buffer-or-name is nil return current buffer's mode."
 * shell
 ** theme
 
-  #+BEGIN_SRC sh :tangle ~/.zshrc
-    source "$(brew --prefix antigen)/share/antigen/antigen.zsh"
+#+BEGIN_SRC sh :tangle ~/.zshrc
+source "$(brew --prefix antigen)/share/antigen/antigen.zsh"
 
-    autoload antigen
+autoload antigen
 
-    antigen use oh-my-zsh
-    antigen bundle git
-    antigen bundle zsh-users/zsh-completions
-    antigen bundle zdharma/fast-syntax-highlighting
-    antigen bundle zsh-users/zsh-autosuggestions
-    antigen bundle zsh-users/zsh-history-substring-search
-    antigen bundle agkozak/zsh-z
+antigen use oh-my-zsh
+antigen bundle git
+antigen bundle zsh-users/zsh-completions
+antigen bundle zdharma-continuum/fast-syntax-highlighting
+antigen bundle zsh-users/zsh-autosuggestions
+antigen bundle zsh-users/zsh-history-substring-search
+antigen bundle agkozak/zsh-z
 
-    SPACESHIP_PROMPT_ORDER=(
-        user          # Username section
-        dir           # Current directory section
-        host          # Hostname section
-        git           # Git section (git_branch + git_status)
-        hg            # Mercurial section (hg_branch  + hg_status)
-        exec_time     # Execution time
-        line_sep      # Line break
-        vi_mode       # Vi-mode indicator
-        jobs          # Background jobs indicator
-        exit_code     # Exit code section
-        char          # Prompt character
-    )
-    SPACESHIP_PROMPT_ADD_NEWLINE=false
-    SPACESHIP_CHAR_SYMBOL="❯"
-    SPACESHIP_CHAR_SUFFIX=" "
-    antigen theme denysdovhan/spaceship-prompt
+SPACESHIP_PROMPT_ORDER=(
+    user          # Username section
+    dir           # Current directory section
+    host          # Hostname section
+    git           # Git section (git_branch + git_status)
+    hg            # Mercurial section (hg_branch  + hg_status)
+    exec_time     # Execution time
+    line_sep      # Line break
+    vi_mode       # Vi-mode indicator
+    jobs          # Background jobs indicator
+    exit_code     # Exit code section
+    char          # Prompt character
+)
+SPACESHIP_PROMPT_ADD_NEWLINE=false
+SPACESHIP_CHAR_SYMBOL="❯"
+SPACESHIP_CHAR_SUFFIX=" "
+antigen theme denysdovhan/spaceship-prompt
 
-    antigen apply
-  #+END_SRC
+antigen apply
+#+END_SRC
 
 ** config
 
@@ -2535,11 +2691,18 @@ mkdir -p ~/.config/next
 
 * ssh
 
-#+BEGIN_SRC conf :tangle ~/.ssh/config
+#+BEGIN_SRC conf :tangle ~/.ssh/config :tangle-mode (identity #o600)
 Host github github.com
 User git
 Hostname github.com
 identityfile ~/.ssh/github-dcostaras.pub
+IdentitiesOnly yes
+IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
+
+Host gitlab gitlab.com
+User git
+Hostname gitlab.com
+identityfile ~/.ssh/gitlab.pub
 IdentitiesOnly yes
 IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
 
@@ -2598,16 +2761,6 @@ AddKeysToAgent yes
 UseKeychain yes
 
 #+END_SRC
-
-** public keys
-
-#+begin_src conf :tangle ~/.ssh/github-dcostaras.pub
-ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBNWj37tatbBFb+KIghbp8gtBcOtQbiD1CzIsX6TK16CtYO3A9zeoXqEUbAn2F7dkTVSzmNGIUmCTgrH59T2J4/0= github-dcostaras@secretive.Donavan-Ross’s-MacBook-Air.local
-#+end_src
-
-#+begin_src conf :tangle ~/.ssh/rsync.net.pub
-ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBAAmex+/3fzVc6lCOnvlb6E1dIGenfinFKkadPp4dqRc/Ja58V8Y8GOm44hsvQgVlKpkSZ8sLwHHseAVPpQVvuA= rsync@secretive.Donavan-Ross’s-MacBook-Air.local
-#+end_src
 
 * authinfo
 

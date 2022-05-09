@@ -1,3 +1,5 @@
+.ONESHELL:
+
 define to-file
 	printf '%b\n' "$$(cat $1)" > $2
 endef
@@ -8,36 +10,26 @@ define git-clone
 endef
 
 all: \
-	.targets/hosts \
-    brew \
+	brew \
 	~/.gitconfig \
-	.targets/rc-init \
-	.targets/doom-config \
+	.targets/rc-files \
+	~/.emacs.d \
+	~/comics \
+	~/books \
+	~/Music \
+	~/Movies \
 	| targets
-#	.targets/spacemacs \
-#	.targets/java8 \
-#	.targets/wireguard \
-
-#.targets/c-headers:
-#	sudo installer -pkg /Library/Developer/CommandLineTools/Packages/macOS_SDK_headers_for_macOS_10.14.pkg -target /
-#	touch $@
 
 ~/.gitconfig: git/config
 	$(call to-file,git/config,$@)
 
-/usr/local/bin/emacs: emacs-init/emacs-executable
-	$(call to-file,$<,$@)
-	chmod 755 $@
-
-install-doom-emacs:
+~/.emacs.d: | ~/.doom.d
 	git clone https://github.com/hlissner/doom-emacs ~/.emacs.d
 	~/.emacs.d/bin/doom install
 
-~/.zshenv: rcs/zsh/zshenv
-	$(call to-file,$<,$@)
-
-.targets/doom-config: emacs-init/doom.org
+.targets/rc-files: rc.org | ~/.doom.d ~/bin
 	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
+	touch $@
 
 # rclone
 ~/.config/rclone:
@@ -59,43 +51,23 @@ endef
 ~/books:
 	$(call setup-annex,books)
 
-Music:
-	cd ~/$@ && rm .DS_Store .localized
+~/Music:
+	cd $@ && rm .DS_Store .localized
 	$(call setup-annex,Music,music)
 
-Movies:
-	# cd ~/$@ && rm .DS_Store .localized
-	$(call git-clone,git@github.com:dcostaras/annex-movies,~/Movies)
-	cd ~/Movies && git annex enableremote drive
+~/Movies:
+	cd $@ && rm .DS_Store .localized
+	$(call setup-annex,Music,music)
 
 # Git annex
 ~/bin/git-annex-remote-rclone: 
 	$(call git-clone,git@github.com:dcostaras/git-annex-remote-rclone.git,/tmp/git-annex-remote)
 	cp /tmp/git-annex-remote/git-annex-remote-rclone $@
 
-# TODO install arm homebrew
-arm-homebrew:
-	mkdir homebrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
-	# We'll be installing Homebrew in the /opt directory.
-	# cd /opt
-	# Create a directory for Homebrew. This requires root permissions.
-	# sudo mkdir homebrew
-	# Make us the owner of the directory so that we no longer require root permissions.
-	# sudo chown -R $(whoami) /opt/homebrew
-	# Download and unzip Homebrew. This command can be found at https://docs.brew.sh/Installation.
-	# curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C homebrew
-	# Add the Homebrew bin directory to the PATH. If you don't use zsh, you'll need to do this yourself.
-	# echo "export PATH=/opt/homebrew/bin:$PATH" >> ~/.zshrc
-
 # TODO: install brew rule
 # TODO export ssh keys from 1password: github-key
 # TODO touchid sudo
 # TODO rclone and general config out of 1password
-
-#.targets/emacs: emacs-init/emacs.init.org
-#	emacs --nw --batch --eval "(require 'org)" --eval '(org-babel-tangle-file "$<")'
-#	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
-#	touch $@
 
 .targets/ql-stephen: | .targets/brew
 	xattr -cr ~/Library/QuickLook/QLStephen.qlgenerator
@@ -107,30 +79,27 @@ arm-homebrew:
 	emacs --batch -l org --eval "(org-babel-tangle-file \"$<\")"
 	touch $@
 
-.targets/hosts-install: | .targets/brew
-	$(call git-clone,git@github.com:StevenBlack/hosts.git,~/src/hosts)
+.targets/hosts-install: | .targets/brew ~/src/hosts
+	$(call git-clone,https://github.com/StevenBlack/hosts.git,~/src/hosts)
 	pip3 install requests lxml bs4
 	touch $@
 
-.targets/hosts: | .targets/hosts-install
+hosts: | .targets/brew .targets/hosts-install
 	cd ~/src/hosts && python3 updateHostsFile.py --auto --replace --extensions gambling porn fakenews social
 
 .targets/cellar-cask:
 	echo 'export PATH="/usr/local/opt/texinfo/bin:$PATH"' >> ~/.bash_profile
 
-brew: .targets/brew
-.targets/brew: Brewfile
-	-brew bundle --file $<
+.targets/install-brew: | .targets
+	/bin/bash -c "$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+	echo 'eval "$$(/opt/homebrew/bin/brew shellenv)"' >> /Users/donavan/.zprofile
+	eval "$$(/opt/homebrew/bin/brew shellenv)"
 	touch $@
 
-# .targets/bash: | .targets/brew
-# 	echo '/usr/local/bin/bash' | sudo tee -a /etc/shells > /dev/null
-# 	chsh -s /usr/local/bin/bash
-# 	touch $@
-
-# .targets/java8: .targets/brew
-# 	brew install --cask java8
-# 	touch $@
+brew: .targets/brew
+.targets/brew: Brewfile 
+	-brew bundle --file $<
+	touch $@
 
 .targets/wireguard: | .targets/brew-commands
 	mkdir -p ~/.config/wireguard
@@ -138,8 +107,20 @@ brew: .targets/brew
 	cd ~/.config/wireguard && sudo chmod -R og-rwx ~/.config/wireguard/*
 	touch $@
 
-targets:
+.targets:
+	mkdir -p $@
+
+targets: ~/src ~/bin
 	mkdir -p $@
 
 ~/bin:
+	mkdir -p $@
+
+~/src:
+	mkdir -p $@
+
+~/.doom.d:
+	mkdir -p $@
+
+~/src/hosts:
 	mkdir -p $@

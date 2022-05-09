@@ -110,6 +110,7 @@ cask "racket"
 cask "rectangle"
 cask "secretive"
 cask "slack"
+cask "steam"
 cask "vlc"
 cask "yacreader"
 
