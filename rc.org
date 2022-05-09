@@ -747,10 +747,13 @@ Sexp is obtained by exiting the list ARG times."
 
 *** Aggressive indent
 
+Can turn this on once I've worked to fix at least the multiple undo points
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(use-package! aggressive-indent
-  :config (add-hook! emacs-lisp-mode
-            (aggressive-indent-mode 1)))
+;; (use-package! aggressive-indent
+;;   :config (add-hook! emacs-lisp-mode
+;;             (aggressive-indent-mode 1)))
+#+end_src
+
 *** back-button
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
@@ -1827,6 +1830,7 @@ If buffer-or-name is nil return current buffer's mode."
   :recipe (:type git :host github :repo "countvajhula/symex.el"
            :fork (:host github :protocol ssh :repo "dcostaras/symex.el")))
 (package! aggressive-indent)
+(package! back-button)
 (package! auto-dim-other-buffers)
 (package! evil-lispy)
 (package! worf)
