@@ -2580,6 +2580,12 @@ cd ~/src/yarmouk && \
     bb start --local carpenter --local workshop
 #+end_src
 
+*** split audio
+
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/split-audio
+ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
+#+end_src
+
 ** audio conversion
 
   #+BEGIN_SRC sh :tangle ~/.zshrc
