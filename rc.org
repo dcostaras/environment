@@ -1010,7 +1010,9 @@ arguments and only proceed with evaluation if it returns nil."
   (clet [1])
   (sp/collected? 1)
   (sp/cond-path :defn)
+  (sp/if-path :defn)
   (sp/recursive-path :defn)
+  (load-marker-utils/capture-load-marker-states 1)
 
   (swap!-> [1])
 
