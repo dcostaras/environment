@@ -932,6 +932,11 @@ arguments and only proceed with evaluation if it returns nil."
   (projectile-save-project-buffers)
   (cider-interactive-eval-clj "(do (in-ns 'user) (restart-system))"))
 
+(defun my-cider-reset-all ()
+  (interactive)
+  (projectile-save-project-buffers)
+  (cider-interactive-eval-clj "(do (in-ns 'user) (restart-all-system))"))
+
 ;;; Three ways to eval a string:
 ;; Evals in environment but doesn't print
 ;; (cider-nrepl-sync-request:eval "(form)")
@@ -957,6 +962,7 @@ arguments and only proceed with evaluation if it returns nil."
        (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
         (:prefix ("r" . "repl")
          "r" #'my-cider-reset
+         "R" #'my-cider-reset-all
          "s" #'my-cider-start-system))))
 
 (defun my-cider-load-debug-tools ()
