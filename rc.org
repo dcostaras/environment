@@ -1478,47 +1478,110 @@ If buffer-or-name is nil return current buffer's mode."
 **** Music downloads fixer
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun my-file-fixer--finalize ()
+  (interactive)
+  (evil-next-line)
+  (dired-goto-next-file)
+  (recenter nil))
+
+(defun my-file-fixer--remove-original-mix* ()
+  (kill-region (point)
+               (line-end-position))
+  (insert
+   (replace-regexp-in-string
+    " ?-? (Original Mix)"
+    ""
+    (string-trim (current-kill 0 t)))))
+
+(defun my-file-fixer--next-line ()
+  (interactive)
+  (evil-next-line)
+  (recenter nil))
+
+(defun my-file-fixer--previous-line ()
+  (interactive)
+  (evil-previous-line)
+  (recenter nil))
+
+(defun my-file-fixer--remove-original-mix ()
+  (interactive)
+  (dired-goto-next-file)
+  (my-file-fixer--remove-original-mix*)
+  (my-file-fixer--finalize))
+
+(defun my-file-fixer--bandcamp-directory-fixer ()
+  (interactive)
+  (dired-goto-next-file)
+  (kill-region (point)
+               (line-end-position))
+  (insert
+   (replace-regexp-in-string
+    (rx (seq (submatch (not " ")) "- "))
+    "\\1, "
+    (string-trim (current-kill 0 t))))
+  (my-file-fixer--finalize))
+
+(defun my-file-fixer--bandcamp-directory-fixer-remove-artist ()
+  (interactive)
+  (dired-goto-next-file)
+  (kill-region (search-forward " - ")
+               (search-forward " - "))
+  (my-file-fixer--bandcamp-directory-fixer))
+
+(defun my-file-fixer--bandcamp-buzzcut* ()
+  (dired-goto-next-file)
+  (when (= 4 (count-matches "- " (point) (line-end-position)))
+    (kill-region (point)
+                 (search-forward "- ")))
+  (kill-region (point)
+               (search-forward "- "))
+  (kill-region (point)
+               (search-forward "- ")))
+
 (defun my-file-fixer--bandcamp-buzzcut ()
   "Remove artist and album from each song filename"
   (interactive)
-  (kill-region (point)
-               (search-forward "- "))
-  (kill-region (point)
-               (search-forward "- "))
-  (kill-region (point)
-               (search-forward "- "))
+  (my-file-fixer--bandcamp-buzzcut*)
+
+  (forward-char 3)
+  (insert "- ")
+  (my-file-fixer--remove-original-mix*)
+  (my-file-fixer--finalize))
+
+(defun my-file-fixer--bandcamp-buzzcut-remove-artist ()
+  "Remove artist and album from each song filename"
+  (interactive)
+  (my-file-fixer--bandcamp-buzzcut*)
   (forward-char 3)
   (kill-region (point)
                (search-forward "- "))
   (insert "- ")
-  (kill-region (point)
-               (line-end-position))
-  (message "%s" (current-kill 0 t))
-  (insert
-   (replace-regexp-in-string
-    " (Original Mix)"
-    ""
-    (string-trim (current-kill 0 t))))
-  (dired-goto-next-file))
+  (my-file-fixer--remove-original-mix*)
+  (my-file-fixer--finalize))
 
 (defun my-file-fixer--move-key-after-track-number ()
   "Move key after track number"
   (interactive)
+  (dired-goto-next-file)
   (kill-region (point)
                (search-forward "- "))
   (search-forward "- ")
   (insert (string-trim (current-kill 0 t)))
   (insert " ")
-  (dired-goto-next-file))
+  (my-file-fixer--finalize))
 
-(define-minor-mode my-music-download-fixer-mode
-  "Run all tests whenever a file is loaded."
-  :global t
-  :keymap (let ((map (make-sparse-keymap)))
-            (general-define-key
-             :keymaps map
-             "C-e" #'my-file-fixer--bandcamp-buzzcut)
-            map))
+(defhydra my-music-filename-fixer (global-map "C-c C-m")
+  "zoom"
+  ("j" my-file-fixer--next-line)
+  ("k" my-file-fixer--previous-line)
+  ("u" evil-undo)
+  ("z z" evil-scroll-line-to-center)
+  ("d" my-file-fixer--bandcamp-directory-fixer "Fix Bandcamp directory name")
+  ("D" my-file-fixer--bandcamp-directory-fixer-remove-artist "Fix Bandcamp directory name and remove artist")
+  ("t" my-file-fixer--move-key-after-track-number "Key after track number")
+  ("b" my-file-fixer--bandcamp-buzzcut "Fix Bandcamp filename")
+  ("B" my-file-fixer--bandcamp-buzzcut-remove-artist "Fix Bandcamp filename and remove artist")
+  ("o" my-file-fixer--remove-original-mix "Remove original mix from filename"))
 #+end_src
 
 ** Lispy bindings
