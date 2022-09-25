@@ -1878,9 +1878,6 @@ If buffer-or-name is nil return current buffer's mode."
 (package! evil-motion-trainer
   :recipe (:host github :repo "martinbaillie/evil-motion-trainer"))
 (package! flycheck-projectile)
-
-;; Cider bug https://github.com/hlissner/doom-emacs/issues/5537
-(package! map :pin "bb50dbaafc0f71743bd9ffd5784258a9fd682c20")
 #+end_src
 
 ** services
