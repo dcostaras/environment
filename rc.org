@@ -745,6 +745,12 @@ Sexp is obtained by exiting the list ARG times."
      ("y" ivy-yank-action "yank"))))
 #+end_src
 
+*** dired
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package dired+)
+#+end_src
+
 *** Aggressive indent
 
 Can turn this on once I've worked to fix at least the multiple undo points
@@ -1847,6 +1853,8 @@ If buffer-or-name is nil return current buffer's mode."
 (package! symex
   :recipe (:type git :host github :repo "countvajhula/symex.el"
            :fork (:host github :protocol ssh :repo "dcostaras/symex.el")))
+(package! dired+
+  :recipe (:type git :host github :repo "emacsmirror/dired-plus"))
 (package! aggressive-indent)
 (package! back-button)
 (package! auto-dim-other-buffers)
