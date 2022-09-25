@@ -14,10 +14,6 @@ all: \
 	~/.gitconfig \
 	.targets/rc-files \
 	~/.emacs.d \
-	~/comics \
-	~/books \
-	~/Music \
-	~/Movies \
 	| targets
 
 ~/.gitconfig: git/config
@@ -39,25 +35,26 @@ all: \
 ~/.config/rclone/rclone.conf: ~/.config/rclone
 	op get document olst7uwyzbg4lbb6567u67765i --output ~/.config/rclone/rclone.conf
 
+# this is not working, need to init the local repo with a new name first
 # Annexes 
-define setup-annex
-	$(call git-clone,git@gitlab.com:d.costaras/annex-$(if $2,$2,$1).git,~/$1)
-	cd ~/$1 && git annex enableremote drive
-endef
+# define setup-annex
+# 	$(call git-clone,git@gitlab.com:d.costaras/annex-$(if $2,$2,$1).git,~/$1)
+# 	cd ~/$1 && git annex enableremote drive
+# endef
 
-~/comics:
-	$(call setup-annex,comics)
+# ~/comics:
+# 	$(call setup-annex,comics)
 
-~/books:
-	$(call setup-annex,books)
+# ~/books:
+# 	$(call setup-annex,books)
 
-~/Music:
-	cd $@ && rm .DS_Store .localized
-	$(call setup-annex,Music,music)
+# ~/Music:
+# 	cd $@ && rm .DS_Store .localized
+# 	$(call setup-annex,Music,music)
 
-~/Movies:
-	cd $@ && rm .DS_Store .localized
-	$(call setup-annex,Music,music)
+# ~/Movies:
+# 	cd $@ && rm .DS_Store .localized
+# 	$(call setup-annex,Music,music)
 
 # Git annex
 ~/bin/git-annex-remote-rclone: 
