@@ -1186,8 +1186,8 @@ Supports the fulcro-spec `specification' macro"
              ("w" . kaocha-runner-show-warnings)
              ("h" . kaocha-runner-hide-windows)))
 
-(defconst atom-rx
-  (rx (seq "#<Atom@" (1+ (in hex)) ": "
+(defconst special-rx
+  (rx (seq "#<" (or "Fn" "Atom") "@" (1+ (in hex)) ": "
            (group (*? anything))
            ">")))
 
@@ -1197,7 +1197,7 @@ Supports the fulcro-spec `specification' macro"
 
   ;; Replace string representation of atoms with contents
   (goto-char (point-min))
-  (while (re-search-forward atom-rx nil t)
+  (while (re-search-forward special-rx nil t)
     (replace-match "\\1"))
 
   (shell-command-on-region
