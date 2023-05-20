@@ -96,12 +96,14 @@ brew "pinentry-mac"
 brew "ykman"
 brew "yubikey-personalization"
 
-cask "1password-cli"
+# cask "1password-cli"
 cask "chromium"
 cask "dwarf-fortress-lmp"
 cask "emacs-mac"
 cask "iterm2"
+cask "little-snitch"
 cask "menumeters"
+cask "micro-snitch"
 # no bottle
 # cask "osxfuse"
 # Already installed?
