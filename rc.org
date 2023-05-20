@@ -745,6 +745,528 @@ Sexp is obtained by exiting the list ARG times."
      ("y" ivy-yank-action "yank"))))
 #+end_src
 
+*** Corfu
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defvar +corfu-auto-delay 0.3
+   "How long after point stands still will completion be called automatically,
+ in seconds.
+
+ Setting `corfu-auto-delay' directly may not work, as it needs to be set *before*
+ enabling `corfu-mode'.")
+ (defvar +corfu-auto-prefix 2
+   "How many characters should be typed before auto-complete starts to kick in.
+
+ Setting `corfu-auto-prefix' directly may not work, as it needs to be set
+ ,*before* enabling `corfu-mode'.")
+ (defvar +corfu-want-multi-component t
+   "Enables multiple component search, with pieces separated by spaces.
+
+ This allows search of non-contiguous unordered bits, for instance by typing
+ \"tear rip\" to match \"rip-and-tear\". Notice the space, it does not break
+ completion in this case.")
+ (defvar +corfu-icon-height 0.9
+   "The height applied to the icons (it is passed to both svg-lib and kind-icon).
+
+ It may need tweaking for the completions to not become cropped at the end.
+ Note that changes are applied only after a cache reset, via
+ `kind-icon-reset-cache'.")
+
+ (defvar +corfu-ispell-completion-modes '(org-mode markdown-mode text-mode)
+   "Modes to enable ispell completion in.
+
+ For completion in comments, see `+corfu-ispell-in-comments-and-strings'.")
+ (defvar +corfu-ispell-in-comments-and-strings t
+   "Enable completion with ispell inside comments when in a `prog-mode'
+ derivative.")
+
+ ;;
+ ;;; Packages
+ (use-package! corfu
+   :hook (doom-first-buffer . global-corfu-mode)
+   :init
+   ;; Auto-completion settings, must be set before calling `global-corfu-mode'.
+   (setq corfu-auto nil
+         corfu-auto-delay +corfu-auto-delay
+         corfu-auto-prefix +corfu-auto-prefix
+         corfu-excluded-modes '(erc-mode
+                                circe-mode
+                                help-mode
+                                gud-mode
+                                vterm-mode))
+
+   :config
+   (when (and (modulep! :tools lsp) (not (modulep! :tools lsp +eglot)))
+     (add-hook 'lsp-mode-hook (defun doom--add-lsp-capf ()
+                                (add-to-list 'completion-at-point-functions (cape-capf-buster #'lsp-completion-at-point)))
+               ;; Below is so that context specific completions in cape come first.
+               :depth 1))
+   (add-to-list 'completion-styles 'partial-completion t)
+   (add-to-list 'completion-styles 'initials t)
+   (setq corfu-cycle t
+         corfu-separator (when +corfu-want-multi-component ?\s)
+         corfu-preselect t
+         corfu-count 16
+         corfu-max-width 120
+         corfu-preview-current 'insert
+         corfu-quit-at-boundary (if +corfu-want-multi-component 'separator t)
+         corfu-quit-no-match (if +corfu-want-multi-component 'separator t)
+         ;; In the case of +tng, TAB should be smart regarding completion;
+         ;; However, it should otherwise behave like normal, whatever normal was.
+         tab-always-indent (if (modulep! +tng) 'complete tab-always-indent))
+   ;; Only done with :tools vertico active due to orderless. Alternatively, we
+   ;; could set it up here if it's not there.
+   (when (and +corfu-want-multi-component (modulep! :completion vertico))
+     (cond ((modulep! :tools lsp +eglot) (add-to-list 'completion-category-overrides '(eglot (styles orderless))))
+           ((modulep! :tools lsp) (add-hook 'lsp-completion-mode-hook
+                                            (defun doom--use-orderless-lsp-capf ()
+                                              (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+                                                    '(orderless)))))))
+   (map! (:unless (modulep! +tng)
+           :desc "complete" "C-SPC" #'completion-at-point)
+         (:map 'corfu-map
+               (:when +corfu-want-multi-component
+                 :desc "insert separator" "C-SPC" #'corfu-insert-separator)
+               (:when (modulep! :completion vertico)
+                 :desc "move to minibuffer" "s-<down>" #'corfu-move-to-minibuffer
+                 (:when (modulep! :editor evil)
+                   :desc "move to minibuffer" "s-j" #'corfu-move-to-minibuffer))
+               (:when (modulep! +tng)
+                 :desc "next" [tab] #'corfu-next
+                 :desc "previous" [backtab] #'corfu-previous
+                 :desc "next" "TAB" #'corfu-next
+                 :desc "previous" "S-TAB" #'corfu-previous))))
+
+ ;; Taken from corfu's README.
+ ;; TODO: extend this to other completion front-ends, mainly helm and ido, since
+ ;; ivy is being considered for removal.
+ (when (modulep! :completion vertico)
+   (defun corfu-move-to-minibuffer ()
+     (interactive)
+     (let ((completion-extra-properties corfu--extra)
+           completion-cycle-threshold completion-cycling)
+       (apply #'consult-completion-in-region completion-in-region--data))))
+
+ (use-package! cape
+   :after corfu
+   :commands (cape-dabbrev
+              cape-file
+              cape-history
+              cape-keyword
+              cape-tex
+              cape-sgml
+              cape-rfc1345
+              cape-abbrev
+              cape-ispell
+              cape-dict
+              cape-symbol
+              cape-line)
+   :init
+   (add-to-list 'completion-at-point-functions #'cape-file)
+   (when +corfu-ispell-in-comments-and-strings
+     (defalias 'corfu--ispell-in-comments-and-strings
+       (cape-super-capf (cape-capf-inside-comment #'cape-ispell)
+                        (cape-capf-inside-string #'cape-ispell)))
+     (add-hook 'prog-mode-hook
+               (lambda ()
+                 (add-to-list 'completion-at-point-functions #'corfu--ispell-in-comments-and-strings))))
+   (dolist (sym +corfu-ispell-completion-modes)
+     (add-hook (intern (concat (symbol-name sym) "-hook"))
+               (lambda ()
+                 (add-to-list 'completion-at-point-functions #'cape-ispell))))
+   (add-hook! '(TeX-mode-hook LaTeX-mode-hook org-mode-hook)
+     (lambda ()
+       (add-to-list 'completion-at-point-functions #'cape-tex t))
+     :depth 2)
+   (add-hook! '(html-mode-hook +web-react-mode-hook typescript-tsx-mode-hook org-mode-hook markdown-mode-hook)
+     (lambda ()
+       (add-to-list 'completion-at-point-functions #'cape-sgml t))
+     :depth 2)
+   (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+   (add-to-list 'completion-at-point-functions #'cape-keyword)
+   :config
+   ;; Enhances speed on large projects, for which many buffers may be open.
+   (setq cape-dabbrev-check-other-buffers nil))
+
+ (use-package! kind-icon
+   :when (modulep! +icons)
+   :commands kind-icon-margin-formatter
+   :init
+   (add-hook 'corfu-margin-formatters #'kind-icon-margin-formatter)
+   :config
+   (setq kind-icon-default-face 'corfu-default
+         kind-icon-blend-background t
+         kind-icon-blend-frac 0.2)
+   (plist-put kind-icon-default-style :height +corfu-icon-height)
+   (plist-put svg-lib-style-default :height +corfu-icon-height))
+
+ (use-package! corfu-terminal
+   :when (and (modulep! :os tty) (not (display-graphic-p)))
+   :hook (corfu-mode . corfu-terminal-mode))
+
+ (use-package! dabbrev
+   :config
+   (setq dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+
+ (setq read-extended-command-predicate
+       #'command-completion-default-include-p)
+
+ ;;
+ ;;; Extensions
+ (use-package! corfu-history
+   :after savehist
+   :hook (corfu-mode . corfu-history-mode)
+   :config
+   (add-to-list 'savehist-additional-variables 'corfu-history))
+ (use-package! corfu-popupinfo
+   :hook (corfu-mode . corfu-popupinfo-mode)
+   :config
+   (setq corfu-popupinfo-delay '(0.5 . 1.0))
+   (map! (:map 'corfu-map
+          :desc "scroll info up" "C-<up>" #'corfu-popupinfo-scroll-down
+          :desc "scroll info down" "C-<down>" #'corfu-popupinfo-scroll-up
+          :desc "scroll info up" "C-S-p" #'corfu-popupinfo-scroll-down
+          :desc "scroll info down" "C-S-n" #'corfu-popupinfo-scroll-up
+          :desc "toggle info" "C-h" #'corfu-popupinfo-toggle)
+         (:map 'corfu-popupinfo-map
+          :when (modulep! :editor evil)
+          ;; Reversed because popupinfo assumes opposite of what feels intuitive
+          ;; with evil.
+          :desc "scroll info up" "C-S-k" #'corfu-popupinfo-scroll-down
+          :desc "scroll info down" "C-S-j" #'corfu-popupinfo-scroll-up)))
+
+
+;; (use-package! corfu
+;;   :custom
+;;   (corfu-separator ?\s)
+;;   (corfu-auto t)
+;;   (corfu-auto-delay 0.1)
+;;   (corfu-auto-prefix 3)
+;;   (corfu-preview-current nil) ;; Disable current candidate preview
+;;   (corfu-on-exact-match nil)
+;;   (corfu-quit-no-match 'separator)
+;;   (corfu-cycle t)
+;;   (completion-cycle-threshold 1)
+;;   (tab-always-indent 'complete)
+;;   (corfu-max-width 80)
+;;   (corfu-preselect-first t)
+;;   ;; :hook
+;;   ;; (doom-first-buffer . global-corfu-mode)
+;;   :init
+;;   (global-corfu-mode)
+;;   :config
+;;   (when (modulep! +minibuffer)
+;;     (add-hook 'minibuffer-setup-hook #'+corfu--enable-in-minibuffer))
+
+;;   ;; Reset lsp-completion provider
+;;   (add-hook 'doom-init-modules-hook
+;;             (lambda ()
+;;               (after! lsp-mode
+;;                 (setq lsp-completion-provider :none))))
+
+;;   ;; Set orderless filtering for LSP-mode completions
+;;   ;; TODO: expose a Doom variable to control this part
+;;   (add-hook 'lsp-completion-mode-hook
+;;             (lambda ()
+;;               (setf (alist-get 'lsp-capf completion-category-defaults) '((styles . (orderless flex))))))
+
+;;   (map! :map corfu-map
+;;         "C-SPC" #'corfu-insert-separator
+;;         "C-n" #'corfu-next
+;;         "C-p" #'corfu-previous
+;;         (:prefix "C-x"
+;;                  "C-k" #'cape-dict
+;;                  "s" #'cape-ispell
+;;                  "C-n" #'cape-keyword
+;;                  "C-f" #'cape-file))
+;;   (after! evil
+;;     (advice-add 'corfu--setup :after 'evil-normalize-keymaps)
+;;     (advice-add 'corfu--teardown :after 'evil-normalize-keymaps)
+;;     (evil-make-overriding-map corfu-map))
+
+;;   (defadvice! +corfu--org-return (orig) :around '+org/return
+;;     (if (and (modulep! :completion corfu)
+;;              corfu-mode
+;;              (>= corfu--index 0))
+;;         (corfu-insert)
+;;       (funcall orig))))
+
+;; (use-package! corfu-doc
+;;   :hook (corfu-mode . corfu-doc-mode)
+;;   :custom
+;;   (corfu-doc-delay 0)
+;;   :bind (:map corfu-map
+;;               ("M-n" . corfu-doc-scroll-down)
+;;               ("M-p" . corfu-doc-scroll-up)
+;;               ("M-d" . corfu-doc-toggle)))
+
+;; (use-package orderless
+;;   :init
+;;   (setq completion-styles '(orderless basic)
+;;         completion-category-defaults nil
+;;         completion-category-overrides '((file (styles . (partial-completion)))))
+;;   ;; Tune the global completion style settings to your liking!
+;;   ;; This affects the minibuffer and non-lsp completion at point.
+;;   ;; (setq completion-styles '(orderless partial-completion basic)
+;;   ;;       completion-category-defaults nil
+;;   ;;       completion-category-overrides nil)
+;;   )
+
+;; (use-package lsp-mode
+;;   :init
+;;   (when (modulep! :completion corfu)
+;;     (setq lsp-completion-provider :none)
+;;     (add-hook 'lsp-mode-hook #'lsp-completion-mode))
+
+;;   ;; (lsp-completion-provider :none) ;; we use Corfu!
+
+;;   ;; :init
+;;   ;; (defun my/orderless-dispatch-flex-first (_pattern index _total)
+;;   ;;   (and (eq index 0) 'orderless-flex))
+
+;;   ;; (defun my/lsp-mode-setup-completion ()
+;;   ;;   (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+;;   ;;         '(orderless)))
+
+;;   ;; ;; Optionally configure the first word as flex filtered.
+;;   ;; (add-hook 'orderless-style-dispatchers #'my/orderless-dispatch-flex-first nil 'local)
+
+;;   ;; ;; Optionally configure the cape-capf-buster.
+;;   ;; (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point)))
+
+;;   ;; :hook
+;;   ;; (lsp-completion-mode . my/lsp-mode-setup-completion)
+;;   )
+
+;; (use-package! kind-icon
+;;   :after corfu
+;;   :when (modulep! +icons)
+;;   :custom
+;;   (kind-icon-default-face 'corfu-default)
+;;   :config
+;;   (setq kind-icon-use-icons t
+;;         svg-lib-icons-dir (expand-file-name "svg-lib" doom-cache-dir)
+;;         kind-icon-mapping
+;;         '((array "a" :icon "code-brackets" :face font-lock-variable-name-face)
+;;           (boolean "b" :icon "circle-half-full" :face font-lock-builtin-face)
+;;           (class "c" :icon "view-grid-plus-outline" :face font-lock-type-face)
+;;           (color "#" :icon "palette" :face success)
+;;           (constant "co" :icon "pause-circle" :face font-lock-constant-face)
+;;           (constructor "cn" :icon "table-column-plus-after" :face font-lock-function-name-face)
+;;           (enum "e" :icon "format-list-bulleted-square" :face font-lock-builtin-face)
+;;           (enum-member "em" :icon "format-list-checks" :face font-lock-builtin-face)
+;;           (event "ev" :icon "lightning-bolt-outline" :face font-lock-warning-face)
+;;           (field "fd" :icon "application-braces-outline" :face font-lock-variable-name-face)
+;;           (file "f" :icon "file" :face font-lock-string-face)
+;;           (folder "d" :icon "folder" :face font-lock-doc-face)
+;;           (function "f" :icon "sigma" :face font-lock-function-name-face)
+;;           (interface "if" :icon "video-input-component" :face font-lock-type-face)
+;;           (keyword "kw" :icon "image-filter-center-focus" :face font-lock-keyword-face)
+;;           (macro "mc" :icon "lambda" :face font-lock-keyword-face)
+;;           (method "m" :icon "sigma" :face font-lock-function-name-face)
+;;           (module "{" :icon "view-module" :face font-lock-preprocessor-face)
+;;           (numeric "nu" :icon "numeric" :face font-lock-builtin-face)
+;;           (operator "op" :icon "plus-circle-outline" :face font-lock-comment-delimiter-face)
+;;           (param "pa" :icon "cog" :face default)
+;;           (property "pr" :icon "tune-vertical" :face font-lock-variable-name-face)
+;;           (reference "rf" :icon "bookmark-box-multiple" :face font-lock-variable-name-face)
+;;           (snippet "S" :icon "text-short" :face font-lock-string-face)
+;;           (string "s" :icon "sticker-text-outline" :face font-lock-string-face)
+;;           (struct "%" :icon "code-braces" :face font-lock-variable-name-face)
+;;           (t "." :icon "crosshairs-question" :face shadow)
+;;           (text "tx" :icon "script-text-outline" :face shadow)
+;;           (type-parameter "tp" :icon "format-list-bulleted-type" :face font-lock-type-face)
+;;           (unit "u" :icon "ruler-square" :face shadow)
+;;           (value "v" :icon "numeric-1-box-multiple-outline" :face font-lock-builtin-face)
+;;           (variable "va" :icon "adjust" :face font-lock-variable-name-face)))
+;;   (add-hook 'doom-load-theme-hook #'kind-icon-reset-cache)
+;;   (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+
+;; (use-package! cape
+;;   :defer t
+;;   :init
+;;   (map!
+;;    [remap dabbrev-expand] 'cape-dabbrev)
+;;   (add-hook! 'latex-mode-hook (defun +corfu--latex-set-capfs ()
+;;                                 (add-to-list 'completion-at-point-functions #'cape-tex)))
+;;   (when (modulep! :checkers spell)
+;;     (add-to-list 'completion-at-point-functions #'cape-dict)
+;;     (add-to-list 'completion-at-point-functions #'cape-ispell))
+;;   (add-to-list 'completion-at-point-functions #'cape-file)
+;;   (add-to-list 'completion-at-point-functions #'cape-keyword t)
+;;   (add-to-list 'completion-at-point-functions #'cape-dabbrev t))
+
+
+;; (use-package! corfu-history
+;;   :after corfu
+;;   :hook (corfu-mode . (lambda ()
+;;                         (corfu-history-mode 1)
+;;                         (savehist-mode 1)
+;;                         (add-to-list 'savehist-additional-variables 'corfu-history))))
+
+;; (use-package! corfu-quick
+;;   :after corfu
+;;   :bind (:map corfu-map
+;;               ("M-q" . corfu-quick-complete)
+;;               ("C-q" . corfu-quick-insert)))
+
+;; (when (modulep! :editor evil +everywhere)
+;;   (setq evil-collection-corfu-key-themes '(default magic-return)))
+
+;; ;; (setq company-search-regexp-function #'company-search-words-in-any-order-regexp)
+;; ;; (setq company-frontends '(company-pseudo-tooltip-frontend company-echo-metadata-frontend company-preview-frontend))
+
+;; ;; Configure Tempel
+;; (use-package tempel
+;;   ;; Require trigger prefix before template name when completing.
+;;   ;; :custom
+;;   ;; (tempel-trigger-prefix "<")
+
+;;   :bind (("M-+" . tempel-complete) ;; Alternative tempel-expand
+;;          ("M-*" . tempel-insert)
+;;          )
+
+;;   :init
+
+;;   ;; Setup completion at point
+;;   (defun tempel-setup-capf ()
+;;     ;; Add the Tempel Capf to `completion-at-point-functions'.
+;;     ;; `tempel-expand' only triggers on exact matches. Alternatively use
+;;     ;; `tempel-complete' if you want to see all matches, but then you
+;;     ;; should also configure `tempel-trigger-prefix', such that Tempel
+;;     ;; does not trigger too often when you don't expect it. NOTE: We add
+;;     ;; `tempel-expand' *before* the main programming mode Capf, such
+;;     ;; that it will be tried first.
+;;     (setq-local completion-at-point-functions
+;;                 (cons #'tempel-expand
+;;                       completion-at-point-functions)))
+
+;;   (add-hook 'prog-mode-hook 'tempel-setup-capf)
+;;   (add-hook 'text-mode-hook 'tempel-setup-capf)
+
+;;   ;; Optionally make the Tempel templates available to Abbrev,
+;;   ;; either locally or globally. `expand-abbrev' is bound to C-x '.
+;;   ;; (add-hook 'prog-mode-hook #'tempel-abbrev-mode)
+;;   ;; (global-tempel-abbrev-mode)
+;;   )
+;; (use-package tempel-clojure)
+
+
+
+#+end_src
+
+**** Templates
+
+#+begin_src emacs-lisp :mkdirp yes :tangle ~/.emacs.d/.local/cache/templates
+;; ~/.config/emacs/templates
+
+fundamental-mode ;; Available everywhere
+
+(today (format-time-string "%Y-%m-%d"))
+
+prog-mode
+
+(fixme (if (derived-mode-p 'emacs-lisp-mode) ";; " comment-start) "FIXME ")
+(todo (if (derived-mode-p 'emacs-lisp-mode) ";; " comment-start) "TODO ")
+(bug (if (derived-mode-p 'emacs-lisp-mode) ";; " comment-start) "BUG ")
+(hack (if (derived-mode-p 'emacs-lisp-mode) ";; " comment-start) "HACK ")
+
+latex-mode
+
+(begin "\\begin{" (s env) "}" r> n> "\\end{" (s env) "}")
+(frac "\\frac{" p "}{" q "}")
+(enumerate "\\begin{enumerate}\n\\item " r> n> "\\end{enumerate}")
+(itemize "\\begin{itemize}\n\\item " r> n> "\\end{itemize}")
+
+lisp-mode emacs-lisp-mode ;; Specify multiple modes
+
+(lambda "(lambda (" p ")" n> r> ")")
+
+emacs-lisp-mode
+
+(autoload ";;;###autoload")
+(pt "(point)")
+(lambda "(lambda (" p ")" n> r> ")")
+(var "(defvar " p "\n  \"" p "\")")
+(local "(defvar-local " p "\n  \"" p "\")")
+(const "(defconst " p "\n  \"" p "\")")
+(custom "(defcustom " p "\n  \"" p "\"" n> ":type '" p ")")
+(face "(defface " p " '((t :inherit " p "))\n  \"" p "\")")
+(group "(defgroup " p " nil\n  \"" p "\"" n> ":group '" p n> ":prefix \"" p "-\")")
+(macro "(defmacro " p " (" p ")\n  \"" p "\"" n> r> ")")
+(alias "(defalias '" p " '" p ")")
+(fun "(defun " p " (" p ")\n  \"" p "\"" n> r> ")")
+(iflet "(if-let (" p ")" n> r> ")")
+(whenlet "(when-let (" p ")" n> r> ")")
+(iflet* "(if-let* (" p ")" n> r> ")")
+(whenlet* "(when-let* (" p ")" n> r> ")")
+(andlet* "(and-let* (" p ")" n> r> ")")
+(cond "(cond" n "(" q "))" >)
+(pcase "(pcase " (p "scrutinee") n "(" q "))" >)
+(let "(let (" p ")" n> r> ")")
+(let* "(let* (" p ")" n> r> ")")
+(rec "(letrec (" p ")" n> r> ")")
+(dotimes "(dotimes (" p ")" n> r> ")")
+(dolist "(dolist (" p ")" n> r> ")")
+(loop "(cl-loop for " p " in " p " do" n> r> ")")
+(command "(defun " p " (" p ")\n  \"" p "\"" n> "(interactive" p ")" n> r> ")")
+(advice "(defun " (p "adv" name) " (&rest app)" n> p n> "(apply app))" n>
+        "(advice-add #'" (p "fun") " " (p ":around") " #'" (s name) ")")
+(provide "(provide '" (file-name-base (or (buffer-file-name) (buffer-name))) ")" n
+         ";;; " (file-name-nondirectory (or (buffer-file-name) (buffer-name))) " ends here" n)
+
+eshell-mode
+
+(for "for " (p "i") " in " p " { " q " }")
+(while "while { " p " } { " q " }")
+(until "until { " p " } { " q " }")
+(if "if { " p " } { " q " }")
+(ife "if { " p " } { " p " } { " q " }")
+(unl "unless { " p " } { " q " }")
+(unle "unless { " p " } { " p " } { " q " }")
+
+text-mode
+
+(cut "--8<---------------cut here---------------start------------->8---" n r n
+     "--8<---------------cut here---------------end--------------->8---" n)
+(asciibox "+-" (make-string (length str) ?-) "-+" n
+          "| " (s str)                       " |" n
+          "+-" (make-string (length str) ?-) "-+" n)
+(rot13 (p "plain text" text) n "----" n (rot13 text))
+(calc (p "taylor(sin(x),x=0,3)" formula) n "----" n (format "%s" (calc-eval formula)))
+
+rst-mode
+
+(title (make-string (length title) ?=) n (p "Title: " title) n (make-string (length title) ?=) n)
+
+java-mode
+
+(class "public class " (p (file-name-base (or (buffer-file-name) (buffer-name)))) " {" n> r> n "}")
+
+c-mode :when (re-search-backward "^\\S-*$" (line-beginning-position) 'noerror)
+
+(inc "#include <" (p (concat (file-name-base (or (buffer-file-name) (buffer-name))) ".h")) ">")
+(incc "#include \"" (p (concat (file-name-base (or (buffer-file-name) (buffer-name))) ".h")) "\"")
+
+org-mode
+
+(title "#+title: " p n "#+author: Daniel Mendler" n "#+language: en" n n)
+(quote "#+begin_quote" n> r> n> "#+end_quote")
+(example "#+begin_example" n> r> n> "#+end_example")
+(center "#+begin_center" n> r> n> "#+end_center")
+(comment "#+begin_comment" n> r> n> "#+end_comment")
+(verse "#+begin_verse" n> r> n> "#+end_verse")
+(src "#+begin_src " p n> r> n> "#+end_src" :post (org-edit-src-code))
+(elisp "#+begin_src emacs-lisp" n> r> n "#+end_src" :post (org-edit-src-code))
+
+;; Local Variables:
+;; mode: lisp-data
+;; outline-regexp: "[a-z]"
+;; End:
+
+#+end_src
+
 *** dired
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
