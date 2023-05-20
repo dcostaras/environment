@@ -1377,40 +1377,10 @@ and switch to REPL"
 (after! cider
 #+end_src
 
-**** my-clojure-def-and-name-regex
+
+**** Cider eval functions
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-;; Not used
-;; (defconst my-clojure-def-and-name-regex
-;;   (rx
-;;    (seq bol
-;;         (* blank) "(" (* blank)
-;;         (group
-;;          (or
-;;           "specification"
-;;           (and "def" (* (syntax word))))))))
-#+end_src
-
-**** cider report mode
-
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(defhydra my-cider-report-hydra ()
-  "zoom"
-  ("g" text-scale-increase "in")
-  ("l" text-scale-decrease "out"))
-
-;; (add-hook 'cider-test-report-mode-hook #'my-cider-report-hydra/body)
-#+end_src
-
-**** other
-
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(defun cider-buffer-p (buffer)
-  (string-match-p "^\\*cider-" (buffer-name buffer)))
-
-(push #'cider-buffer-p doom-real-buffer-functions)
-
-
 (defun cider-interactive-eval-clj (form &optional callback bounds additional-params)
   "Evaluate FORM and dispatch the response to CALLBACK.
 If the code to be evaluated comes from a buffer, it is preferred to use a
@@ -1446,6 +1416,90 @@ arguments and only proceed with evaluation if it returns nil."
            (when start (cider-column-number-at-pos start))
            (seq-mapcat #'identity additional-params)
            connection))))))
+#+end_src
+
+**** Mode hooks
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun my-define-clojure-mode-hooks (hook-function)
+  (message "bar")
+  (add-hook!
+   '(clojure-mode-hook
+     clojurec-mode-hook
+     clojurescript-mode-hook)
+   hook-function))
+#+end_src
+
+**** my-clojure-def-and-name-regex
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+;; Not used
+;; (defconst my-clojure-def-and-name-regex
+;;   (rx
+;;    (seq bol
+;;         (* blank) "(" (* blank)
+;;         (group
+;;          (or
+;;           "specification"
+;;           (and "def" (* (syntax word))))))))
+#+end_src
+
+**** Font lock
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(rx-define my-clojure-defining-forms
+  (or (seq ">def" (optional "n"))
+      "defsc"
+      "defmutation"
+      "defrouter"
+      "defresolver"
+      "defstyled"))
+
+(defun my-defining-forms-font-lock ()
+  (message "foo")
+  (font-lock-add-keywords
+   nil
+   `((,(rx "("
+           (* (syntax whitespace))
+           (group my-clojure-defining-forms)
+           (+ (syntax whitespace))
+           (group (+ (or (syntax word) (syntax symbol)))))
+      (1 font-lock-keyword-face)
+      (2 font-lock-function-name-face)))))
+
+(my-define-clojure-mode-hooks #'my-defining-forms-font-lock)
+#+end_src
+
+**** cider report mode
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defhydra my-cider-report-hydra ()
+  "zoom"
+  ("g" text-scale-increase "in")
+  ("l" text-scale-decrease "out"))
+
+(general-define-key
+ :states 'normal
+ :keymaps 'cider-popup-buffer-mode-map
+ "q" 'cider-popup-buffer-quit)
+ #+end_src
+
+**** Code loading
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun eval-top-level-form-and-reload-tilley ()
+  (interactive)
+  (cider-eval-defun-at-point)
+  (cider-interactive-eval-clj "(do (in-ns 'user) (refresh-pages-after-eval!))"))
+#+end_src
+
+**** other
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun cider-buffer-p (buffer)
+  (string-match-p "^\\*cider-" (buffer-name buffer)))
+
+(push #'cider-buffer-p doom-real-buffer-functions)
 
 (setq my-cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
 
@@ -1480,13 +1534,6 @@ arguments and only proceed with evaluation if it returns nil."
   (cider-repl-switch-to-other)
   (cider-insert-in-repl "(start-client)" t))
 
-(map! (:localleader
-       (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
-        (:prefix ("r" . "repl")
-         "r" #'my-cider-reset
-         "R" #'my-cider-reset-all
-         "s" #'my-cider-start-system))))
-
 (defun my-cider-load-debug-tools ()
   (interactive)
   (cider-interactive-eval
@@ -1509,44 +1556,44 @@ arguments and only proceed with evaluation if it returns nil."
 ;;   (set-lookup-handlers! 'clj-refactor-mode nil))
 
 (define-clojure-indent
-  ;; Fulcro
-  (>defn :defn)
-  (defmutation [1 :form :form [1]])
-  ;; (pc/defmutation [2 :form :form [1]])
+ ;; Fulcro
+ (>defn :defn)
+ (defmutation [1 :form :form [1]])
+ ;; (pc/defmutation [2 :form :form [1]])
 
-  ;; Fulcro-spec
-  (specification [1])
-  (component [1])
-  (behavior [1])
-  (when-mocking '(0))
-  (assertions [0])
+ ;; Fulcro-spec
+ (specification [1])
+ (component [1])
+ (behavior [1])
+ (when-mocking '(0))
+ (assertions [0])
 
-  (thrown-with-data? [1])
-  (not-thrown-with-data? [1])
+ (thrown-with-data? [1])
+ (not-thrown-with-data? [1])
 
-  ;; Datomic
-  (not-join 1)
+ ;; Datomic
+ (not-join 1)
 
-  ;; JRA
-  (system/let [1])
-  (clet [1])
-  (sp/collected? 1)
-  (sp/cond-path :defn)
-  (sp/if-path :defn)
-  (sp/recursive-path :defn)
-  (load-marker-utils/capture-load-marker-states 1)
+ ;; JRA
+ (system/let [1])
+ (clet [1])
+ (sp/collected? 1)
+ (sp/cond-path :defn)
+ (sp/if-path :defn)
+ (sp/recursive-path :defn)
+ (load-marker-utils/capture-load-marker-states 1)
 
-  (swap!-> [1])
+ (swap!-> [1])
 
-  (comment :defn)
+ (comment :defn)
 
-  (m/search 1)
+ (m/search 1)
 
-  ;; compojure
-  (context 2)
-  (POST 2)
-  (GET 2)
-  (PUT 2))
+ ;; compojure
+ (context 2)
+ (POST 2)
+ (GET 2)
+ (PUT 2))
 
 (defvar kaocha-windows-rx (rx bol (* any) "kaocha" (* any)))
 
@@ -1793,19 +1840,6 @@ Supports the fulcro-spec `specification' macro"
 ;; :main-opts ["-m" "repl-eval.nrepl"]}
 ;; While I could refactor this to instrument variable middleware and injection forms, is there some hook I am missing here?  It was much much easier and cleaner to accomplish REPL initialization with leiningen.
 
-(defun guardrails-font-lock ()
-  (font-lock-add-keywords
-   nil
-   `((,(rx "("
-           (* (syntax whitespace))
-           (group ">def" (optional "n"))
-           (+ (syntax whitespace))
-           (group (+ (or (syntax word) (syntax symbol)))))
-      (1 font-lock-keyword-face)
-      (2 font-lock-function-name-face)))))
-
-(add-hook 'clojure-mode-hook #'guardrails-font-lock)
-
 (global-subword-mode 1)
 
 (after! aggressive-indent
@@ -1821,7 +1855,26 @@ Supports the fulcro-spec `specification' macro"
 (after! lsp-mode
   (after! lsp-ui-mode
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))))
+    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)))
+#+end_src
+
+**** key mappings
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(map! (:localleader
+       (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
+             (:prefix ("r" . "repl")
+                      "r" #'my-cider-reset
+                      "R" #'my-cider-reset-all
+                      "s" #'my-cider-start-system)))
+      (:mode cider-mode
+             "C-c C-c" #'eval-top-level-form-and-reload-tilley))
+#+end_src
+
+**** End
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+)
 #+end_src
 
 *** Lispy
@@ -3212,8 +3265,16 @@ compdef _bb_tasks bb
 * AWS
 
 #+begin_src conf :tangle ~/.aws/config :mkdirp yes
-[profile jra]
-credential_process = sh -c "op get item 'JRA AWS' --fields 'aws_access_key_id,aws_secret_access_key' | 1password-aws"
+[default]
+region = us-east-2
+
+[profile admin]
+source = default
+mfa_serial=arn:aws:iam::056866866838:mfa/drcostaras@daitaas.com
+
+[profile root]
+source = default
+mfa_serial=arn:aws:iam::056866866838:mfa/root-account-mfa-device
 #+end_src
 
 * next
