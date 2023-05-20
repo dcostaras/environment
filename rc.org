@@ -3218,7 +3218,37 @@ cd ~/src/yarmouk && \
     bb start --local carpenter --local workshop
 #+end_src
 
-*** split audio
+*** audio
+
+**** wav to aiff
+
+#+begin_src clojure :shebang "#!/usr/bin/env bb" :tangle ~/bin/wav-to-aiff
+(require '[clojure.java.shell :refer [sh]])
+(require '[cheshire.core :as json])
+(doseq [filename *command-line-args*]
+  (let [output-filename (clojure.string/replace filename #".wav" ".aiff")
+        info (-> (sh "ffprobe"
+                     "-hide_banner"
+                     "-loglevel" "panic"
+                     "-show_streams"
+                     "-of" "json"
+                     filename)
+                 :out
+                 (json/parse-string true)
+                 :streams
+                 (nth 0))
+        bit-depth (-> info :bits_per_sample str)
+        sample-format (-> info :sample_fmt str)
+        sample-rate (-> info :sample_rate str)]
+    (sh "ffmpeg"
+        "-hide_banner"
+        "-i" filename
+        "-ar" sample-rate
+        "-acodec" (str "pcm_s" bit-depth "be")
+        output-filename)))
+#+end_src
+
+**** split audio
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/split-audio
 ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
