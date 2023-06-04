@@ -1,4 +1,4 @@
-personal_ws-1.1 en 156
+personal_ws-1.1 en 170
 APIs
 Babashka
 Costaras
@@ -29,6 +29,7 @@ baz
 bigdec
 bigdecimal
 cardinality
+child
 cli
 clj
 cljc
@@ -36,6 +37,8 @@ cljs
 clocktables
 cognitect
 cognito
+combinator
+combinators
 config
 configs
 cpcache
@@ -47,6 +50,7 @@ daitaas
 datanac
 datastructure
 datoms
+decrypt
 def'd
 defmethod
 defn
@@ -58,6 +62,7 @@ denormalised
 dep
 deps
 deref
+descendents
 destructured
 destructuring
 dev
@@ -69,7 +74,9 @@ entrypoint
 enum
 enums
 env
+eval
 evalling
+evals
 flaxseed
 fn
 fns
@@ -80,6 +87,7 @@ fsn
 fulcro
 fulcro's
 getValueByKeys
+girouette
 gitignore
 gmail
 hoc
@@ -95,6 +103,7 @@ jwt
 jwtToken
 keypair
 kondo
+leiningen
 localhost
 lsp
 magit
@@ -115,7 +124,11 @@ nrepl
 onboarding
 params
 plc
+pooles
 postfixed
+pseudoclass
+pseudoclasses
+pseudoelement
 readme
 rebl
 recurse
@@ -154,4 +167,5 @@ uuid
 vals
 varargs
 verifier
+whitespace
 workspaces
