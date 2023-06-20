@@ -3173,6 +3173,15 @@ git annex copy --all --to=rsync
 git annex sync
 #+end_src
 
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/annex-init-rsync
+if [[ $1 = annex-* ]]
+then
+  git annex initremote rsync type=rsync rsyncurl=rsync:$1 encryption=shared
+else
+  echo "ARG must start with 'annex-'"
+fi
+#+end_src
+
 *** Clojure
 
 #+begin_src clojure :shebang "#!/usr/bin/env bb" :tangle ~/bin/bb-repl
