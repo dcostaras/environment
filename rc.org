@@ -1781,12 +1781,9 @@ Can turn this on once I've worked to fix at least the multiple undo points
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! lsp-mode
-  (push "\\.shadow-cljs" lsp-file-watch-ignored)
-  (push "\\.clj-kondo" lsp-file-watch-ignored)
-  (push "\\.lsp" lsp-file-watch-ignored)
-  (push "\\.cpcache" lsp-file-watch-ignored)
-  (push "resources" lsp-file-watch-ignored)
-
+  (after! lsp-ui-mode
+    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references))
   (setq lsp-ui-doc-enable nil)
   (setq lsp-ui-doc-show-with-cursor nil)
   (setq lsp-ui-doc-show-with-mouse nil)
@@ -1873,8 +1870,29 @@ and switch to REPL"
 (after! cider
 #+end_src
 
+**** Settings
 
-**** Cider eval functions
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(setq cider-clojure-cli-global-options "-A:debug-tools")
+(setq cider-shadow-cljs-global-options "-A:debug-tools")
+(setq cider-save-file-on-load t)
+(setq clojure-toplevel-inside-comment-form t)
+(setq org-babel-clojure-backend 'cider)
+(setq lsp-lens-enable t)
+(setq lsp-enable-symbol-highlighting t)
+
+(defun cider-buffer-p (buffer)
+  (string-match-p "^\\*cider-" (buffer-name buffer)))
+
+(push #'cider-buffer-p doom-real-buffer-functions)
+
+(advice-add 'cider-pprint-eval-last-sexp :around 'evil-collection-cider-last-sexp)
+
+(add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+(add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
+#+end_src
+
+**** cider-interactive-eval-clj
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (defun cider-interactive-eval-clj (form &optional callback bounds additional-params)
@@ -1967,6 +1985,14 @@ arguments and only proceed with evaluation if it returns nil."
 (my-define-clojure-mode-hooks #'my-defining-forms-font-lock)
 #+end_src
 
+**** Aggressive indent
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(after! aggressive-indent
+  (add-hook! clojure-mode
+    (aggressive-indent-mode 1)))
+#+end_src
+
 **** cider report mode
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
@@ -1981,25 +2007,35 @@ arguments and only proceed with evaluation if it returns nil."
  "q" 'cider-popup-buffer-quit)
  #+end_src
 
-**** Code loading
+**** Eval commands
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(defun eval-top-level-form-and-reload-tilley ()
-  (interactive)
-  (cider-eval-defun-at-point)
-  (cider-interactive-eval-clj "(do (in-ns 'user) (refresh-pages-after-eval!))"))
+Three ways to eval a string:
+
+Evals in environment but doesn't print
+#+begin_src emacs-lisp
+(cider-nrepl-sync-request:eval "(form)")
 #+end_src
 
-**** other
+Evals in environment and prints
+#+begin_src emacs-lisp
+(cider-interactive-eval-clj "(form)")
+#+end_src
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(defun cider-buffer-p (buffer)
-  (string-match-p "^\\*cider-" (buffer-name buffer)))
+Inserts literal form into repl and eval (second arg is `t`)
+#+begin_src emacs-lisp
+(cider-insert-in-repl "(form)" t)
+#+end_src
 
-(push #'cider-buffer-p doom-real-buffer-functions)
+#+name: cider-load-debug-tools
+#+begin_src clojure
+(require '[com.gfredericks.debug-repl :refer [break! unbreak! unbreak!!]])
+(require '[hashp.core])
+(use 'hyperfiddle.rcf)
 
-(setq my-cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
+(hyperfiddle.rcf/enable!)
+#+end_src
 
+#+begin_src emacs-lisp :noweb yes :noweb-prefix no :tangle ~/.doom.d/config.el
 (defun my-cider-reset ()
   (interactive)
   (projectile-save-project-buffers)
@@ -2010,17 +2046,22 @@ arguments and only proceed with evaluation if it returns nil."
   (projectile-save-project-buffers)
   (cider-interactive-eval-clj "(do (in-ns 'user) (restart-all-system))"))
 
-;;; Three ways to eval a string:
-;; Evals in environment but doesn't print
-;; (cider-nrepl-sync-request:eval "(form)")
-;; Evals in environment and prints
-;; (cider-interactive-eval-clj "(form)")
-;; Inserts literal form into repl and eval (second arg)
-;; (cider-insert-in-repl "(form)" t)
+(setq my-cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
 
 (defun my-kill-cider-repls ()
   (interactive)
   (kill-matching-buffers my-cider-repl-name-rx nil t))
+
+(defun my-cider-load-reveal-tap-log ()
+  (interactive)
+  (cider-interactive-eval
+   (format "%s" '((requiring-resolve 'vlaaad.reveal/tap-log)))))
+
+(defun my-cider-clear-reveal ()
+  (interactive)
+  (cider-interactive-eval
+   (format "%s" '(do (require 'vlaaad.reveal)
+                     (vlaaad.reveal/submit-command! (vlaaad.reveal/clear-output))))))
 
 (defun my-cider-start-system ()
   (interactive)
@@ -2029,29 +2070,29 @@ arguments and only proceed with evaluation if it returns nil."
   (cider-insert-in-repl "(start-system)" t)
   (cider-connect-sibling-clj '())
   (cider-repl-switch-to-other)
-  (cider-insert-in-repl "(start-client)" t))
+  (cider-insert-in-repl "(start-client)" t)
+  (my-cider-load-reveal-tap-log))
+
+(defmacro my-cider-interactive-eval (&rest body)
+  `(cider-interactive-eval ,(format "%s" `(do ,@body))))
 
 (defun my-cider-load-debug-tools ()
   (interactive)
-  (cider-interactive-eval
-   "(do
-      (require '[com.gfredericks.debug-repl :refer [break! unbreak! unbreak!!]])
-      (require '[hashp.core]))"))
+  (my-cider-interactive-eval <<cider-load-debug-tools>>))
 
-(setq cider-clojure-cli-global-options "-A:debug-tools")
-(setq cider-shadow-cljs-global-options "-A:debug-tools")
-(setq cider-save-file-on-load t)
-(setq clojure-toplevel-inside-comment-form t)
-(setq org-babel-clojure-backend 'cider)
-(setq lsp-lens-enable t)
+(map! (:localleader
+       (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
+             (:prefix ("r" . "repl")
+                      "r" #'my-cider-reset
+                      "R" #'my-cider-reset-all
+                      "s" #'my-cider-start-system
+                      "t" #'my-cider-load-reveal-tap-log
+                      "c" #'my-cider-clear-reveal))))
+#+end_src
 
-;; TODO test this
-;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
-;; (use-package! clj-refactor
-;;   :after clojure-mode
-;;   :config
-;;   (set-lookup-handlers! 'clj-refactor-mode nil))
+**** Indentation
 
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (define-clojure-indent
  ;; Fulcro
  (>defn :defn)
@@ -2091,7 +2132,11 @@ arguments and only proceed with evaluation if it returns nil."
  (POST 2)
  (GET 2)
  (PUT 2))
+#+end_src
 
+**** Testing
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (defvar kaocha-windows-rx (rx bol (* any) "kaocha" (* any)))
 
 (setq display-buffer-alist '((kaocha-windows-rx (display-buffer-pop-up-frame display-buffer-reuse-window display-buffer-same-window))))
@@ -2126,6 +2171,13 @@ Given an ORIGINAL-BUFFER, use that instead of (current-buffer) when switching ba
   (interactive)
   (kaocha-runner--clear-buffer kaocha-runner--out-buffer)
   (kaocha-runner--clear-buffer kaocha-runner--err-buffer)
+  (message "%s" (format kaocha-runner-repl-invocation-template
+           (if run-all?
+               (format "(kaocha.repl/run-all %s)" kaocha-runner-extra-configuration)
+             (format
+              "(kaocha.repl/run %s %s)"
+              testable-sym
+              kaocha-runner-extra-configuration))))
   (kaocha-runner--eval-clojure-code
    (format kaocha-runner-repl-invocation-template
            (if run-all?
@@ -2203,6 +2255,7 @@ Supports the fulcro-spec `specification' macro"
        (nrepl-make-response-handler
         code-buffer
         (lambda (_buffer test-var)
+          (message "%s" ns)
           (if (not (string= "nil" test-var))
               (progn
                 (setq my-last-executed-test (list ns test-var))
@@ -2228,6 +2281,21 @@ Supports the fulcro-spec `specification' macro"
       (advice-remove 'cider-eval-defun-at-point #'my-run-test)
       (remove-hook 'cider-file-loaded-hook #'tdd-test))))
 
+(use-package kaocha-runner
+  :init
+  (bind-keys :prefix-map ar-emacs-kaocha-prefix-map
+             :prefix "C-c k"
+             ("t" . kaocha-runner-run-test-at-point)
+             ("r" . kaocha-runner-run-tests)
+             ("a" . kaocha-runner-run-all-tests)
+             ("w" . kaocha-runner-show-warnings)
+             ("h" . kaocha-runner-hide-windows)))
+#+end_src
+
+**** Minor modes
+***** pprint-eval-mode
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (define-minor-mode pprint-eval-mode
   "When active swaps `cider-eval-defun-at-point' with `cider-pprint-eval-defun-at-point'"
   nil nil nil
@@ -2239,25 +2307,64 @@ Supports the fulcro-spec `specification' macro"
     (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
           [remap cider-pprint-eval-defun-at-point] #'cider-eval-defun-at-point
           [remap cider-pprint-eval-last-sexp] #'cider-eval-last-sexp)))
+#+end_src
 
-(advice-add 'cider-pprint-eval-last-sexp :around 'evil-collection-cider-last-sexp)
+***** clear-reveal-eval-mode
 
-(use-package kaocha-runner
-  :init
-  (bind-keys :prefix-map ar-emacs-kaocha-prefix-map
-             :prefix "C-c k"
-             ("t" . kaocha-runner-run-test-at-point)
-             ("r" . kaocha-runner-run-tests)
-             ("a" . kaocha-runner-run-all-tests)
-             ("w" . kaocha-runner-show-warnings)
-             ("h" . kaocha-runner-hide-windows)))
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun my-clear-reveal-and-eval ()
+  (interactive)
+  (my-cider-clear-reveal)
+  (eval-top-level-form-and-reload-tilley))
 
+(define-minor-mode clear-reveal-eval-mode
+  nil nil nil
+  :global t
+  (if clear-reveal-eval-mode
+      (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
+            [remap eval-top-level-form-and-reload-tilley] #'my-clear-reveal-and-eval)
+    (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
+          [remap my-clear-reveal-and-eval] #'eval-top-level-form-and-reload-tilley)))
+#+end_src
+
+***** reload-tilley-mode
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun eval-top-level-form-and-reload-tilley ()
+  (interactive)
+  (cider-eval-defun-at-point)
+  (cider-interactive-eval-clj "(do (in-ns 'user) (refresh-pages-after-eval!))"))
+
+(defun load-buffer-and-reload-tilley ()
+  (interactive)
+  (cider-load-buffer)
+  (cider-interactive-eval-clj "(do (in-ns 'user) (refresh-pages-after-eval!))"))
+
+(map! (:mode cider-mode
+             "C-c C-c" #'cider-eval-defun-at-point
+             "C-c C-k" #'cider-load-buffer))
+
+(define-minor-mode reload-tilley-on-eval-mode
+  nil nil nil
+  :global t
+  (if reload-tilley-on-eval-mode
+      (map! :mode cider-mode
+            [remap cider-eval-defun-at-point] #'eval-top-level-form-and-reload-tilley
+            [remap cider-load-buffer] #'load-buffer-and-reload-tilley)
+    (map! :mode cider-mode
+          [remap eval-top-level-form-and-reload-tilley] #'cider-eval-defun-at-point
+          [remap load-buffer-and-reload-tilley] #'cider-load-buffer)))
+#+end_src
+
+**** Jet
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (defconst special-rx
   (rx (seq "#<" (or "Fn" "Atom") "@" (1+ (in hex)) ": "
            (group (*? anything))
            ">")))
 
-(defun jet (beginning end)
+(defun my--jet (beginning end)
   (interactive "r")
   (narrow-to-region beginning end)
 
@@ -2276,7 +2383,11 @@ Supports the fulcro-spec `specification' macro"
    t)
 
   (widen))
+#+end_src
 
+**** REBL
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 ;; Similar to C-x C-e, but sends to REBL
 (defun rebl-eval-last-sexp ()
   (interactive)
@@ -2299,74 +2410,71 @@ Supports the fulcro-spec `specification' macro"
           (lambda ()
             (local-set-key (kbd "C-S-x") #'rebl-eval-defun-at-point)
             (local-set-key (kbd "C-x C-r") #'rebl-eval-last-sexp)))
+#+end_src
 
-(add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
-(add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
-;; waffletower  6:03 AM
-;; I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
-;; Untitled
-;; (ns repl-eval.nrepl
-;;     (:require [clojure.pprint :refer [pprint]]
-;;      [nrepl.server :as server]
-;;      [nrepl.core :as nrepl]
-;;      refactor-nrepl.middleware
-;;      cider.nrepl))
-;; ​
-;; (defn start
-;;   []
-;;   (let [server (server/start-server
-;;                 :handler (apply server/default-handler
-;;                                 (conj
-;;                                  (map #'cider.nrepl/resolve-or-fail cider.nrepl/cider-middleware)
-;;                                  #'refactor-nrepl.middleware/wrap-refactor)))
-;;                port (:port server)]
-;;     (with-open [cxn (nrepl/connect :port port)]
-;;                (-> (nrepl/client cxn 1000)
-;;                    (nrepl/message {:op "eval" :code "(require '[clojure.pprint :refer [pprint]])"})
-;;                    nrepl/response-values))
-;;     (spit ".nrepl-port" port)))
-;; Collapse
-;; 6:04
-;; The injection in this case is requiring pprint.
-;; waffletower  6:09 AM
-;; The code is easily referenced in a deps.edn alias:
-;; :inject {:extra-deps {waffletower/repl-eval {:local/root "../repl-eval/"}
-;; nrepl/nrepl {:mvn/version "0.7.0"}
-;; refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
-;; cider/cider-nrepl {:mvn/version "0.25.1"}}
-;; :main-opts ["-m" "repl-eval.nrepl"]}
-;; While I could refactor this to instrument variable middleware and injection forms, is there some hook I am missing here?  It was much much easier and cleaner to accomplish REPL initialization with leiningen.
+**** Possible nREPL code injection
 
-(global-subword-mode 1)
+I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
 
-(after! aggressive-indent
-  (add-hook! clojure-mode
-    (aggressive-indent-mode 1)))
+#+begin_src emacs-lisp
+(ns repl-eval.nrepl
+    (:require [clojure.pprint :refer [pprint]]
+     [nrepl.server :as server]
+     [nrepl.core :as nrepl]
+     refactor-nrepl.middleware
+     cider.nrepl))
+​
+(defn start
+  []
+  (let [server (server/start-server
+                :handler (apply server/default-handler
+                                (conj
+                                 (map #'cider.nrepl/resolve-or-fail cider.nrepl/cider-middleware)
+                                 #'refactor-nrepl.middleware/wrap-refactor)))
+               port (:port server)]
+    (with-open [cxn (nrepl/connect :port port)]
+               (-> (nrepl/client cxn 1000)
+                   (nrepl/message {:op "eval" :code "(require '[clojure.pprint :refer [pprint]])"})
+                   nrepl/response-values))
+    (spit ".nrepl-port" port)))
+#+end_src
+
+The injection in this case is requiring pprint.
+The code is easily referenced in a deps.edn alias:
+
+#+begin_src clojure
+:inject {:extra-deps {waffletower/repl-eval {:local/root "../repl-eval/"}
+                      nrepl/nrepl {:mvn/version "0.7.0"}
+                      refactor-nrepl/refactor-nrepl {:mvn/version "2.5.0"}
+                      cider/cider-nrepl {:mvn/version "0.25.1"}}
+         :main-opts ["-m" "repl-eval.nrepl"]}
+                      #+end_src
+
+While I could refactor this to instrument variable middleware and injection forms, is there some hook I am missing here? It was much easier and cleaner to accomplish REPL initialization with leiningen.
+
+**** LSP
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(after! lsp-mode
+  (push "\\.shadow-cljs" lsp-file-watch-ignored)
+  (push "\\.clj-kondo" lsp-file-watch-ignored)
+  (push "\\.lsp" lsp-file-watch-ignored)
+  (push "\\.cpcache" lsp-file-watch-ignored)
+  (push "resources" lsp-file-watch-ignored))
+
+;; TODO test this
+;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
+;; (use-package! clj-refactor
+;;   :after clojure-mode
+;;   :config
+;;   (set-lookup-handlers! 'clj-refactor-mode nil))
 
 ;; TODO test this
 ;; see https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/
 ;; (use-package! cider
 ;;   :config
 ;;   (set-lookup-handlers! 'cider-mode nil))
-
-(after! lsp-mode
-  (after! lsp-ui-mode
-    (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-    (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)))
-#+end_src
-
-**** key mappings
-
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(map! (:localleader
-       (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
-             (:prefix ("r" . "repl")
-                      "r" #'my-cider-reset
-                      "R" #'my-cider-reset-all
-                      "s" #'my-cider-start-system)))
-      (:mode cider-mode
-             "C-c C-c" #'eval-top-level-form-and-reload-tilley))
-#+end_src
+  #+end_src
 
 **** End
 
