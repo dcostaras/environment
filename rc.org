@@ -425,6 +425,20 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 (use-package! ob-http)
 #+end_src
 
+**** Export
+
+#+name: org-export
+#+begin_src emacs-lisp
+(use-package! ox-latex)
+
+(add-to-list 'org-latex-packages-alist '("" "minted"))
+(setq org-latex-listings 'minted)
+(setq org-latex-pdf-process
+      '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
+        "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+#+end_src
+
 **** Package
 
 #+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
@@ -444,6 +458,7 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
   <<org-auto-tangle>>
   <<org-keybindings>>
   <<org-ob-http>>
+  <<org-export>>
 #+end_src
 
 *** Babashka
