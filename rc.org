@@ -3188,7 +3188,7 @@ git annex sync
 *** doom
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doom
-~/.emacs.d/bin/doom "$1"
+~/.config/emacs/bin/doom "$1"
 #+end_src
 
 *** emacsen
