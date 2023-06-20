@@ -224,6 +224,27 @@ enjoy using a lot.
     `(s-format ,fmt 'aget (list ,@agetter))))
 #+end_src
 
+**** Coercion
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun keyword->symbol (keyword)
+  "Convert KEYWORD to symbol."
+  (intern (substring (symbol-name keyword) 1)))
+
+(defun keyword->string (keyword)
+  "Convert KEYWORD to symbol."
+  (substring (symbol-name keyword) 1))
+
+(defun symbol->string (symbol)
+  (symbol-name symbol))
+
+(defun symbol->keyword (symbol)
+  (intern (concat ":" (symbol-name symbol))))
+
+(defun string->symbol (string)
+  (intern string))
+#+end_src
+
 *** Org
 **** Keybindings
 
