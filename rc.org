@@ -713,6 +713,19 @@ advises functions to enable or disable features based on user configuration."
   (my-symex-initialize))
 #+end_src
 
+**** evil-ex-define-cmd-local
+
+#+name: evil-ex-define-cmd-local
+#+begin_src emacs-lisp
+(use-package! evil-ex)
+
+(defun my--evil-ex-define-cmd-local (cmd function)
+  "Locally binds the function FUNCTION to the command CMD."
+  (unless (local-variable-p 'evil-ex-commands)
+    (setq-local evil-ex-commands (copy-alist evil-ex-commands)))
+  (evil-ex-define-cmd cmd function))
+#+end_src
+
 **** Hydra paste
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
