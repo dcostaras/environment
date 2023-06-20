@@ -940,6 +940,21 @@ advises functions to enable or disable features based on user configuration."
   (evil-ex-define-cmd cmd function))
 #+end_src
 
+**** Recenter buffer after evil motions
+
+#+name: evil-recentering
+(defun my-evil-recenter (&optional count symbol)
+  (recenter nil))
+
+;; Evil
+(advice-add 'evil-ex-search-word-forward :after #'my-evil-recenter)
+(advice-add 'evil-ex-search-next :after #'my-evil-recenter)
+(advice-add 'evil-goto-mark-line :after #'my-evil-recenter)
+
+;; Info
+(advice-add 'Info-follow-nearest-node :after #'my-evil-recenter)
+#+end_src
+
 **** key-chord
 
 #+name: evil-key-chord
