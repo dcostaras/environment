@@ -331,11 +331,11 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 (setq org-src-window-setup 'current-window)
 #+end_src
 
-**** Tangling and exporting
+**** Babel
 
-#+name: org-tangling-and-exporting
+#+name: org-babel
 #+begin_src emacs-lisp
-(use-package! ob-http)
+
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
@@ -626,7 +626,7 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
   <<org-settings>>
   <<org-buffers>>
   <<org-agenda>>
-  <<org-tangling-and-exporting>>
+  <<org-babel>>
   <<org-auto-tangle>>
   <<org-worf>>
   <<org-keybindings>>
