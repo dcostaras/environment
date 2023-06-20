@@ -1,5 +1,6 @@
 #+author: Donavan-Ross Costaras
 #+email: d.costaras@gmail.com
+#+auto_tangle: t
 
 * Emacs
 ** TODO turn "_" into the vim action to comment with #_ an object
@@ -343,6 +344,22 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
    (scheme . t)))
 #+end_src
 
+**** TODO Tangling
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! org-auto-tangle)
+#+end_src
+
+#+name: org-auto-tangle
+#+begin_src emacs-lisp
+;; (use-package! org-auto-tangle
+;;   :defer t
+;;   :hook (org-mode . org-auto-tangle-mode)
+;;   :config
+;;   (setq org-auto-tangle-babel-safelist
+;;         '("~/env/rc.org")))
+#+end_src
+
 **** Worf
 
 #+name: org-worf
@@ -413,6 +430,7 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
   <<org-agenda>>
   <<org-tangling-and-exporting>>
   <<org-worf>>)
+  <<org-auto-tangle>>
   <<org-keybindings>>
 #+end_src
 
