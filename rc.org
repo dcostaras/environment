@@ -2482,6 +2482,17 @@ While I could refactor this to instrument variable middleware and injection form
 ;;   (set-lookup-handlers! 'cider-mode nil))
   #+end_src
 
+**** TODO Tempel
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! tempel)
+(package! tempel-clojure
+  :recipe (:type git
+           :host github
+           :files ("tempel-clojure.el" "templates")
+           :repo "mpenet/tempel-clojure"))
+#+end_src
+
 **** End
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
