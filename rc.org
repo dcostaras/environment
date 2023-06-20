@@ -336,6 +336,24 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
 (map! :leader "cc" #'my--bb-run-task)
 #+end_src
 
+*** Latex
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun my--bb-compile-latex ()
+  (interactive)
+  (my--bb-task "compile"))
+
+(defun my--latex-mode-hook ()
+  (add-hook 'after-save-hook #'my--bb-compile-latex nil 'make-it-local))
+
+(define-minor-mode my--compile-latex-on-save-mode
+  nil nil nil
+  :global t
+  (if my--compile-latex-on-save-mode
+      (add-hook! tex-mode #'my--latex-mode-hook)
+    (remove-hook! tex-mode #'my--latex-mode-hook)))
+#+end_src
+
 *** Auto dim other buffers
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
