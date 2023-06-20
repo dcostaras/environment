@@ -425,6 +425,17 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 (use-package! ob-http)
 #+end_src
 
+**** org-ml
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! org-ml)
+#+end_src
+
+#+name: org-ml
+#+begin_src emacs-lisp
+(use-package! org-ml)
+#+end_src
+
 **** Export
 
 #+name: org-export
@@ -437,6 +448,116 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
       '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"
         "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+#+end_src
+
+***** Environments
+
+#+name: org-export-environments
+#+begin_src emacs-lisp
+(defvar my--org-export-environments)
+
+(defun my--org-babel-exp-code-template (&optional environments)
+  ;; TODO split the orig var instead of hard coding
+  ;; TODO this doesn't work for things with a `-` in them
+  (concat "#+begin_src %lang%switches%flags"
+          " :part %part"
+          (mapconcat (lambda (attr)
+                       (format " :%s %%%s" attr attr))
+                     (map-keys environments))
+          "\n%body\n#+end_src"))
+
+(setq org-babel-exp-code-template (my--org-babel-exp-code-template))
+
+(defun my--org-block-attr-value (block attr)
+  (let* ((block-info (org-with-point-at (org-element-property :begin block)
+                       (org-babel-get-src-block-info)))
+         (attr-value-or-template (assoc-default (symbol->keyword attr) (elt block-info 2))))
+    (unless (s-equals? attr-value-or-template (format "%%%s" attr))
+      attr-value-or-template)))
+
+(defun my--org-export-environment-templates (org-block backend-key)
+  (loopy
+   (named outer)
+   (map (environment-name . instances) my--org-export-environments)
+
+   (set block-instance-name (my--org-block-attr-value org-block environment-name))
+   (unless block-instance-name (skip))
+
+   (loopy
+    (map (instance . backends) instances)
+    (at outer (when (s-equals? block-instance-name instance)
+                (collect templates (map-elt backends backend-key)))))
+
+   (finally-return templates)))
+
+(defun my--org-export-apply-templates (result templates)
+  (if templates
+      (map-let (before after) (car templates)
+        (my--org-export-apply-templates (concat before result after) (cdr templates)))
+    result))
+
+(defun my--org-latex-src-block (old-func src-block _contents info)
+  (let ((result (funcall old-func src-block _contents info))
+        (templates (my--org-export-environment-templates src-block 'latex)))
+    (my--org-export-apply-templates result templates)))
+
+(advice-add 'org-latex-src-block :around #'my--org-latex-src-block)
+
+(defun my--org-html-src-block (old-func src-block _contents info)
+  (let ((result (funcall old-func src-block _contents info))
+        (templates (my--org-export-environment-templates src-block 'html)))
+    (my--org-export-apply-templates result templates)))
+
+(advice-add 'org-html-src-block :around #'my--org-html-src-block)
+
+(defun my--org-element-has-tag? (heading tag)
+  (member tag (org-element-property :tags heading)))
+
+(defun my--org-export-process-backend (backend-block)
+  (let ((backend (ht)))
+    (org-element-map backend-block 'src-block
+      (lambda (src-block)
+        (let ((part (--> src-block
+                         (org-ml-get-property :parameters it)
+                         (map-elt it :part)))
+              (value (--> src-block
+                          (org-ml-get-property :value it)
+                          (concat "\n" it "\n"))))
+          (map-put! backend part value))))
+    backend))
+
+;; (defun eval-and-run ()
+;;   (interactive)
+;;   (eros-eval-defun nil)
+;;   (save-excursion
+;;     (with-current-buffer "sicp-workbook.org"
+;;       (org-latex-export-to-latex))))
+
+;; (general-define-key
+;;  :keymaps 'org-src-mode-map
+;;  "C-c C-c" #'eval-and-run)
+
+(defun my--org-export-create-environments ()
+  (let ((environments (ht)))
+    (cl-flet ((name (element) (->> element
+                                   (org-ml-get-property :raw-value)
+                                   (string->symbol))))
+      (org-element-map (org-element-parse-buffer) 'headline
+        (lambda (environment)
+          (when (my--org-element-has-tag? environment "environment")
+            (loopy
+             (with (instances (ht))
+                   (environment-name (name environment)))
+             (list instance (org-ml-get-children environment))
+
+             (loopy
+              (with (backends (ht)))
+              (list backend (org-ml-get-children instance))
+              (do (map-put! backends (name backend) (my--org-export-process-backend backend)))
+              (after-do (map-put! instances (name instance) backends)))
+
+             (after-do (map-put! environments environment-name instances))))))
+      environments)))
 #+end_src
 
 **** Package
@@ -458,7 +579,9 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
   <<org-auto-tangle>>
   <<org-keybindings>>
   <<org-ob-http>>
+  <<org-ml>>
   <<org-export>>
+  <<org-export-environments>>
 #+end_src
 
 *** Babashka
