@@ -3109,7 +3109,6 @@ antigen apply
 
 #+BEGIN_SRC sh :tangle ~/.zshrc
 export PATH="$PATH:/users/donavan/bin"
-export PATH="$PATH:/opt/local/bin" # Intel homebrew
 export PATH="$PATH:/opt/local/sbin"
 export PATH="$PATH:/Library/TeX/texbin"
 
