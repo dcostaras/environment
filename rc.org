@@ -3123,9 +3123,9 @@ export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -XX:-OmitStackTraceInFastThrow"
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Dapple.awt.UIElement=true"
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Xms512m -Xmx4g"
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home"
-export AWS_DEFAULT_REGION=us-east-2
-export AWS_REGION=us-east-2
-export AWS_PROFILE=jra
+# export AWS_DEFAULT_REGION=us-east-2
+# export AWS_REGION=us-east-2
+# export AWS_PROFILE=jra
 source ~/.zprofile
 #+END_SRC
 
