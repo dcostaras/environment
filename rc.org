@@ -560,6 +560,58 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
       environments)))
 #+end_src
 
+**** org-tempo
+
+#+name: org-tempo
+#+begin_src emacs-lisp
+(use-package! org-tempo
+  :config
+  (tempo-define-template
+   "src scheme expression"
+   '(n
+     "#+begin_src scheme" n
+     p n
+     "#+end_src"
+     n)
+   "<ss")
+
+  (tempo-define-template
+   "src scheme definition"
+   '(n
+     "#+begin_src scheme :results none" n
+     p n
+     "#+end_src"
+     n)
+   "<ssd")
+
+  (tempo-define-template
+   "Doom config src block"
+   '(n
+     "#+begin_src emacs-lisp :tangle ~/.doom.d/config.el" n
+     p n
+     "#+end_src"
+     n)
+   "<config")
+
+  (tempo-define-template
+   "Doom packages src block"
+   '(n
+     "#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el" n
+     p n
+     "#+end_src"
+     n)
+   "<packages")
+
+  (tempo-define-template
+   "Doom init src block"
+   '(n
+     "#+begin_src emacs-lisp :tangle ~/.doom./init.el" n
+     p n
+     "#+end_src"
+     n)
+   "<init"))
+#+end_src
+
 **** Package
 
 #+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
@@ -575,13 +627,14 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
   <<org-buffers>>
   <<org-agenda>>
   <<org-tangling-and-exporting>>
-  <<org-worf>>)
   <<org-auto-tangle>>
+  <<org-worf>>
   <<org-keybindings>>
   <<org-ob-http>>
   <<org-ml>>
   <<org-export>>
   <<org-export-environments>>
+  <<org-tempo>>)
 #+end_src
 
 *** Babashka
