@@ -710,48 +710,26 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
       ispell-personal-dictionary "~/env/spelling/.pws")
 #+end_src
 
+*** general
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package! general)
+#+end_src
+
 *** evil
-**** Default states
-
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-;; (setq evil-symex-state-modes '(clojure-mode
-;;                                clojurec-mode
-;;                                clojurescript-mode))
-
-#+end_src
-
-**** general
-
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(use-package general)
-#+end_src
-
-**** Recenter buffer after evil motions
-
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(defun my-evil-recenter (&optional count symbol)
-  (recenter nil))
-
-;; Evil
-(advice-add 'evil-ex-search-word-forward :after #'my-evil-recenter)
-(advice-add 'evil-ex-search-next :after #'my-evil-recenter)
-(advice-add 'evil-goto-mark-line :after #'my-evil-recenter)
-
-;; Info
-(advice-add 'Info-follow-nearest-node :after #'my-evil-recenter)
-#+end_src
-
-**** key-chord
-
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(use-package key-chord
-  :config (key-chord-mode 1))
-#+end_src
-
 **** Symex
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(use-package symex
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! rigpa
+  :recipe (:type git :host github :repo "countvajhula/rigpa"))
+(package! symex
+  :recipe (:type git :host github :repo "countvajhula/symex.el"
+           :fork (:host github :protocol ssh :repo "dcostaras/symex.el")))
+#+end_src
+
+#+name: evil-symex
+#+begin_src emacs-lisp
+(use-package! symex
   :hook ((clojure-mode clojurescript-mode clojurec-mode) . my-symex-activation-hook)
 
   :general
@@ -962,9 +940,18 @@ advises functions to enable or disable features based on user configuration."
   (evil-ex-define-cmd cmd function))
 #+end_src
 
+**** key-chord
+
+#+name: evil-key-chord
+#+begin_src emacs-lisp
+(use-package key-chord
+  :config (key-chord-mode 1))
+#+end_src
+
 **** Hydra paste
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+name: evil-hydra-paste
+#+begin_src emacs-lisp
 (defhydra hydra-paste
   (:color red
    :hint nil)
@@ -978,12 +965,12 @@ advises functions to enable or disable features based on user configuration."
 
 (map! :nv "p" #'hydra-paste/evil-paste-after
       :nv "P" #'hydra-paste/evil-paste-before)
-
 #+end_src
 
 **** Evil escape
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+name: evil-escape
+#+begin_src emacs-lisp
 (use-package! evil-escape
   :disabled t
   :init (progn
@@ -993,9 +980,24 @@ advises functions to enable or disable features based on user configuration."
 
 **** Motion trainer
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+name: evil-motion-trainer
+#+begin_src emacs-lisp
 ;; (global-evil-motion-trainer-mode 1)
 (setq evil-motion-trainer-threshold 6)
+#+end_src
+
+**** Package
+
+#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
+(use-package! evil
+  :config
+  <<evil-symex>>
+  <<evil-ex-define-cmd-local>>
+  <<evil-recentering>>
+  <<evil-key-chord>>
+  <<evil-hydra-paste>>
+  <<evil-escape>>
+  <<evil-motion-trainer>>)
 #+end_src
 
 *** Doom modeline
@@ -2973,11 +2975,6 @@ If buffer-or-name is nil return current buffer's mode."
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
                                         ;(unpin! t)
 
-(package! rigpa
-  :recipe (:type git :host github :repo "countvajhula/rigpa"))
-(package! symex
-  :recipe (:type git :host github :repo "countvajhula/symex.el"
-           :fork (:host github :protocol ssh :repo "dcostaras/symex.el")))
 (package! aggressive-indent)
 (package! back-button)
 (package! auto-dim-other-buffers)
