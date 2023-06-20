@@ -3100,10 +3100,10 @@ antigen apply
 
 ** aliases
 
-  #+BEGIN_SRC sh :tangle ~/.zshrc
-     alias cat="bat"
-     alias p="prettybat"
-  #+END_SRC
+#+BEGIN_SRC sh :tangle ~/.zshrc
+alias cat="bat"
+alias p="prettybat"
+#+END_SRC
 
 ** path
 
