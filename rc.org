@@ -297,6 +297,45 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
   <<org-worf>>)
 #+end_src
 
+*** Babashka
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun my--bb-tasks-for-project ()
+  (interactive)
+  (let* ((default-directory (projectile-project-root))
+         (tasks-string (shell-command-to-string "bb tasks | tail -n +3 | cut -f1 -d ' '")))
+    (s-split (rx (seq symbol-end
+                      (not (syntax symbol))))
+             tasks-string
+             'omit-nulls)))
+
+(defun my--bb-task-sentinel (process event)
+  (if (string-equal event "finished\n")
+      (setq mode-name (propertize mode-name 'face 'mode-line-highlight))
+    (setq mode-name (propertize mode-name 'face 'font-lock-warning-face))))
+
+(defun my--bb-task (task)
+  (setq mode-name (propertize mode-name 'face 'font-lock-string-face))
+  (let ((default-directory (projectile-project-root)))
+    (set-process-sentinel
+     (start-process-shell-command task task (format "bb %s" task))
+     'my--bb-task-sentinel)))
+
+(defvar my--bb-task-consult-items
+  (list :name "BB Tasks"
+        :action #'my--bb-task
+        :enabled #'projectile-project-root
+        :items (lambda ()
+                 (my--bb-tasks-for-project))))
+
+(defun my--bb-run-task ()
+  (interactive)
+  (consult--multi '(my--bb-task-consult-items)
+                  :prompt "Run: "))
+
+(map! :leader "cc" #'my--bb-run-task)
+#+end_src
+
 *** Auto dim other buffers
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
