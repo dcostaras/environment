@@ -225,7 +225,9 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
-   (http . t)))
+   (http . t)
+   (racket . t)
+   (scheme . t)))
 #+end_src
 
 **** Worf
@@ -1415,14 +1417,32 @@ Can turn this on once I've worked to fix at least the multiple undo points
 
 *** Scheme/Racket
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(after! racket
-  (map! :map racket-mode-map "C-c C-c" #'racket-send-definition))
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! racket-mode)
+(package! ob-racket
+  :recipe (:type git :host github :repo "hasu/emacs-ob-racket"
+           :files ("*.el" "*.rkt")))
+(package! sicp)
+#+end_src
 
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package! racket-mode
+  :general
+  (:keymaps 'racket-mode-map
+   "C-c C-c" #'racket-send-definition)
+
+  :config
+  (use-package! geiser
+    :config
+    (setq geiser-default-implementation 'racket)))
+#+end_src
+
+**** Unused non-racket config
+
+#+begin_src emacs-lisp
 (defun mit-scheme ()
   (interactive)
   (run-scheme "/Applications/scheme.app/Contents/Resources/mit-scheme"))
-#+end_src
 
 (defvar-local prev-scheme-file nil)
 
@@ -1455,6 +1475,7 @@ and switch to REPL"
 (add-hook 'inferior-scheme-mode-hook
           (lambda () (local-set-key (kbd "C-h C-j")
                                     'switch-to-scheme-file)))
+#+end_src
 
 *** Clojure
 
@@ -2494,14 +2515,13 @@ If buffer-or-name is nil return current buffer's mode."
        ;;purescript        ; javascript, but functional
        ;;python            ; beautiful is better than ugly
        ;;qt                ; the 'cutest' gui framework ever
-       racket              ; a DSL for DSLs
        ;;raku              ; the artist formerly known as perl6
        ;;rest              ; Emacs as a REST client
        ;;rst               ; ReST in peace
        ;;(ruby +rails)     ; 1.step {|i| p "Ruby is #{i.even? ? 'love' : 'life'}"}
        ;;rust              ; Fe2O3.unwrap().unwrap().unwrap().unwrap()
        ;;scala             ; java, but good
-       ;;scheme            ; a fully conniving family of lisps
+       (scheme +racket) ; a fully conniving family of lisps
        sh                  ; she sells {ba,z,fi}sh shells on the C xor
        ;;sml
        ;;solidity          ; do you need a blockchain? No.
