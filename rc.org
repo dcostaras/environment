@@ -295,6 +295,13 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
  "C-c '" #'org-edit-src-exit)
 #+end_src
 
+**** ex commands
+
+#+name: org-src-mode-ex-commands
+#+begin_src emacs-lisp
+(my--evil-ex-define-cmd-local "w" #'org-edit-src-save)
+#+end_src
+
 **** Settings
 
 #+name: org-settings
@@ -395,6 +402,11 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 #+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
 
 (use-package! org
+  :init
+  (defun my--org-src-mode-ex-commands ()
+    <<org-src-mode-ex-commands>>)
+  :hook
+  (org-src-mode . my--org-src-mode-ex-commands)
   :config
   <<org-settings>>
   <<org-buffers>>
