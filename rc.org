@@ -600,8 +600,8 @@ advises functions to enable or disable features based on user configuration."
       (advice-add #'symex-go-forward :around #'symex--forget-branch-positions))
     (symex--add-selection-advice))
 
-  (setq evil-symex-state-cursor '(box "orange"))
-  (setq evil-normal-state-cursor `(box ,(doom-color 'green)))
+  (setq evil-symex-state-cursor '("orange" box))
+  (setq evil-normal-state-cursor `(,(doom-color 'green) box))
 
   (my-symex-initialize))
 #+end_src
