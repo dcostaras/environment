@@ -269,6 +269,19 @@ enjoy using a lot.
     (prn (yaml-encode value))))
 #+end_src
 
+*** TODO Tail buffer minor mode
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun message-buffer-goto-end-of-buffer (&rest args)
+  (let* ((win (get-buffer-window "*Messages*"))
+         (buf (and win (window-buffer win))))
+    (and win (not (equal (current-buffer) buf))
+         (set-window-point
+          win (with-current-buffer buf (point-max))))))
+
+;; (advice-add 'message :after 'message-buffer-goto-end-of-buffer)
+#+end_src
+
 *** Org
 **** Keybindings
 
