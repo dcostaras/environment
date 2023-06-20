@@ -56,6 +56,8 @@ so one can yank eval last sexp
              (accept-change-group ,handle)
              (undo-amalgamate-change-group ,handle))
            (cancel-change-group ,handle))))))
+** TODO investigate binky mode
+https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780cf8
 ** config
 
 *** Lexical binding
