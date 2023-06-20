@@ -825,6 +825,20 @@ advises functions to enable or disable features based on user configuration."
 
 *** Corfu
 
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! corfu :recipe (:files ("*.el" "extensions/*.el")))
+(package! cape)
+(package! dabbrev)
+(when (modulep! :os tty)
+  (package! corfu-terminal))
+(when (modulep! +icons)
+  (package! kind-icon))
+(when (modulep! +orderless)
+  (package! orderless))
+(package! corfu-doc-terminal
+  :recipe (:type git :repo "https://codeberg.org/akib/emacs-corfu-doc-terminal.git"))
+#+end_src
+
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (defvar +corfu-auto-delay 0.3
    "How long after point stands still will completion be called automatically,
@@ -2386,8 +2400,9 @@ If buffer-or-name is nil return current buffer's mode."
 (doom! :input
 
        :completion
-       company             ; the ultimate code completion backend
-       (vertico +icons)
+       ;; (corfu +icons +tng)
+       ;company             ; the ultimate code completion backend
+       (vertico +icons +childframe)
        ;ivy                 ; a search engine for love and life
 
        :ui
