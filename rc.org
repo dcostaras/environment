@@ -3129,18 +3129,6 @@ export AWS_PROFILE=jra
 source ~/.zprofile
 #+END_SRC
 
-** GPG setup
- :tangle ~/.zshrc
-  #+BEGIN_SRC sh
-     GPG_TTY=$(tty)
-     export GPG_TTY
-
-     unset GPG_AGENT_INFO
-     unset SSH_AGENT_PID
-     export SSH_AUTH_SOCK="${HOME}/.gnupg/S.gpg-agent.ssh"
-     gpgconf --launch gpg-agent
-  #+END_SRC
-
 ** 1Password
 
 #+begin_src sh :tangle no
