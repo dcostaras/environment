@@ -1403,6 +1403,16 @@ Can turn this on once I've worked to fix at least the multiple undo points
   (setq lsp-ui-sideline-show-hover t))
 #+end_src
 
+*** EmacsLisp
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package! emacs-lisp-mode
+  :defer t
+  :general
+  (:mode 'emacs-lisp-mode
+         "C-c C-c" #'eval-defun))
+#+end_src
+
 *** Scheme/Racket
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
