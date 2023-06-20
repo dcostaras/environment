@@ -1,4 +1,4 @@
-personal_ws-1.1 en 170
+personal_ws-1.1 en 181
 APIs
 Babashka
 Costaras
@@ -16,6 +16,7 @@ Unhedged
 Worklog
 accessToken
 anonymised
+architected
 arg
 args
 arities
@@ -35,10 +36,13 @@ clj
 cljc
 cljs
 clocktables
+cloudfront
+cloudwatch
 cognitect
 cognito
 combinator
 combinators
+composable
 config
 configs
 cpcache
@@ -47,6 +51,7 @@ creds
 cropmix
 customisable
 daitaas
+datalog
 datanac
 datastructure
 datoms
@@ -69,6 +74,7 @@ dev
 docstring
 drcostaras
 edn
+elisp
 elvance
 entrypoint
 enum
@@ -123,6 +129,7 @@ npes
 nrepl
 onboarding
 params
+pdflatex
 plc
 pooles
 postfixed
@@ -131,13 +138,16 @@ pseudoclasses
 pseudoelement
 readme
 rebl
+recentering
 recurse
+redux
 renderer
 repl
 repling
 repo
 resolvers
 runtime
+scalable
 schemas
 setTimeout
 sha
@@ -149,6 +159,7 @@ subform
 symex
 symexes
 tempid
+terraform
 theming
 tilley
 timeously
