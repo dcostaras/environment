@@ -245,6 +245,30 @@ enjoy using a lot.
   (intern string))
 #+end_src
 
+**** Better printing
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! yaml)
+#+end_src
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(after! org-ml
+  (defun ppn (node)
+    (pp (org-ml-remove-parent node))))
+
+(defun pp-nil (node)
+  (pp node)
+  "")
+
+(defun prn (value)
+  (message "%s" value))
+
+(use-package! yaml
+  :config
+  (defun pp-yaml (value)
+    (prn (yaml-encode value))))
+#+end_src
+
 *** Org
 **** Keybindings
 
