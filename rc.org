@@ -3051,9 +3051,9 @@ antigen apply
 
 ** config
 
-  #+BEGIN_SRC sh :tangle ~/.zshrc
-    echo loading zsh config
-    # Lines configured by zsh-newuser-install
+#+begin_src sh :tangle ~/.zshrc
+echo loading zsh config
+#+end_src
 
     autoload -Uz compinit
     typeset -i updated_at=$(date +'%j' -r ~/.zcompdump 2>/dev/null || stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null)
@@ -3063,40 +3063,43 @@ antigen apply
         compinit -C -i
     fi
 
-    HISTFILE=$HOME/.zsh_history
-    HISTSIZE=100000
-    SAVEHIST=$HISTSIZE
+** History
 
-    setopt hist_ignore_all_dups # remove older duplicate entries from history
-    setopt hist_reduce_blanks # remove superfluous blanks from history items
-    setopt inc_append_history # save history entries as soon as they are entered
-    setopt share_history # share history between different instances of the shell
-    setopt auto_cd # cd by typing directory name if it's not a command
-    # setopt correct_all # autocorrect commands
-    setopt auto_list # automatically list choices on ambiguous completion
-    setopt auto_menu # automatically use menu completion
-    setopt always_to_end # move cursor to end if word had one match
-    zstyle ':completion:*' menu select # select completions with arrow keys
-    zstyle ':completion:*' group-name '' # group results by category
-    zstyle ':completion:::::' completer _expand _complete _ignored _approximate # enable approximate matches for completion
+#+begin_src sh :tangle ~/.zshrc
+HISTFILE=$HOME/.zsh_history
+HISTSIZE=100000
+SAVEHIST=$HISTSIZE
 
-    bindkey '^[[A' history-substring-search-up
-    bindkey '^[[B' history-substring-search-down
+setopt hist_ignore_all_dups # remove older duplicate entries from history
+setopt hist_reduce_blanks # remove superfluous blanks from history items
+setopt inc_append_history # save history entries as soon as they are entered
+setopt share_history # share history between different instances of the shell
+setopt auto_cd # cd by typing directory name if it's not a command
+# setopt correct_all # autocorrect commands
+setopt auto_list # automatically list choices on ambiguous completion
+setopt auto_menu # automatically use menu completion
+setopt always_to_end # move cursor to end if word had one match
+zstyle ':completion:*' menu select # select completions with arrow keys
+zstyle ':completion:*' group-name '' # group results by category
+zstyle ':completion:::::' completer _expand _complete _ignored _approximate # enable approximate matches for completion
 
-    bindkey '^l' forward-word
-    bindkey '^h' backward-word
+bindkey '^[[A' history-substring-search-up
+bindkey '^[[B' history-substring-search-down
 
-    # HISTFILE=~/.histfile
-    # HISTSIZE=1000
-    # SAVEHIST=1000
-    # # End of lines configured by zsh-newuser-install
-    # # The following lines were added by compinstall
-    # zstyle :compinstall filename '/Users/donavan/.zshrc'
+bindkey '^l' forward-word
+bindkey '^h' backward-word
 
-    # autoload -Uz compinit
-    # compinit
-    # # End of lines added by compinstall
-   #+END_SRC
+# HISTFILE=~/.histfile
+# HISTSIZE=1000
+# SAVEHIST=1000
+# # End of lines configured by zsh-newuser-install
+# # The following lines were added by compinstall
+# zstyle :compinstall filename '/Users/donavan/.zshrc'
+
+# autoload -Uz compinit
+# compinit
+# # End of lines added by compinstall
+#+end_src
 
 ** aliases
 
