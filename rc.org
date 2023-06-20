@@ -1234,8 +1234,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** Templates
 
-#+begin_src emacs-lisp :mkdirp yes :tangle ~/.emacs.d/.local/cache/templates
-;; ~/.config/emacs/templates
+#+begin_src emacs-lisp :mkdirp yes :tangle ~/.config/emacs/.local/cache/templates
 
 fundamental-mode ;; Available everywhere
 
