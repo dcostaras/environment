@@ -113,12 +113,13 @@ so one can yank eval last sexp
 
  delete-by-moving-to-trash t
  truncate-string-ellipsis "…"
- auto-save-default t)
+ auto-save-default t
+
+ ns-use-native-fullscreen nil)
 
 ;; More modern fill column length
 (setq-default fill-column 100)
 
-(setq ns-use-native-fullscreen nil)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
