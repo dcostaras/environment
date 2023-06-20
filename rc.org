@@ -179,6 +179,23 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
 (setq mac-pass-command-to-system nil)
 #+end_src
 
+*** Core dependencies
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! ht)
+(package! s)
+(package! dash)
+(package! loopy)
+#+end_src
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package! ht)
+(use-package! s)
+(use-package! dash
+  :config (global-dash-fontify-mode))
+(use-package! loopy)
+#+end_src
+
 *** Org
 **** Keybindings
 
