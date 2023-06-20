@@ -504,22 +504,8 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
 
   :config
 
-  (defun my-symex-initialize ()
-    "Initialize symex mode.
-This registers symex mode for use in all recognized Lisp modes, and also
-advises functions to enable or disable features based on user configuration."
-    ;; enable the symex minor mode in all recognized lisp modes
-    (dolist (mode-name symex-lisp-modes)
-      (let ((mode-hook (intern (concat (symbol-name mode-name)
-                                       "-hook"))))
-        (add-hook mode-hook 'symex-mode)))
-    ;; advise functions to enable or disable configured features
-    (when symex-remember-branch-positions-p
-      (advice-add #'symex-go-down :around #'symex--remember-branch-position)
-      (advice-add #'symex-go-up :around #'symex--return-to-branch-position)
-      (advice-add #'symex-go-backward :around #'symex--forget-branch-positions)
-      (advice-add #'symex-go-forward :around #'symex--forget-branch-positions))
-    (symex--add-selection-advice))
+  (defun my-symex-activation-hook ()
+    (symex-mode-interface))
 
   (defun my-lispy-ace-symbol (arg)
     "Jump to a symbol within the current sexp and mark it.
@@ -540,8 +526,22 @@ Sexp is obtained by exiting the list ARG times."
                               (lispy--in-string-or-comment-p))))
                      lispy-avy-style-symbol))))))
 
-  (defun my-symex-activation-hook ()
-    (symex-mode-interface))
+  (defun my-symex-initialize ()
+    "Initialize symex mode.
+This registers symex mode for use in all recognized Lisp modes, and also
+advises functions to enable or disable features based on user configuration."
+    ;; enable the symex minor mode in all recognized lisp modes
+    (dolist (mode-name symex-lisp-modes)
+      (let ((mode-hook (intern (concat (symbol-name mode-name)
+                                       "-hook"))))
+        (add-hook mode-hook 'symex-mode)))
+    ;; advise functions to enable or disable configured features
+    (when symex-remember-branch-positions-p
+      (advice-add #'symex-go-down :around #'symex--remember-branch-position)
+      (advice-add #'symex-go-up :around #'symex--return-to-branch-position)
+      (advice-add #'symex-go-backward :around #'symex--forget-branch-positions)
+      (advice-add #'symex-go-forward :around #'symex--forget-branch-positions))
+    (symex--add-selection-advice))
 
   (setq evil-symex-state-cursor '(box "orange"))
   (setq evil-normal-state-cursor `(box ,(doom-color 'green)))
