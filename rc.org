@@ -3185,6 +3185,21 @@ git annex copy --all --to=rsync
 git annex sync
 #+end_src
 
+*** Clojure
+
+#+begin_src clojure :shebang "#!/usr/bin/env bb" :tangle ~/bin/bb-repl
+(ns bb-repl
+  (:require
+   [babashka.deps :refer [clojure]]
+   [babashka.process :refer [shell]]))
+
+(let [deps (-> (shell {:out :string} "bb print-deps") :out read-string)
+      clojure-args (list* "-Sdeps" deps *command-line-args*)]
+  (if-let [proc (clojure clojure-args)]
+    (-> @proc :exit (System/exit))
+    (System/exit 0)))
+#+end_src
+
 *** doom
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doom
