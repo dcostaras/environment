@@ -614,8 +614,11 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 
 **** Package
 
-#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! org-contrib)
+#+end_src
 
+#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
 (use-package! org
   :init
   (defun my--org-src-mode-ex-commands ()
