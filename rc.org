@@ -2358,7 +2358,13 @@ Supports the fulcro-spec `specification' macro"
 
 **** Jet
 
+#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+(package! jet)
+#+end_src
+
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(use-package! jet)
+
 (defconst special-rx
   (rx (seq "#<" (or "Fn" "Atom") "@" (1+ (in hex)) ": "
            (group (*? anything))
