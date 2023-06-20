@@ -1532,21 +1532,22 @@ arguments and only proceed with evaluation if it returns nil."
 **** Font lock
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(rx-define my-clojure-defining-forms
+(rx-define my-clojure-defining-macro-forms
   (or (seq ">def" (optional "n"))
       "defsc"
       "defmutation"
       "defrouter"
       "defresolver"
-      "defstyled"))
+      "defstyled"
+      "defpage"
+      "deffragment"))
 
 (defun my-defining-forms-font-lock ()
-  (message "foo")
   (font-lock-add-keywords
    nil
    `((,(rx "("
            (* (syntax whitespace))
-           (group my-clojure-defining-forms)
+           (group my-clojure-defining-macro-forms)
            (+ (syntax whitespace))
            (group (+ (or (syntax word) (syntax symbol)))))
       (1 font-lock-keyword-face)
