@@ -3116,12 +3116,11 @@ export PATH="$PATH:/Library/TeX/texbin"
 export PATH="/opt/homebrew/bin:$PATH" # ARM homebrew
 #+END_SRC
 
-** env setup
+** JVM env setup
 
 #+BEGIN_SRC sh :tangle ~/.zshenv
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -XX:-OmitStackTraceInFastThrow"
 export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Dapple.awt.UIElement=true"
-export JAVA_TOOL_OPTIONS="$JAVA_TOOL_OPTIONS -Xms512m -Xmx4g"
 export JAVA_HOME="/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home"
 # export AWS_DEFAULT_REGION=us-east-2
 # export AWS_REGION=us-east-2
