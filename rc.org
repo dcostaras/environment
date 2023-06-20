@@ -326,6 +326,21 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
 (use-package general)
 #+end_src
 
+**** Recenter buffer after evil motions
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun my-evil-recenter (&optional count symbol)
+  (recenter nil))
+
+;; Evil
+(advice-add 'evil-ex-search-word-forward :after #'my-evil-recenter)
+(advice-add 'evil-ex-search-next :after #'my-evil-recenter)
+(advice-add 'evil-goto-mark-line :after #'my-evil-recenter)
+
+;; Info
+(advice-add 'Info-follow-nearest-node :after #'my-evil-recenter)
+#+end_src
+
 **** key-chord
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
