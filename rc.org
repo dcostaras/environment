@@ -120,6 +120,8 @@ so one can yank eval last sexp
 ;; More modern fill column length
 (setq-default fill-column 100)
 
+;; Turn subword mode on
+(global-subword-mode 1)
 
 ;; Here are some additional functions/macros that could help you configure Doom:
 ;;
