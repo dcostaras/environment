@@ -3055,13 +3055,39 @@ antigen apply
 echo loading zsh config
 #+end_src
 
-    autoload -Uz compinit
-    typeset -i updated_at=$(date +'%j' -r ~/.zcompdump 2>/dev/null || stat -f '%Sm' -t '%j' ~/.zcompdump 2>/dev/null)
-    if [ $(date +'%j') != $updated_at ]; then
-        compinit -i
-    else
-        compinit -C -i
-    fi
+** Completion
+
+*** Setup
+
+Mostly put together from information here:
+https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
+https://wikimatze.de/writing-zsh-completion-for-padrino/
+
+Ensure completions dir exists and add it to $fpath, zsh's function path _array_ (scalar version is at $FPATH)
+#+begin_src sh :tangle ~/.zshrc
+mkdir -p ~/bin/completions
+fpath=($HOME/bin/completions $fpath)
+#+end_src
+
+Initiate the completion framework
+#+begin_src sh :tangle ~/.zshrc
+autoload -U compinit
+compinit
+#+end_src
+
+It seems that countless recommendations on the web to run `autoload -Uz compinit && compinit` have resulted in everyone's zsh autocomplete initialization running that. I have no idea what it does, however experimentation has shown that running "compinit" clobbers any completions you already had configured. Which totally sucks if you configure auto completion for multiple tools in your zshrc. Prevent any possible issues by aliasing compinit.
+#+begin_src sh :tangle ~/.zshrc
+alias compinit="echo no more compinit!"
+#+end_src
+
+*** Babashka
+
+#+begin_src sh :tangle ~/bin/completions/_bb
+#compdef bb
+local -a matches
+matches=(`bb tasks |tail -n +3 |cut -f1 -d ' '`)
+_describe 'command' matches
+#+end_src
 
 ** History
 
@@ -3379,17 +3405,6 @@ ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
       ffmpeg -f u16le -ar 44100 -ac 1 -i input.raw
   }
   #+END_SRC
-
-** completion
-
-#+BEGIN_SRC sh :tangle ~/.zshrc
-_bb_tasks() {
-    local matches=(`bb tasks |tail -n +3 |cut -f1 -d ' '`)
-    compadd -a matches
-    _files # autocomplete filenames as well
-}
-compdef _bb_tasks bb
-#+END_SRC
 
 * AWS
 
