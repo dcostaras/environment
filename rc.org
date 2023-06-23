@@ -3661,6 +3661,7 @@ bindkey '^h' backward-word
 #+BEGIN_SRC sh :tangle ~/.zshrc
 alias cat="bat"
 alias p="prettybat"
+alias vi="nvim"
 #+END_SRC
 
 ** path
@@ -4206,6 +4207,7 @@ brew "htop"
 brew "leiningen"
 brew "makefile2graph"
 brew "nmap"
+brew "neovim"
 brew "node"
 brew "pass"
 brew "pgcli"
