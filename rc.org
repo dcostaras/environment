@@ -943,6 +943,7 @@ advises functions to enable or disable features based on user configuration."
 **** Recenter buffer after evil motions
 
 #+name: evil-recentering
+#+begin_src emacs-lisp
 (defun my-evil-recenter (&optional count symbol)
   (recenter nil))
 
