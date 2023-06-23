@@ -1,3 +1,4 @@
 .targets
 .DS_Store
-/brew/Brewfile.lock.json
+Brewfile
+Brewfile.lock.json
