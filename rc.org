@@ -59,6 +59,20 @@ so one can yank eval last sexp
            (cancel-change-group ,handle))))))
 ** TODO investigate binky mode
 https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780cf8
+** TODO pcase-defun
+>  (defun eval-feature-expression (form)
+>    (pcase form
+>     ((pred atom) (featurep form nil))
+>     (`(not ,x) (not (eval-feature-expression x)))
+>     (`(and) t)
+>     (`(and ,form1 . ,forms)
+>      (and (eval-feature-expression form1)
+>           (eval-feature-expression (cons 'and forms))))
+>     (`(or) nil)
+>     (`(or ,form1 . ,forms)
+>      (or (eval-feature-expression form1)
+>          (eval-feature-expression (cons 'or forms))))
+>     (t (error "Invalid feature expression: %s" form)))))
 ** config
 
 *** Lexical binding
