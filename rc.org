@@ -1,6 +1,7 @@
+#+property: header-args :results none
+#+title: Environment
 #+author: Donavan-Ross Costaras
 #+email: d.costaras@gmail.com
-#+auto_tangle: t
 
 * Emacs
 ** TODO turn "_" into the vim action to comment with #_ an object
@@ -73,6 +74,50 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
 >      (or (eval-feature-expression form1)
 >          (eval-feature-expression (cons 'or forms))))
 >     (t (error "Invalid feature expression: %s" form)))))
+** TODO investigate using src blocks as templates for babel and export
+** TODO make a tangle like option called :compile
+** TODO Investigate using +default/search-buffer for evil search
+
+Based on https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1328110153
+
+#+name: org-searching
+#+begin_src emacs-lisp
+(defun org-show-current-heading-tidily ()
+  (interactive)                         ;Inteactive
+  "Show next entry, keeping other entries closed."
+  (if (save-excursion (end-of-line) (outline-invisible-p))
+      (progn (org-show-entry) (show-children))
+    (setq-local my:current_line (line-number-at-pos))
+    (outline-back-to-heading)
+    (unless (and (bolp) (org-on-heading-p))
+      (org-up-heading-safe)
+      (hide-subtree)
+      (error "Boundary reached"))
+    (org-overview)
+    (org-reveal t)
+    (org-show-entry)
+    (show-children)
+    (goto-line my:current_line)))
+
+(defun qw/search-buffer ()
+  (interactive)
+  (org-fold-show-all)
+  (+default/search-buffer)
+  (org-show-current-heading-tidily))
+#+end_src
+** TODO make certain minor modes for auto compile, tangle, etc.
+
+;; (defun eval-and-run ()
+;;   (interactive)
+;;   (eros-eval-defun nil)
+;;   (save-excursion
+;;     (with-current-buffer "sicp-workbook.org"
+;;       (org-latex-export-to-latex))))
+
+;; (general-define-key
+;;  :keymaps 'org-src-mode-map
+;;  "C-c C-c" #'eval-and-run)
+** TODO comment blocks in elisp
 ** config
 
 *** Lexical binding
@@ -302,6 +347,26 @@ enjoy using a lot.
 #+end_src
 
 *** Org
+**** Init
+
+**** TODO Fixing current issues with searching in org buffers
+
+#+begin_src emacs-lisp :noweb-ref org-init
+(setq org-fold-core-style 'overlays)
+#+end_src
+
+#+begin_src emacs-lisp
+;; Configuration A
+(progn
+  (setq org-fold-core-style 'overlays)
+  (evil-select-search-module 'evil-search-module 'evil-search))
+
+;; Configuration B
+(progn
+  (setq org-fold-core-style 'text-properties)
+  (evil-select-search-module 'evil-search-module 'isearch))
+#+end_src
+
 **** Keybindings
 
 Keybindings are defined manually in the ~:config~ block because they need to override the org-mode defaults
@@ -313,7 +378,6 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
  "C-c C-k" nil
  "C-c '" #'org-edit-src-exit)
 #+end_src
-
 **** ex commands
 
 #+name: org-src-mode-ex-commands
@@ -362,7 +426,11 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
    (scheme . t)))
 #+end_src
 
-**** TODO Tangling
+**** TODO Auto tangling
+*****  org-auto-tangle
+
+uses:
+#+auto_tangle: t
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
 (package! org-auto-tangle)
@@ -377,6 +445,11 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 ;;   (setq org-auto-tangle-babel-safelist
 ;;         '("~/env/rc.org")))
 #+end_src
+
+***** another way of doing it
+-*- eval: (add-hook 'after-save-hook #'org-babel-tangle nil 'buffer-local) -*-
+
+***** Tie it into [[*make certain minor modes for auto compile, tangle, etc.][make certain minor modes for auto compile, tangle, etc.]]
 
 **** Worf
 
@@ -456,7 +529,10 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 
 **** Export
 
-#+name: org-export
+:PROPERTIES:
+:header-args: :noweb-ref org-export
+:END:
+
 #+begin_src emacs-lisp
 (use-package! ox-latex)
 
@@ -469,8 +545,12 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 #+end_src
 
 ***** Environments
+****** TODO export environement is possibly a bad name for this
 
-#+name: org-export-environments
+Does it clashes semantically with actual org environment?
+
+****** Machinary
+
 #+begin_src emacs-lisp
 (defvar my--org-export-environments)
 
@@ -544,17 +624,6 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
           (map-put! backend part value))))
     backend))
 
-;; (defun eval-and-run ()
-;;   (interactive)
-;;   (eros-eval-defun nil)
-;;   (save-excursion
-;;     (with-current-buffer "sicp-workbook.org"
-;;       (org-latex-export-to-latex))))
-
-;; (general-define-key
-;;  :keymaps 'org-src-mode-map
-;;  "C-c C-c" #'eval-and-run)
-
 (defun my--org-export-create-environments ()
   (let ((environments (ht)))
     (cl-flet ((name (element) (->> element
@@ -578,56 +647,56 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
       environments)))
 #+end_src
 
+***** Backends
+
+#+begin_src emacs-lisp
+(setq org-export-backends '(org md ascii html icalendar latex odt))
+#+end_src
+
+**** Tangling
+
+#+name: org-tangle
+#+begin_src emacs-lisp
+(defun my--tangle-on-save ()
+  (message "foofd")
+  t
+  ;; (interactive)
+  ;; (org-org-export-as-org)
+  ;; (eros-eval-defun nil)
+  ;; (save-excursion
+  ;;   (with-current-buffer "sicp-workbook.org"
+  ;;     (org-latex-export-to-latex)))
+  )
+#+end_src
+
+#+begin_src emacs-lisp
+(with-current-buffer "rc.org"
+  (message "%s" (current-buffer))
+  ;; (remove-hook 'after-save-hook #'my--tangle-on-save nil 'buffer-local)
+  ;; (add-hook 'after-save-hook #'my--tangle-on-save nil 'buffer-local)
+  org-ctrl-c-ctrl-c-final-hook
+  (remove-hook! 'org-ctrl-c-ctrl-c-final-hook :local #'my--tangle-on-save)
+  (add-hook! 'org-ctrl-c-ctrl-c-final-hook :local #'my--tangle-on-save)
+
+  (remove-hook! 'org-ctrl-c-ctrl-c-hook :local #'my--tangle-on-save)
+  (add-hook! 'org-ctrl-c-ctrl-c-hook :local #'my--tangle-on-save)
+  )
+#+end_src
+
 **** org-tempo
+#+INCLUDE: "./org-tempo-templates.org" :only-contents t
+
+***** TODO investigate yas-snippet for this
+ties to src block templates
+
+***** Package
 
 #+name: org-tempo
-#+begin_src emacs-lisp
+#+begin_src emacs-lisp :noweb yes
 (use-package! org-tempo
   :config
-  (tempo-define-template
-   "src scheme expression"
-   '(n
-     "#+begin_src scheme" n
-     p n
-     "#+end_src"
-     n)
-   "<ss")
-
-  (tempo-define-template
-   "src scheme definition"
-   '(n
-     "#+begin_src scheme :results none" n
-     p n
-     "#+end_src"
-     n)
-   "<ssd")
-
-  (tempo-define-template
-   "Doom config src block"
-   '(n
-     "#+begin_src emacs-lisp :tangle ~/.doom.d/config.el" n
-     p n
-     "#+end_src"
-     n)
-   "<config")
-
-  (tempo-define-template
-   "Doom packages src block"
-   '(n
-     "#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el" n
-     p n
-     "#+end_src"
-     n)
-   "<packages")
-
-  (tempo-define-template
-   "Doom init src block"
-   '(n
-     "#+begin_src emacs-lisp :tangle ~/.doom./init.el" n
-     p n
-     "#+end_src"
-     n)
-   "<init"))
+  <<org-tempo-config>>
+  <<foobar>>)
 #+end_src
 
 **** Package
@@ -639,23 +708,26 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 #+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
 (use-package! org
   :init
+  <<org-init>>
   (defun my--org-src-mode-ex-commands ()
     <<org-src-mode-ex-commands>>)
   :hook
   (org-src-mode . my--org-src-mode-ex-commands)
   :config
+  <<org-searching>>
   <<org-settings>>
   <<org-buffers>>
   <<org-agenda>>
   <<org-babel>>
+  <<org-tangle>>
   <<org-auto-tangle>>
   <<org-worf>>
   <<org-keybindings>>
   <<org-ob-http>>
   <<org-ml>>
   <<org-export>>
-  <<org-export-environments>>
-  <<org-tempo>>)
+  <<org-tempo>>
+  )
 #+end_src
 
 *** Babashka
@@ -2874,7 +2946,7 @@ If buffer-or-name is nil return current buffer's mode."
 | xh  | lispy-describe                | Other    |
 | m   | lispy-mark-list               | Other    |
 
- #+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/config.el :var bindings=lispy-bindings :colnames yes=
+ #+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/config.el :var bindings=lispy-bindings :colnames yes
 (eval
  (append
   '(defhydra my/lispy-cheat-sheet (:hint nil :foreign-keys run)
@@ -3133,17 +3205,33 @@ If buffer-or-name is nil return current buffer's mode."
                                         ;(unpin! pinned-package another-pinned-package)
 ;; ...Or *all* packages (NOT RECOMMENDED; will likely break things)
                                         ;(unpin! t)
+                                        ;
 
+;; transient showcase
+
+;; (package! transient-showcase
+;;   :recipe (:type git :host github :repo "positron-solutions/transient-showcase"))
+
+;; TODO investigate
+(package! popon
+  :recipe (:type git :repo "https://codeberg.org/akib/emacs-popon"))
+
+
+;; (package! org-special-block-extras
+;;   :recipe (:type git :host github :repo "alhassy/org-special-block-extras"))
+
+
+(package! swift-mode)
+(package! fennel-mode)
 (package! aggressive-indent)
 (package! back-button)
 (package! auto-dim-other-buffers)
 (package! evil-lispy)
 (package! worf)
-(package! ob-http)
 (package! org-download)
-(package! writeroom-mode)
+;; (package! writeroom-mode)
 (package! key-chord)
-(package! pcre2el)
+;; (package! pcre2el)
 (package! magit-delta)
 (package! kaocha-runner)
 (package! evil-motion-trainer
@@ -3222,14 +3310,46 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** profiles
 
-#+NAME: env-chemacs
-| CHEMACS_PROFILE | doom |
-
 #+begin_src emacs-lisp :tangle ~/.emacs-profiles.el
 (("doom"   . ((user-emacs-directory . "~/.config/doom-emacs")))
  ("rigpa" . ((user-emacs-directory . "~/.config/rigpa-emacs")))
  ("vanilla" . ((user-emacs-directory . "~/.config/vanilla-emacs"))))
 #+end_src
+
+*** Default profile
+
+#+NAME: env-chemacs
+| CHEMACS_PROFILE | doom |
+
+*** Commands to run profiles
+:PROPERTIES:
+:header-args:sh: :shebang #!/bin/zsh
+:END:
+
+*** Test MacOS app :app-bundle:
+
+#+begin_src swift :shebang #!/usr/bin/swift :tangle ~/bin/rigpa-emacs
+import Foundation
+let task = Process()
+let pipe = Pipe()
+task.standardOutput = pipe
+task.standardError = pipe
+
+task.executableURL = URL(fileURLWithPath: "/bin/zsh")
+task.arguments = ["-c", "echo \"foo\""]
+try print(task.run())
+#+end_src
+
+*** Vanilla
+:PROPERTIES:
+:header-args:emacs-lisp: :tangle ~/.config/rigpa-emacs/init.el
+:END:
+
+#+begin_src emacs-lisp :mkdirp yes
+(require 'package)
+(package-install 'use-package)
+#+end_src
+
 * Clojure environment
 ** Inject CIDER dependencies and middleware boot task
 
