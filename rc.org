@@ -267,10 +267,6 @@ enjoy using a lot.
 #+end_src
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
-(after! org-ml
-  (defun pp-node (node)
-    (pp (org-ml-remove-parent node))))
-
 (defun pp-nil (node)
   (pp node)
   "")
@@ -278,6 +274,10 @@ enjoy using a lot.
 (defun ppn (node)
   (pp node)
   (message "\n"))
+
+(after! org-ml
+  (defun pp-node (node)
+    (ppn (org-ml-remove-parent node))))
 
 (defun prn (value)
   (message "%s" value))
