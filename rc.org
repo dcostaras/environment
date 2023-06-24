@@ -268,7 +268,7 @@ enjoy using a lot.
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (after! org-ml
-  (defun ppn (node)
+  (defun pp-node (node)
     (pp (org-ml-remove-parent node))))
 
 (defun pp-nil (node)
