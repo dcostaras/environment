@@ -275,6 +275,10 @@ enjoy using a lot.
   (pp node)
   "")
 
+(defun ppn (node)
+  (pp node)
+  (message "\n"))
+
 (defun prn (value)
   (message "%s" value))
 
