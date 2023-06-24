@@ -3219,6 +3219,17 @@ If buffer-or-name is nil return current buffer's mode."
          (cider-known-endpoints . (("host-a" "10.10.10.1" "7888")
                                    ("localhost" "9000"))))))
 #+end_src
+
+** profiles
+
+#+NAME: env-chemacs
+| CHEMACS_PROFILE | doom |
+
+#+begin_src emacs-lisp :tangle ~/.emacs-profiles.el
+(("doom"   . ((user-emacs-directory . "~/.config/doom-emacs")))
+ ("rigpa" . ((user-emacs-directory . "~/.config/rigpa-emacs")))
+ ("vanilla" . ((user-emacs-directory . "~/.config/vanilla-emacs"))))
+#+end_src
 * Clojure environment
 ** Inject CIDER dependencies and middleware boot task
 
@@ -3799,7 +3810,7 @@ fi
 *** doom
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/doom
-~/.config/emacs/bin/doom "$1"
+~/.config/doom-emacs/bin/doom "$1"
 #+end_src
 
 *** emacsen
