@@ -118,6 +118,8 @@ Based on https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1328110
 ;;  :keymaps 'org-src-mode-map
 ;;  "C-c C-c" #'eval-and-run)
 ** TODO comment blocks in elisp
+** TODO bug in [[file:~/.config/doom-emacs/.local/straight/repos/org/lisp/ob-exp.el::defmacro org-babel-exp--at-source (&rest body][org macro debug declaration]]
+** TODO think of defun prefix for personal functions like `+` in doom emacs
 ** config
 
 *** Lexical binding
