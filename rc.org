@@ -369,6 +369,15 @@ enjoy using a lot.
   (evil-select-search-module 'evil-search-module 'isearch))
 #+end_src
 
+**** API
+
+#+name: org-api
+#+begin_src emacs-lisp
+(defun my--unfold-heading (heading)
+  (->> (org-ml-parse-headlines 'all)
+       (org-ml-match-do `((:raw-value ,heading)) #'org-ml-unfold)))
+#+end_src
+
 **** Keybindings
 
 Keybindings are defined manually in the ~:config~ block because they need to override the org-mode defaults
@@ -718,6 +727,7 @@ ties to src block templates
   :config
   <<org-searching>>
   <<org-settings>>
+  <<org-api>>
   <<org-buffers>>
   <<org-agenda>>
   <<org-babel>>
