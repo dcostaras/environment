@@ -1,4 +1,4 @@
-personal_ws-1.1 en 181
+personal_ws-1.1 en 186
 APIs
 Babashka
 Costaras
@@ -15,12 +15,14 @@ StaticQuery
 Unhedged
 Worklog
 accessToken
+annum
 anonymised
 architected
 arg
 args
 arities
 arity
+async
 atlassian
 attr
 attrs
@@ -29,6 +31,7 @@ backend
 baz
 bigdec
 bigdecimal
+blockchain
 cardinality
 child
 cli
@@ -133,6 +136,7 @@ pdflatex
 plc
 pooles
 postfixed
+programmatically
 pseudoclass
 pseudoclasses
 pseudoelement
@@ -167,6 +171,7 @@ todo
 tooltip
 transactability
 transactable
+transactionally
 txs
 ui
 unassign
