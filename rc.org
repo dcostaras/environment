@@ -199,7 +199,7 @@ Use GitHub releases for this?
  truncate-string-ellipsis "…"
  auto-save-default t
 
- ns-use-native-fullscreen nil)
+ ns-use-native-fullscreen t)
 
 ;; More modern fill column length
 (setq-default fill-column 100)
