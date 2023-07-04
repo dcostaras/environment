@@ -3053,7 +3053,7 @@ If buffer-or-name is nil return current buffer's mode."
 | xh  | lispy-describe                | Other    |
 | m   | lispy-mark-list               | Other    |
 
- #+BEGIN_SRC emacs-lisp :tangle ~/.doom.d/config.el :var bindings=lispy-bindings :colnames yes
+#+begin_src emacs-lisp :var bindings=lispy-bindings :colnames yes
 (eval
  (append
   '(defhydra my/lispy-cheat-sheet (:hint nil :foreign-keys run)
@@ -3070,7 +3070,7 @@ If buffer-or-name is nil return current buffer's mode."
                  (elt x 2)))))
 (with-eval-after-load "lispy"
   (define-key lispy-mode-map (kbd "<f12>") 'my/lispy-cheat-sheet/body))
-   #+END_SRC
+#+end_src
 
 ** init
 
