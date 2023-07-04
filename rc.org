@@ -120,6 +120,26 @@ Based on https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1328110
 ** TODO comment blocks in elisp
 ** TODO bug in [[file:~/.config/doom-emacs/.local/straight/repos/org/lisp/ob-exp.el::defmacro org-babel-exp--at-source (&rest body][org macro debug declaration]]
 ** TODO think of defun prefix for personal functions like `+` in doom emacs
+** TODO add :lexical t globally to all emacs-lisp src blocks
+
+org-babel-default-header-args:emacs-lisp is a variable defined in
+ob-emacs-lisp.el.
+
+Value
+((:lexical . "no"))
+
+Set
+
+Documentation
+Default arguments for evaluating an emacs-lisp source block.
+
+A value of "yes" or t causes source blocks to be eval'd using
+lexical scoping.  It can also be an alist mapping symbols to
+their value.  It is used both as the optional LEXICAL argument to
+eval, and as the value for lexical-binding in buffers created
+by org-edit-src-code.
+** TODO do a publish step when tangling environment so I don't lose the compiled versions and can't tangle on stock emacs / or see if I can bootstrap the tangling with default doom?
+Use GitHub releases for this?
 ** config
 
 *** Lexical binding
