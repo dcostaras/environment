@@ -416,8 +416,6 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 #+end_src
 
 *** Org
-**** Init
-
 **** TODO Fixing current issues with searching in org buffers
 
 #+begin_src emacs-lisp :noweb-ref org-init
