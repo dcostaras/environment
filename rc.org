@@ -4660,6 +4660,18 @@ UseKeychain yes
 
 #+END_SRC
 
+* Git
+
+#+begin_src gitconfig :tangle ~/.config/git/config :mkdirp yes
+[user]
+	name = Donavan-Ross Costaras
+	email = d.costaras@gmail.com
+[protocol "keybase"]
+	allow = always
+[github]
+	user = dcostaras
+#+end_src
+
 * authinfo
 
   :tangle ~/.authinfo.gpg
