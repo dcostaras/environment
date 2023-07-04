@@ -443,24 +443,6 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
        (org-ml-match-do `((:raw-value ,heading)) #'org-ml-unfold)))
 #+end_src
 
-**** Keybindings
-
-Keybindings are defined manually in the ~:config~ block because they need to override the org-mode defaults
-#+name: org-keybindings
-#+begin_src emacs-lisp
-(general-define-key
- :keymaps 'org-src-mode-map
- "C-c C-c" nil
- "C-c C-k" nil
- "C-c '" #'org-edit-src-exit)
-#+end_src
-**** ex commands
-
-#+name: org-src-mode-ex-commands
-#+begin_src emacs-lisp
-(my--evil-ex-define-cmd-local "w" #'org-edit-src-save)
-#+end_src
-
 **** Settings
 
 #+name: org-settings
@@ -490,10 +472,11 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 #+end_src
 
 **** Babel
+:PROPERTIES:
+:header-args+: :noweb-ref org-babel
+:END:
 
-#+name: org-babel
 #+begin_src emacs-lisp
-
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
@@ -507,6 +490,27 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
   :mode org-src-mode
   :before #'+eval/buffer
   (org-edit-src-save))
+#+end_src
+
+***** ex commands
+
+#+begin_src emacs-lisp :noweb-ref org-init
+(defun >org-src-mode-ex-commands ()
+  (>evil-ex-define-local-cmd "w" #'org-edit-src-save))
+
+(add-hook! org-src-mode #'>org-src-mode-ex-commands)
+#+end_src
+
+***** Keybindings
+
+Keybindings are defined manually in the ~:config~ block because they need to override the org-mode defaults
+
+#+begin_src emacs-lisp
+(general-define-key
+ :keymaps 'org-src-mode-map
+ "C-c C-c" nil
+ "C-c C-k" nil
+ "C-c '" #'org-edit-src-exit)
 #+end_src
 
 **** TODO Auto tangling
@@ -611,9 +615,8 @@ uses:
 #+end_src
 
 **** Export
-
 :PROPERTIES:
-:header-args: :noweb-ref org-export
+:header-args+: :noweb-ref org-export
 :END:
 
 #+begin_src emacs-lisp
@@ -737,6 +740,14 @@ Does it clashes semantically with actual org environment?
 #+end_src
 
 **** Tangling
+:PROPERTIES:
+:header-args+: :noweb-ref org-tangle
+:END:
+
+***** Macros
+:PROPERTIES:
+:header-args+: :noweb-ref none
+:END:
 
 #+name: org-tangle
 #+begin_src emacs-lisp
@@ -792,10 +803,6 @@ ties to src block templates
 (use-package! org
   :init
   <<org-init>>
-  (defun my--org-src-mode-ex-commands ()
-    <<org-src-mode-ex-commands>>)
-  :hook
-  (org-src-mode . my--org-src-mode-ex-commands)
   :config
   <<org-searching>>
   <<org-settings>>
@@ -806,7 +813,6 @@ ties to src block templates
   <<org-tangle>>
   <<org-auto-tangle>>
   <<org-worf>>
-  <<org-keybindings>>
   <<org-ob-http>>
   <<org-ml>>
   <<org-export>>
@@ -1103,11 +1109,11 @@ advises functions to enable or disable features based on user configuration."
 
 **** evil-ex-define-cmd-local
 
-#+name: evil-ex-define-cmd-local
+#+name: evil-ex-define-local-cmd
 #+begin_src emacs-lisp
 (use-package! evil-ex)
 
-(defun my--evil-ex-define-cmd-local (cmd function)
+(defun >evil-ex-define-local-cmd (cmd function)
   "Locally binds the function FUNCTION to the command CMD."
   (unless (local-variable-p 'evil-ex-commands)
     (setq-local evil-ex-commands (copy-alist evil-ex-commands)))
@@ -1182,7 +1188,7 @@ advises functions to enable or disable features based on user configuration."
 (use-package! evil
   :config
   <<evil-symex>>
-  <<evil-ex-define-cmd-local>>
+  <<evil-ex-define-local-cmd>>
   <<evil-recentering>>
   <<evil-key-chord>>
   <<evil-hydra-paste>>
@@ -1974,7 +1980,8 @@ Can turn this on once I've worked to fix at least the multiple undo points
   :defer t
   :general
   (:mode 'emacs-lisp-mode
-         "C-c C-c" #'eval-defun))
+         "C-c C-c" #'eval-defun
+         "C-c C-k" #'+eval/buffer))
 #+end_src
 
 *** Scheme/Racket
