@@ -1,4 +1,4 @@
-#+property: header-args :results none
+#+setupfile: ./setup-file.org
 #+title: Environment
 #+author: Donavan-Ross Costaras
 #+email: d.costaras@gmail.com
