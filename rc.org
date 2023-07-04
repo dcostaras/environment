@@ -502,6 +502,13 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
    (scheme . t)))
 #+end_src
 
+#+begin_src emacs-lisp
+(>defadvice! >org-edit-src-save-before-+eval/buffer (&rest _)
+  :mode org-src-mode
+  :before #'+eval/buffer
+  (org-edit-src-save))
+#+end_src
+
 **** TODO Auto tangling
 *****  org-auto-tangle
 
