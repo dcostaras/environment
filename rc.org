@@ -751,16 +751,6 @@ Does it clashes semantically with actual org environment?
 
 #+name: org-tangle
 #+begin_src emacs-lisp
-(defun my--tangle-on-save ()
-  (message "foofd")
-  t
-  ;; (interactive)
-  ;; (org-org-export-as-org)
-  ;; (eros-eval-defun nil)
-  ;; (save-excursion
-  ;;   (with-current-buffer "sicp-workbook.org"
-  ;;     (org-latex-export-to-latex)))
-  )
 #+end_src
 
 #+begin_src emacs-lisp
@@ -775,7 +765,35 @@ Does it clashes semantically with actual org environment?
   (remove-hook! 'org-ctrl-c-ctrl-c-hook :local #'my--tangle-on-save)
   (add-hook! 'org-ctrl-c-ctrl-c-hook :local #'my--tangle-on-save)
   )
+***** Environment
+
+#+name: environment-file-name
+#+begin_src emacs-lisp :results pp :noweb-ref none
+(buffer-file-name)
 #+end_src
+
+#+begin_src emacs-lisp :noweb yes
+(defvar my--environment-file-name <<environment-file-name()>>)
+#+end_src
+
+#+begin_src emacs-lisp
+(defun >tangle-environment ()
+  (interactive)
+  (save-excursion
+    (with-current-buffer (find-file my--environment-file-name)
+      (let* ((org-babel-exp-code-template "#+begin_src %lang :shebang %shebang :tangle %tangle%switches%flags\n%body\n#+end_src")
+             (org-babel-default-header-args (cons '(:shebang . "") org-babel-default-header-args))
+             (temp-org-file-name (org-org-export-to-org)))
+        (org-babel-tangle-file temp-org-file-name)
+        ;; (delete-file temp-org-file-name)
+        ))))
+#+end_src
+
+#+begin_src emacs-lisp :eval no :noweb-ref none
+(add-hook! 'after-save-hook :local #'my--tangle-environment nil 'buffer-local)
+#+end_src
+
+****** TODO make tangling the env async
 
 **** org-tempo
 #+INCLUDE: "./org-tempo-templates.org" :only-contents t
