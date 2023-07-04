@@ -796,10 +796,10 @@ Does it clashes semantically with actual org environment?
 ****** TODO make tangling the env async
 
 **** org-tempo
-#+INCLUDE: "./org-tempo-templates.org" :only-contents t
+#+include: ./org-tempo-templates.org
 
+***** TODO investigate whether we can use search here to keep titles in the other doc from poluting this file
 ***** TODO investigate yas-snippet for this
-ties to src block templates
 
 ***** Package
 
@@ -807,8 +807,7 @@ ties to src block templates
 #+begin_src emacs-lisp :noweb yes
 (use-package! org-tempo
   :config
-  <<org-tempo-config>>
-  <<foobar>>)
+  <<org-tempo-config>>)
 #+end_src
 
 **** Package
@@ -834,8 +833,7 @@ ties to src block templates
   <<org-ob-http>>
   <<org-ml>>
   <<org-export>>
-  <<org-tempo>>
-  )
+  <<org-tempo>>)
 #+end_src
 
 *** Babashka
