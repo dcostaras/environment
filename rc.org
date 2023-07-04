@@ -355,6 +355,13 @@ enjoy using a lot.
     (prn (yaml-encode value))))
 #+end_src
 
+**** Comment macro
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defmacro comment (&rest _)
+  (declare (indent defun)))
+#+end_src
+
 *** TODO Tail buffer minor mode
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
