@@ -362,6 +362,46 @@ enjoy using a lot.
   (declare (indent defun)))
 #+end_src
 
+**** >defadvice!
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defmacro >defadvice! (symbol arglist &optional docstring &rest args)
+  "Define an advice called SYMBOL and add it to PLACES.
+
+ARGLIST is as in `defun'. WHERE is a keyword as passed to `advice-add', and
+PLACE is the function to which to add the advice, like in `advice-add'.
+DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mode.
+
+\(fn SYMBOL ARGLIST &optional DOCSTRING &rest :mode MODE [WHERE PLACES...] BODY\)"
+  (declare (doc-string 3) (indent defun))
+  (unless (stringp docstring)
+    (push docstring args)
+    (setq docstring nil))
+  (let (where-alist mode body)
+    (named-let recur ((body* args))
+      (pcase body*
+        (`(:mode ,mode-symbol . ,_)
+         (setq mode mode-symbol)
+         (recur (cddr body*)))
+
+        (`(,(and (pred keywordp) position)
+           ,function . ,_)
+         (push `(cons ,position (ensure-list ,function)) where-alist)
+         (recur (cddr body*)))
+
+        (_
+         (setq body body*))))
+    `(progn
+       (defun ,symbol ,arglist
+         ,docstring
+         (when (or (derived-mode-p ',mode)
+                   (and (boundp ',mode) ,mode))
+           ,@body))
+       (dolist (targets (list ,@(nreverse where-alist)))
+         (dolist (target (cdr targets))
+           (advice-add target (car targets) #',symbol))))))
+#+end_src
+
 *** TODO Tail buffer minor mode
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
