@@ -811,6 +811,17 @@ Does it clashes semantically with actual org environment?
   <<org-tempo-config>>)
 #+end_src
 
+**** org-modern
+
+#+begin_src emacs-lisp :noweb-ref packages
+(package! org-modern)
+#+end_src
+
+#+begin_src emacs-lisp :noweb-ref org-config
+(use-package! org-modern
+  :config (global-org-modern-mode))
+#+end_src
+
 **** Package
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
@@ -822,6 +833,7 @@ Does it clashes semantically with actual org environment?
   :init
   <<org-init>>
   :config
+  <<org-config>>
   <<org-searching>>
   <<org-settings>>
   <<org-api>>
@@ -3262,7 +3274,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** packages
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/packages.el
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
@@ -3345,6 +3357,7 @@ If buffer-or-name is nil return current buffer's mode."
 (package! evil-motion-trainer
   :recipe (:host github :repo "martinbaillie/evil-motion-trainer"))
 (package! flycheck-projectile)
+<<packages>>
 #+end_src
 
 ** services
