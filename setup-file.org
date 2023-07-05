@@ -1,3 +1,5 @@
 #+property: header-args+ :results none
 #+property: header-args+ :mkdirp yes
+#+property: header-args+ :comments link
+
 #+options: prop:t
