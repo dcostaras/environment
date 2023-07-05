@@ -645,9 +645,9 @@ Does it clashes semantically with actual org environment?
   ;; TODO this doesn't work for things with a `-` in them
   (concat "#+begin_src %lang%switches%flags"
           " :part %part"
-          (mapconcat (lambda (attr)
-                       (format " :%s %%%s" attr attr))
-                     (map-keys environments))
+          ;; (mapconcat (lambda (attr)
+          ;;              (format " :%s %%%s" attr attr))
+          ;;            (map-keys environments))
           "\n%body\n#+end_src"))
 
 (setq org-babel-exp-code-template (my--org-babel-exp-code-template))
