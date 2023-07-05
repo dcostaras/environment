@@ -81,7 +81,7 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
 Based on https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1328110153
 
 #+name: org-searching
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defun org-show-current-heading-tidily ()
   (interactive)                         ;Inteactive
   "Show next entry, keeping other entries closed."
@@ -120,9 +120,9 @@ Based on https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1328110
 ** TODO comment blocks in elisp
 ** TODO bug in [[file:~/.config/doom-emacs/.local/straight/repos/org/lisp/ob-exp.el::defmacro org-babel-exp--at-source (&rest body][org macro debug declaration]]
 ** TODO think of defun prefix for personal functions like `+` in doom emacs
-** TODO add :lexical t globally to all emacs-lisp src blocks
+** TODO add :lexical t globally to all elisp src blocks
 
-org-babel-default-header-args:emacs-lisp is a variable defined in
+org-babel-default-header-args:elisp is a variable defined in
 ob-emacs-lisp.el.
 
 Value
@@ -131,7 +131,7 @@ Value
 Set
 
 Documentation
-Default arguments for evaluating an emacs-lisp source block.
+Default arguments for evaluating an elisp source block.
 
 A value of "yes" or t causes source blocks to be eval'd using
 lexical scoping.  It can also be an alist mapping symbols to
@@ -144,12 +144,12 @@ Use GitHub releases for this?
 
 *** Lexical binding
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el :comments no
+#+begin_src elisp :tangle ~/.doom.d/config.el :comments no
 ;;; -*- lexical-binding: t; -*-
 #+end_src
 
 *** Settings
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (setq
 
  ;; Place your private configuration here! Remember, you do not need to run 'doom
@@ -228,13 +228,13 @@ Use GitHub releases for this?
 
 **** Fullscreen
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (add-hook! 'emacs-startup-hook #'toggle-frame-fullscreen)
 #+end_src
 
 **** Pulse
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 ;; This is not disabled even if we do not load the nav-flash :ui module
 (remove-hook 'doom-switch-window-hook #'+nav-flash-blink-cursor-maybe-h)
 
@@ -255,7 +255,7 @@ Use GitHub releases for this?
 
 *** MacOS
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (setq mac-option-modifier 'super)
 (setq mac-command-modifier 'meta)
 (setq mac-pass-command-to-system nil)
@@ -263,14 +263,14 @@ Use GitHub releases for this?
 
 *** Core dependencies
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! ht)
 (package! s)
 (package! dash)
 (package! loopy)
 #+end_src
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! ht)
 (use-package! s)
 (use-package! dash
@@ -283,7 +283,7 @@ Use GitHub releases for this?
 **** f-string
 
 From: https://kitchingroup.cheme.cmu.edu/blog/2018/05/14/f-strings-in-emacs-lisp/
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defmacro f-string (fmt)
   "Like `s-format' but with format fields in it.
 FMT is a string to be expanded against the current lexical
@@ -308,7 +308,7 @@ enjoy using a lot.
 
 **** Coercion
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun keyword->symbol (keyword)
   "Convert KEYWORD to symbol."
   (intern (substring (symbol-name keyword) 1)))
@@ -329,11 +329,11 @@ enjoy using a lot.
 
 **** Better printing
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! yaml)
 #+end_src
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun pp-nil (node)
   (pp node)
   "")
@@ -357,14 +357,14 @@ enjoy using a lot.
 
 **** Comment macro
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defmacro comment (&rest _)
   (declare (indent defun)))
 #+end_src
 
 **** >defadvice!
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defmacro >defadvice! (symbol arglist &optional docstring &rest args)
   "Define an advice called SYMBOL and add it to PLACES.
 
@@ -404,7 +404,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 
 *** TODO Tail buffer minor mode
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun message-buffer-goto-end-of-buffer (&rest args)
   (let* ((win (get-buffer-window "*Messages*"))
          (buf (and win (window-buffer win))))
@@ -418,11 +418,11 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 *** Org
 **** TODO Fixing current issues with searching in org buffers
 
-#+begin_src emacs-lisp :noweb-ref org-init
+#+begin_src elisp :noweb-ref org-init
 (setq org-fold-core-style 'overlays)
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 ;; Configuration A
 (progn
   (setq org-fold-core-style 'overlays)
@@ -437,7 +437,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 **** API
 
 #+name: org-api
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defun my--unfold-heading (heading)
   (->> (org-ml-parse-headlines 'all)
        (org-ml-match-do `((:raw-value ,heading)) #'org-ml-unfold)))
@@ -446,7 +446,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 **** Settings
 
 #+name: org-settings
-#+begin_src emacs-lisp
+#+begin_src elisp
 (setq org-time-clocksum-use-effort-durations nil)
 (setq org-duration-format '(("h" . nil) (special . 2)))
 (setq org-effort-durations `(("h" . 60)))
@@ -460,7 +460,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 **** Org buffers
 
 #+name: org-buffers
-#+begin_src emacs-lisp
+#+begin_src elisp
 ;; Org src buffers are real
 (defun org-buffer-p (buffer)
   (string-match-p "^\\*Org Src" (buffer-name buffer)))
@@ -476,7 +476,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 :header-args+: :noweb-ref org-babel
 :END:
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (org-babel-do-load-languages
  'org-babel-load-languages
  '((emacs-lisp . t)
@@ -485,7 +485,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
    (scheme . t)))
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (>defadvice! >org-edit-src-save-before-+eval/buffer (&rest _)
   :mode org-src-mode
   :before #'+eval/buffer
@@ -494,7 +494,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 
 ***** ex commands
 
-#+begin_src emacs-lisp :noweb-ref org-init
+#+begin_src elisp :noweb-ref org-init
 (defun >org-src-mode-ex-commands ()
   (>evil-ex-define-local-cmd "w" #'org-edit-src-save))
 
@@ -505,7 +505,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 
 Keybindings are defined manually in the ~:config~ block because they need to override the org-mode defaults
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (general-define-key
  :keymaps 'org-src-mode-map
  "C-c C-c" nil
@@ -519,12 +519,12 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
 uses:
 #+auto_tangle: t
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! org-auto-tangle)
 #+end_src
 
 #+name: org-auto-tangle
-#+begin_src emacs-lisp
+#+begin_src elisp
 ;; (use-package! org-auto-tangle
 ;;   :defer t
 ;;   :hook (org-mode . org-auto-tangle-mode)
@@ -541,7 +541,7 @@ uses:
 **** Worf
 
 #+name: org-worf
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package! worf
   :disabled t
   :config
@@ -569,7 +569,7 @@ uses:
 **** Agenda
 
 #+name: org-agenda
-#+begin_src emacs-lisp
+#+begin_src elisp
 (setq org-capture-templates
       `(("i" "Inbox" entry  (file "inbox.org")
          ,(concat "* TODO %?\n"
@@ -594,23 +594,23 @@ uses:
 
 **** ob-http
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! ob-http)
 #+end_src
 
 #+name: org-ob-http
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package! ob-http)
 #+end_src
 
 **** org-ml
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! org-ml)
 #+end_src
 
 #+name: org-ml
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package! org-ml)
 #+end_src
 
@@ -619,7 +619,7 @@ uses:
 :header-args+: :noweb-ref org-export
 :END:
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package! ox-latex)
 
 (add-to-list 'org-latex-packages-alist '("" "minted"))
@@ -637,7 +637,7 @@ Does it clashes semantically with actual org environment?
 
 ****** Machinary
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defvar my--org-export-environments)
 
 (defun my--org-babel-exp-code-template (&optional environments)
@@ -735,7 +735,7 @@ Does it clashes semantically with actual org environment?
 
 ***** Backends
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (setq org-export-backends '(org md ascii html icalendar latex odt))
 #+end_src
 
@@ -747,15 +747,15 @@ Does it clashes semantically with actual org environment?
 ***** Environment
 
 #+name: environment-file-name
-#+begin_src emacs-lisp :results pp :noweb-ref none
+#+begin_src elisp :results pp :noweb-ref none
 (buffer-file-name)
 #+end_src
 
-#+begin_src emacs-lisp :noweb yes
+#+begin_src elisp :noweb yes
 (defvar my--environment-file-name <<environment-file-name()>>)
 #+end_src
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defun >tangle-environment ()
   (interactive)
   (save-excursion
@@ -771,7 +771,7 @@ Does it clashes semantically with actual org environment?
         ))))
 #+end_src
 
-#+begin_src emacs-lisp :eval no :noweb-ref none
+#+begin_src elisp :eval no :noweb-ref none
 (add-hook! 'after-save-hook :local #'my--tangle-environment nil 'buffer-local)
 #+end_src
 
@@ -786,7 +786,7 @@ Does it clashes semantically with actual org environment?
 ***** Package
 
 #+name: org-tempo
-#+begin_src emacs-lisp :noweb yes
+#+begin_src elisp :noweb yes
 (use-package! org-tempo
   :config
   <<org-tempo-config>>)
@@ -794,22 +794,22 @@ Does it clashes semantically with actual org environment?
 
 **** org-modern
 
-#+begin_src emacs-lisp :noweb-ref packages
+#+begin_src elisp :noweb-ref packages
 (package! org-modern)
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref org-config
+#+begin_src elisp :noweb-ref org-config
 (use-package! org-modern
   :config (global-org-modern-mode))
 #+end_src
 
 **** Package
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! org-contrib)
 #+end_src
 
-#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
+#+begin_src elisp :noweb yes :tangle ~/.doom.d/config.el
 (use-package! org
   :init
   <<org-init>>
@@ -832,7 +832,7 @@ Does it clashes semantically with actual org environment?
 
 *** Babashka
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun my--bb-tasks-for-project ()
   (interactive)
   (let* ((default-directory (projectile-project-root))
@@ -871,7 +871,7 @@ Does it clashes semantically with actual org environment?
 
 *** Latex
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun my--bb-compile-latex ()
   (interactive)
   (my--bb-task "compile"))
@@ -889,27 +889,27 @@ Does it clashes semantically with actual org environment?
 
 *** Auto dim other buffers
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! auto-dim-other-buffers)
 #+end_src
 
 *** Spelling
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (setq ispell-dictionary "en"
       ispell-personal-dictionary "~/env/spelling/.pws")
 #+end_src
 
 *** general
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! general)
 #+end_src
 
 *** evil
 **** Symex
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! rigpa
   :recipe (:type git :host github :repo "countvajhula/rigpa"))
 (package! symex
@@ -918,7 +918,7 @@ Does it clashes semantically with actual org environment?
 #+end_src
 
 #+name: evil-symex
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package! symex
   :hook ((clojure-mode clojurescript-mode clojurec-mode) . my-symex-activation-hook)
 
@@ -1120,7 +1120,7 @@ advises functions to enable or disable features based on user configuration."
 **** evil-ex-define-cmd-local
 
 #+name: evil-ex-define-local-cmd
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package! evil-ex)
 
 (defun >evil-ex-define-local-cmd (cmd function)
@@ -1133,7 +1133,7 @@ advises functions to enable or disable features based on user configuration."
 **** Recenter buffer after evil motions
 
 #+name: evil-recentering
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defun my-evil-recenter (&optional count symbol)
   (recenter nil))
 
@@ -1149,7 +1149,7 @@ advises functions to enable or disable features based on user configuration."
 **** key-chord
 
 #+name: evil-key-chord
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package key-chord
   :config (key-chord-mode 1))
 #+end_src
@@ -1157,7 +1157,7 @@ advises functions to enable or disable features based on user configuration."
 **** Hydra paste
 
 #+name: evil-hydra-paste
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defhydra hydra-paste
   (:color red
    :hint nil)
@@ -1176,7 +1176,7 @@ advises functions to enable or disable features based on user configuration."
 **** Evil escape
 
 #+name: evil-escape
-#+begin_src emacs-lisp
+#+begin_src elisp
 (use-package! evil-escape
   :disabled t
   :init (progn
@@ -1187,18 +1187,18 @@ advises functions to enable or disable features based on user configuration."
 **** Motion trainer
 
 #+name: evil-motion-trainer
-#+begin_src emacs-lisp
+#+begin_src elisp
 ;; (global-evil-motion-trainer-mode 1)
 (setq evil-motion-trainer-threshold 6)
 #+end_src
 
 **** evil-goggles
 
-#+begin_src emacs-lisp :noweb-ref packages
+#+begin_src elisp :noweb-ref packages
 (package! evil-goggles)
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref evil-config
+#+begin_src elisp :noweb-ref evil-config
 (use-package! evil-goggles
   :config
   (setq evil-goggles-duration 0.2
@@ -1209,7 +1209,7 @@ advises functions to enable or disable features based on user configuration."
         evil-goggles-enable-change t))
 #+end_src
 
-#+begin_src emacs-lisp :noweb-ref faces
+#+begin_src elisp :noweb-ref faces
 `(evil-goggles-yank-face :background ,(doom-color 'green))
 `(evil-goggles-paste-face :background ,(doom-color 'violet))
 `(evil-goggles-delete-face :background ,(doom-color 'red))
@@ -1217,7 +1217,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** Package
 
-#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
+#+begin_src elisp :noweb yes :tangle ~/.doom.d/config.el
 (use-package! evil
   :config
   <<evil-config>>
@@ -1232,7 +1232,7 @@ advises functions to enable or disable features based on user configuration."
 
 *** Doom modeline
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! doom-modeline
   :config
   (setq doom-modeline-modal-icon t)
@@ -1269,7 +1269,7 @@ advises functions to enable or disable features based on user configuration."
 
 *** Rigpa
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package rigpa
   :disabled t
 
@@ -1383,7 +1383,7 @@ advises functions to enable or disable features based on user configuration."
 
 *** Ivy/Vertico
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (after! vertico
   (map! :map vertico-map
         "C-h" #'vertico-directory-delete-char
@@ -1411,7 +1411,7 @@ advises functions to enable or disable features based on user configuration."
 
 *** Corfu
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! corfu :recipe (:files ("*.el" "extensions/*.el")))
 (package! cape)
 (package! dabbrev)
@@ -1425,7 +1425,7 @@ advises functions to enable or disable features based on user configuration."
   :recipe (:type git :repo "https://codeberg.org/akib/emacs-corfu-doc-terminal.git"))
 #+end_src
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defvar +corfu-auto-delay 0.3
    "How long after point stands still will completion be called automatically,
  in seconds.
@@ -1836,7 +1836,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** Templates
 
-#+begin_src emacs-lisp :tangle ~/.config/emacs/.local/cache/templates
+#+begin_src elisp :tangle ~/.config/emacs/.local/cache/templates
 
 fundamental-mode ;; Available everywhere
 
@@ -1935,7 +1935,7 @@ org-mode
 (comment "#+begin_comment" n> r> n> "#+end_comment")
 (verse "#+begin_verse" n> r> n> "#+end_verse")
 (src "#+begin_src " p n> r> n> "#+end_src" :post (org-edit-src-code))
-(elisp "#+begin_src emacs-lisp" n> r> n "#+end_src" :post (org-edit-src-code))
+(elisp "#+begin_src elisp" n> r> n "#+end_src" :post (org-edit-src-code))
 
 ;; Local Variables:
 ;; mode: lisp-data
@@ -1946,19 +1946,19 @@ org-mode
 
 *** dired
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! dired+
   :recipe (:type git :host github :repo "emacsmirror/dired-plus"))
 #+end_src
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package dired+)
 #+end_src
 
 *** Aggressive indent
 
 Can turn this on once I've worked to fix at least the multiple undo points
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 ;; (use-package! aggressive-indent
 ;;   :config (add-hook! emacs-lisp-mode
 ;;             (aggressive-indent-mode 1)))
@@ -1966,14 +1966,14 @@ Can turn this on once I've worked to fix at least the multiple undo points
 
 *** back-button
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! back-button
   :config (back-button-mode 1))
 #+end_src
 
 *** Magit
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! magit
   :init
   (setq auth-sources '("~/.authinfo")))
@@ -1994,7 +1994,7 @@ Can turn this on once I've worked to fix at least the multiple undo points
 
 *** LSP
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (after! lsp-mode
   (after! lsp-ui-mode
     (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
@@ -2009,7 +2009,7 @@ Can turn this on once I've worked to fix at least the multiple undo points
 
 *** YASnippet
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun >tangle-dir (sub-path)
   "Expand the SUB-PATH into the directory given by the tangle-dir
 property if that property exists, else use the
@@ -2036,7 +2036,7 @@ Something like:
 
 *** EmacsLisp
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! emacs-lisp-mode
   :defer t
   :general
@@ -2059,7 +2059,7 @@ a test snippet
 
 *** Scheme/Racket
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! racket-mode)
 (package! ob-racket
   :recipe (:type git :host github :repo "hasu/emacs-ob-racket"
@@ -2067,7 +2067,7 @@ a test snippet
 (package! sicp)
 #+end_src
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! racket-mode
   :general
   (:keymaps 'racket-mode-map
@@ -2081,7 +2081,7 @@ a test snippet
 
 **** Unused non-racket config
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (defun mit-scheme ()
   (interactive)
   (run-scheme "/Applications/scheme.app/Contents/Resources/mit-scheme"))
@@ -2121,13 +2121,13 @@ and switch to REPL"
 
 *** Clojure
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (after! cider
 #+end_src
 
 **** Settings
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (setq cider-clojure-cli-global-options "-A:debug-tools")
 (setq cider-shadow-cljs-global-options "-A:debug-tools")
 (setq cider-save-file-on-load t)
@@ -2149,7 +2149,7 @@ and switch to REPL"
 
 **** cider-interactive-eval-clj
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun cider-interactive-eval-clj (form &optional callback bounds additional-params)
   "Evaluate FORM and dispatch the response to CALLBACK.
 If the code to be evaluated comes from a buffer, it is preferred to use a
@@ -2189,7 +2189,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** Mode hooks
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun my-define-clojure-mode-hooks (hook-function)
   (message "bar")
   (add-hook!
@@ -2201,7 +2201,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** my-clojure-def-and-name-regex
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 ;; Not used
 ;; (defconst my-clojure-def-and-name-regex
 ;;   (rx
@@ -2215,7 +2215,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** Font lock
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (rx-define my-clojure-defining-macro-forms
   (or (seq ">def" (optional "n"))
       "defsc"
@@ -2242,7 +2242,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** Aggressive indent
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (after! aggressive-indent
   (add-hook! clojure-mode
     (aggressive-indent-mode 1)))
@@ -2250,7 +2250,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** cider report mode
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defhydra my-cider-report-hydra ()
   "zoom"
   ("g" text-scale-increase "in")
@@ -2267,17 +2267,17 @@ arguments and only proceed with evaluation if it returns nil."
 Three ways to eval a string:
 
 Evals in environment but doesn't print
-#+begin_src emacs-lisp
+#+begin_src elisp
 (cider-nrepl-sync-request:eval "(form)")
 #+end_src
 
 Evals in environment and prints
-#+begin_src emacs-lisp
+#+begin_src elisp
 (cider-interactive-eval-clj "(form)")
 #+end_src
 
 Inserts literal form into repl and eval (second arg is `t`)
-#+begin_src emacs-lisp
+#+begin_src elisp
 (cider-insert-in-repl "(form)" t)
 #+end_src
 
@@ -2290,7 +2290,7 @@ Inserts literal form into repl and eval (second arg is `t`)
 (hyperfiddle.rcf/enable!)
 #+end_src
 
-#+begin_src emacs-lisp :noweb yes :noweb-prefix no :tangle ~/.doom.d/config.el
+#+begin_src elisp :noweb yes :noweb-prefix no :tangle ~/.doom.d/config.el
 (defun my-cider-reset ()
   (interactive)
   (projectile-save-project-buffers)
@@ -2347,7 +2347,7 @@ Inserts literal form into repl and eval (second arg is `t`)
 
 **** Indentation
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (define-clojure-indent
  ;; Fulcro
  (>defn :defn)
@@ -2391,7 +2391,7 @@ Inserts literal form into repl and eval (second arg is `t`)
 
 **** Testing
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defvar kaocha-windows-rx (rx bol (* any) "kaocha" (* any)))
 
 (setq display-buffer-alist '((kaocha-windows-rx (display-buffer-pop-up-frame display-buffer-reuse-window display-buffer-same-window))))
@@ -2550,7 +2550,7 @@ Supports the fulcro-spec `specification' macro"
 **** Minor modes
 ***** pprint-eval-mode
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (define-minor-mode pprint-eval-mode
   "When active swaps `cider-eval-defun-at-point' with `cider-pprint-eval-defun-at-point'"
   nil nil nil
@@ -2566,7 +2566,7 @@ Supports the fulcro-spec `specification' macro"
 
 ***** clear-reveal-eval-mode
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun my-clear-reveal-and-eval ()
   (interactive)
   (my-cider-clear-reveal)
@@ -2584,7 +2584,7 @@ Supports the fulcro-spec `specification' macro"
 
 ***** reload-tilley-mode
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun eval-top-level-form-and-reload-tilley ()
   (interactive)
   (cider-eval-defun-at-point)
@@ -2613,11 +2613,11 @@ Supports the fulcro-spec `specification' macro"
 
 **** Jet
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! jet)
 #+end_src
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! jet)
 
 (defconst special-rx
@@ -2648,7 +2648,7 @@ Supports the fulcro-spec `specification' macro"
 
 **** REBL
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 ;; Similar to C-x C-e, but sends to REBL
 (defun rebl-eval-last-sexp ()
   (interactive)
@@ -2677,7 +2677,7 @@ Supports the fulcro-spec `specification' macro"
 
 I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (ns repl-eval.nrepl
     (:require [clojure.pprint :refer [pprint]]
      [nrepl.server :as server]
@@ -2715,7 +2715,7 @@ While I could refactor this to instrument variable middleware and injection form
 
 **** LSP
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (after! lsp-mode
   (push "\\.shadow-cljs" lsp-file-watch-ignored)
   (push "\\.clj-kondo" lsp-file-watch-ignored)
@@ -2739,7 +2739,7 @@ While I could refactor this to instrument variable middleware and injection form
 
 **** TODO Tempel
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! tempel)
 (package! tempel-clojure
   :recipe (:type git
@@ -2750,13 +2750,13 @@ While I could refactor this to instrument variable middleware and injection form
 
 **** End
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 )
 #+end_src
 
 *** Lispy
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (lispyville-set-key-theme
  '(operators
    c-w
@@ -2790,7 +2790,7 @@ While I could refactor this to instrument variable middleware and injection form
 
 *** Dired/Eshell
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun my-buffer-mode (&optional buffer-or-name)
   "Return the major mode associated with a buffer.
 If buffer-or-name is nil return current buffer's mode."
@@ -2839,7 +2839,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 *** Theme
 
-#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/config.el
+#+begin_src elisp :noweb yes :tangle ~/.doom.d/config.el
 (setq doom-theme 'doom-monokai-pro)
 
 (custom-theme-set-faces! '(doom-monokai-pro)
@@ -2862,7 +2862,7 @@ If buffer-or-name is nil return current buffer's mode."
 *** Functions
 **** JRT functions
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun my-process-cost-line-item ()
   (interactive)
   (goto-char (point-min))
@@ -2930,7 +2930,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 **** Music downloads fixer
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (defun my-file-fixer--finalize ()
   (interactive)
   (evil-next-line)
@@ -3111,7 +3111,7 @@ If buffer-or-name is nil return current buffer's mode."
 | xh  | lispy-describe                | Other    |
 | m   | lispy-mark-list               | Other    |
 
-#+begin_src emacs-lisp :var bindings=lispy-bindings :colnames yes
+#+begin_src elisp :var bindings=lispy-bindings :colnames yes
 (eval
  (append
   '(defhydra my/lispy-cheat-sheet (:hint nil :foreign-keys run)
@@ -3132,7 +3132,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** init
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/init.el
+#+begin_src elisp :tangle ~/.doom.d/init.el
 ;;; init.el -*- lexical-binding: t; -*-
 
 ;; This file controls what Doom modules are enabled and what order they load
@@ -3319,7 +3319,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** packages
 
-#+begin_src emacs-lisp :noweb yes :tangle ~/.doom.d/packages.el
+#+begin_src elisp :noweb yes :tangle ~/.doom.d/packages.el
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
@@ -3407,7 +3407,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** services
 
-#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (prodigy-define-service
   :name "fulcro template"
   :command "npx"
@@ -3466,7 +3466,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** .dir-locals
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 ((nil . ((cider-clojure-cli-global-options . "-A:dev:test:kondo:debug-tools -J-Dtrace -J-Dghostwheel.enabled=true")
          (cider-custom-cljs-repl-init-form . "(shadow/repl :main)")
          (cider-default-cljs-repl . shadow-select)
@@ -3476,7 +3476,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** profiles
 
-#+begin_src emacs-lisp :tangle ~/.emacs-profiles.el
+#+begin_src elisp :tangle ~/.emacs-profiles.el
 (("doom"   . ((user-emacs-directory . "~/.config/doom-emacs")))
  ("rigpa" . ((user-emacs-directory . "~/.config/rigpa-emacs")))
  ("vanilla" . ((user-emacs-directory . "~/.config/vanilla-emacs"))))
@@ -3508,10 +3508,10 @@ try print(task.run())
 
 *** Vanilla
 :PROPERTIES:
-:header-args:emacs-lisp: :tangle ~/.config/rigpa-emacs/init.el
+:header-args+:elisp: :tangle ~/.config/rigpa-emacs/init.el
 :END:
 
-#+begin_src emacs-lisp
+#+begin_src elisp
 (require 'package)
 (package-install 'use-package)
 #+end_src
@@ -4006,7 +4006,7 @@ alias vi="nvim"
 *** zshenv
 
 #+name: set-env
-#+begin_src emacs-lisp :var env-block='()
+#+begin_src elisp :var env-block='()
 (cl-flet ((process-env-var (env-var)
             (seq-let (key value) env-var
               (s-lex-format "export ${key}=\"${value}\" \nlaunchctl setenv ${key} \"$${key}\"\n"))))
