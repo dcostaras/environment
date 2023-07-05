@@ -1855,7 +1855,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** Templates
 
-#+begin_src emacs-lisp :mkdirp yes :tangle ~/.config/emacs/.local/cache/templates
+#+begin_src emacs-lisp :tangle ~/.config/emacs/.local/cache/templates
 
 fundamental-mode ;; Available everywhere
 
@@ -3491,7 +3491,7 @@ try print(task.run())
 :header-args:emacs-lisp: :tangle ~/.config/rigpa-emacs/init.el
 :END:
 
-#+begin_src emacs-lisp :mkdirp yes
+#+begin_src emacs-lisp
 (require 'package)
 (package-install 'use-package)
 #+end_src
@@ -3562,7 +3562,7 @@ try print(task.run())
 
 ** deps
 
-#+BEGIN_SRC clojure :tangle ~/.clojure/deps.edn :ns 'nil :mkdirp yes
+#+BEGIN_SRC clojure :tangle ~/.clojure/deps.edn :ns 'nil
 ;; see https://github.com/seancorfield/dot-clojure
 {:mvn/repos {"sonatype" {:url "https://oss.sonatype.org/content/repositories/snapshots/"}
              "cognitect-dev-tools" {:url "https://dev-tools.cognitect.com/maven/releases/"}}
@@ -3804,18 +3804,18 @@ try print(task.run())
 
 ** shadow
 
-#+BEGIN_SRC clojure :tangle ~/.shadow-cljs/config.edn :ns 'nil :mkdirp yes
+#+BEGIN_SRC clojure :tangle ~/.shadow-cljs/config.edn :ns 'nil
 {:deps-aliases [:dev #_:local-fulcro :debug-tools]}
 #+END_SRC
 
 ** datomic
-#+begin_src clojure :tangle ~/.datomic/dev-local.edn :mkdirp yes
+#+begin_src clojure :tangle ~/.datomic/dev-local.edn
 {:storage-dir "/Users/donavan/.datomic/data"}
 #+end_src
 
 ** clj-kondo
 
-#+begin_src clojure :tangle ~/.config/clj-kondo/config.edn :mkdirp yes
+#+begin_src clojure :tangle ~/.config/clj-kondo/config.edn
 {:lint-as {com.fulcrologic.fulcro.components/defsc clojure.core/defn
            com.fulcrologic.fulcro.mutations/defmutation clojure.core/defn}}
 #+end_src
@@ -4257,7 +4257,7 @@ ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
 
 * AWS
 
-#+begin_src conf :tangle ~/.aws/config :mkdirp yes
+#+begin_src conf :tangle ~/.aws/config
 [default]
 region = us-east-2
 
@@ -4701,7 +4701,7 @@ UseKeychain yes
 
 * Git
 
-#+begin_src gitconfig :tangle ~/.config/git/config :mkdirp yes
+#+begin_src gitconfig :tangle ~/.config/git/config
 [user]
 	name = Donavan-Ross Costaras
 	email = d.costaras@gmail.com

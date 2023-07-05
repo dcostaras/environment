@@ -1,2 +1,3 @@
-#+property: header-args :results none
+#+property: header-args+ :results none
+#+property: header-args+ :mkdirp yes
 #+options: prop:t
