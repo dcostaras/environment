@@ -631,7 +631,7 @@ uses:
 #+end_src
 
 ***** Environments
-****** TODO export environement is possibly a bad name for this
+****** TODO export environment is possibly a bad name for this
 
 Does it clashes semantically with actual org environment?
 
