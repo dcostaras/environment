@@ -2007,6 +2007,33 @@ Can turn this on once I've worked to fix at least the multiple undo points
   (setq lsp-ui-sideline-show-hover t))
 #+end_src
 
+*** YASnippet
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defun >tangle-dir (sub-path)
+  "Expand the SUB-PATH into the directory given by the tangle-dir
+property if that property exists, else use the
+`default-directory'."
+  (expand-file-name sub-path
+                    (or (org-entry-get (point) "tangle-dir" 'inherit)
+                        (default-directory))))
+
+(defun >snippet-properties (directory)
+  (s-join "\n" (list (s-lex-format ":tangle-dir: ~/.doom.d/snippets/${directory}/")
+                     ":header-args+: :comments no")))
+#+end_src
+
+#+MACRO: snippet-dir (eval (>snippet-properties $1))
+
+**** TODO could I turn this into a new header?
+Something like:
+
+:tangle-rel test
+
+...instead of
+
+:tangle (>tangle-dir "test")
+
 *** EmacsLisp
 
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
@@ -2016,6 +2043,18 @@ Can turn this on once I've worked to fix at least the multiple undo points
   (:mode 'emacs-lisp-mode
          "C-c C-c" #'eval-defun
          "C-c C-k" #'+eval/buffer))
+#+end_src
+
+**** Snippets
+:PROPERTIES:
+{{{snippet-dir(emacs-lisp-mode)}}}
+:END:
+
+#+begin_src snippet :tangle (>tangle-dir "test")
+# name: test
+# key: test
+# --
+a test snippet
 #+end_src
 
 *** Scheme/Racket
