@@ -744,27 +744,6 @@ Does it clashes semantically with actual org environment?
 :header-args+: :noweb-ref org-tangle
 :END:
 
-***** Macros
-:PROPERTIES:
-:header-args+: :noweb-ref none
-:END:
-
-#+name: org-tangle
-#+begin_src emacs-lisp
-#+end_src
-
-#+begin_src emacs-lisp
-(with-current-buffer "rc.org"
-  (message "%s" (current-buffer))
-  ;; (remove-hook 'after-save-hook #'my--tangle-on-save nil 'buffer-local)
-  ;; (add-hook 'after-save-hook #'my--tangle-on-save nil 'buffer-local)
-  org-ctrl-c-ctrl-c-final-hook
-  (remove-hook! 'org-ctrl-c-ctrl-c-final-hook :local #'my--tangle-on-save)
-  (add-hook! 'org-ctrl-c-ctrl-c-final-hook :local #'my--tangle-on-save)
-
-  (remove-hook! 'org-ctrl-c-ctrl-c-hook :local #'my--tangle-on-save)
-  (add-hook! 'org-ctrl-c-ctrl-c-hook :local #'my--tangle-on-save)
-  )
 ***** Environment
 
 #+name: environment-file-name
