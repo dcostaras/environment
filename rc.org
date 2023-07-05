@@ -3489,7 +3489,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 *** Commands to run profiles
 :PROPERTIES:
-:header-args:sh: :shebang #!/bin/zsh
+:header-args+:sh: :shebang #!/bin/zsh
 :END:
 
 *** Test MacOS app :app-bundle:
