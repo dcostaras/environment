@@ -1,4 +1,4 @@
-personal_ws-1.1 en 187
+personal_ws-1.1 en 190
 APIs
 Babashka
 Costaras
@@ -111,6 +111,7 @@ jra
 js
 jwt
 jwtToken
+karabiner
 keypair
 kondo
 leiningen
@@ -186,3 +187,5 @@ varargs
 verifier
 whitespace
 workspaces
+yabai
+yabairc
