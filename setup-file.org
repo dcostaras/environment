@@ -1,5 +1,6 @@
 #+property: header-args+ :results none
 #+property: header-args+ :mkdirp yes
+#+property: header-args+ :noweb yes
 #+property: header-args+ :comments link
 #+property: header-args:emacs-lisp+ :lexical t
 

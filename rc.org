@@ -769,7 +769,7 @@ Does it clashes semantically with actual org environment?
 (buffer-file-name)
 #+end_src
 
-#+begin_src elisp :noweb yes
+#+begin_src elisp
 (defvar my--environment-file-name <<environment-file-name()>>)
 #+end_src
 
@@ -792,7 +792,7 @@ Does it clashes semantically with actual org environment?
         (org-babel-tangle-file temp-org-file-name)))))
 #+end_src
 
-#+begin_src elisp :noweb yes
+#+begin_src elisp
 (defun >post-tangle-environment-hook ()
   <<org-post-tangle-environment-hook>>)
 #+end_src
@@ -808,7 +808,7 @@ Does it clashes semantically with actual org environment?
 ***** Package
 
 #+name: org-tempo
-#+begin_src elisp :noweb yes
+#+begin_src elisp
 (use-package! org-tempo
   :config
   <<org-tempo-config>>)
@@ -831,7 +831,7 @@ Does it clashes semantically with actual org environment?
 (package! org-contrib)
 #+end_src
 
-#+begin_src elisp :noweb yes :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! org
   :init
   <<org-init>>
@@ -1227,7 +1227,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** Package
 
-#+begin_src elisp :noweb yes :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! evil
   :config
   <<evil-config>>)
@@ -2293,7 +2293,7 @@ Inserts literal form into repl and eval (second arg is `t`)
 (hyperfiddle.rcf/enable!)
 #+end_src
 
-#+begin_src elisp :noweb yes :noweb-prefix no :tangle ~/.doom.d/config.el
+#+begin_src elisp :noweb-prefix no :tangle ~/.doom.d/config.el
 (defun my-cider-reset ()
   (interactive)
   (projectile-save-project-buffers)
@@ -2842,7 +2842,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 *** Theme
 
-#+begin_src elisp :noweb yes :tangle ~/.doom.d/config.el
+#+begin_src elisp :tangle ~/.doom.d/config.el
 (setq doom-theme 'doom-monokai-pro)
 
 (custom-theme-set-faces! '(doom-monokai-pro)
@@ -3322,7 +3322,7 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** packages
 
-#+begin_src elisp :noweb yes :tangle ~/.doom.d/packages.el
+#+begin_src elisp :tangle ~/.doom.d/packages.el
 ;; -*- no-byte-compile: t; -*-
 ;;; $DOOMDIR/packages.el
 
@@ -4157,7 +4157,7 @@ alias vi="nvim"
        (s-join "\n")))
 #+end_src
 
-#+begin_src sh :noweb yes :tangle ~/.zshenv
+#+begin_src sh :tangle ~/.zshenv
 <<set-env(env-block="path")>>
 <<set-env(env-block="aws")>>
 <<set-env(env-block="java")>>
