@@ -3646,7 +3646,7 @@ try print(task.run())
 ** Compile
 
 #+begin_src elisp :noweb-ref org-post-tangle-environment-hook
-(let* ((output-buffer (generate-new-buffer "*Async goku karabiner.edn compile*"))
+(let* ((output-buffer (get-buffer-create "*Goku compile*"))
        (proc (start-process "goku" output-buffer "goku"))
        (sentinel (lambda (process signal)
                    (when (memq (process-status process) '(exit signal))
