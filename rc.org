@@ -928,18 +928,13 @@ Does it clashes semantically with actual org environment?
   :general
 
   (:states '(normal insert)
-   "<escape>" 'symex-mode-interface
-   (general-chord "jk") 'symex-mode-interface)
+   "<escape>" 'symex-mode-interface)
 
   (:states '(normal)
-   "<enter>" 'symex-mode-interface
-   (general-chord "fd") 'symex-mode-interface)
+   "<enter>" 'symex-mode-interface)
 
   (:states '(symex)
-   (general-chord "jk") 'evil-normal-state)
-
-  (:states '(symex insert)
-   (general-chord "fd") 'evil-normal-state)
+   "<escape>" 'evil-normal-state)
 
   (:keymaps 'symex-editing-mode-map
    :states '(symex)
