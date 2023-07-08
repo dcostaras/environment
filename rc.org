@@ -4723,12 +4723,12 @@ UseKeychain yes
 
 #+begin_src gitconfig :tangle ~/.config/git/config
 [user]
-	name = Donavan-Ross Costaras
-	email = d.costaras@gmail.com
+ name = Donavan-Ross Costaras
+ email = d.costaras@gmail.com
 [protocol "keybase"]
-	allow = always
+ allow = always
 [github]
-	user = dcostaras
+ user = dcostaras
 #+end_src
 
 * TODO Quicklook plugins
