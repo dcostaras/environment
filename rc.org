@@ -227,9 +227,9 @@ Use GitHub releases for this?
 ;;
 #+end_src
 
-**** Fullscreen
+**** Fullscreen :noexport:
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp :noweb-ref doom-config
 (add-hook! 'emacs-startup-hook #'toggle-frame-fullscreen)
 #+end_src
 
