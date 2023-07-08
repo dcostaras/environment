@@ -4415,6 +4415,99 @@ ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
   }
   #+END_SRC
 
+* Yabai
+
+** App management
+
+#+name: yabai-unmanaged-apps
+| ^System Preferences$ |
+| ^Finder$             |
+
+*** Rule
+
+#+name: yabai-app-management
+#+begin_src elisp :var apps=yabai-unmanaged-apps
+(->> apps
+     (-map (fn (`(,s))
+             (s-lex-format "app='${s}'")))
+     (s-join " ")
+     (concat "yabai -m rule --add manage=off "))
+#+end_src
+
+** Config
+
+#+name: yabai-config
+| mouse_follows_focus         | on           | test |
+| focus_follows_mouse         | autoraise    |      |
+| window_origin_display       | default      |      |
+| window_placement            | second_child |      |
+| window_zoom_persist         | on           |      |
+| window_topmost              | off          |      |
+| window_shadow               | off          |      |
+| window_animation_frame_rate | 120          |      |
+| window_opacity_duration     | 0.0          |      |
+| active_window_opacity       | 1.0          |      |
+| normal_window_opacity       | 0.90         |      |
+| window_opacity              | off          |      |
+| insert_feedback_color       | 0xffff0000   |      |
+| active_window_border_color  | 0xff00ff00   |      |
+| normal_window_border_color  | 0xff0000ff   |      |
+| window_border_width         | 2            |      |
+| window_border_radius        | 0            |      |
+| window_border_blur          | off          |      |
+| window_border_hidpi         | on           |      |
+| window_border               | on           |      |
+| split_ratio                 | 0.50         |      |
+| split_type                  | auto         |      |
+| auto_balance                | off          |      |
+| top_padding                 | 0            |      |
+| bottom_padding              | 0            |      |
+| left_padding                | 0            |      |
+| right_padding               | 0            |      |
+| window_gap                  | 0            |      |
+| layout                      | bsp          |      |
+| mouse_modifier              | fn           |      |
+| mouse_action1               | move         |      |
+| mouse_action2               | resize       |      |
+| mouse_drop_action           | swap         |      |
+
+#+name: yabai-config-string
+#+begin_src elisp :var config=yabai-config
+(->> config
+     (-map (fn (`(,config-key ,config-value))
+             (s-lex-format "${config-key} ${config-value}")))
+     (s-join " ")
+     (concat "yabai -m config "))
+#+end_src
+
+** yabairc
+
+#+begin_src sh :shebang #!/bin/zsh :tangle ~/.config/yabai/yabairc
+# for this to work you must configure sudo such that
+# it will be able to run the command without password
+#
+# see this wiki page for information:
+#  - https://github.com/koekeishiya/yabai/wiki/Installing-yabai-(latest-release)#configure-scripting-addition
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa
+
+<<yabai-app-management()>>
+<<yabai-config-string()>>
+#+end_src
+
+*** Compile
+
+#+begin_src elisp :noweb-ref org-post-tangle-environment-hook
+(let* ((output-buffer (get-buffer-create "*Yabai reload*"))
+       (proc (start-process "reload yabai" output-buffer "yabai" "--restart-service"))
+       (sentinel (lambda (process signal)
+                   (when (memq (process-status process) '(exit signal))
+                     (message "Done")))))
+  (if (process-live-p proc)
+      (set-process-sentinel proc sentinel)
+    (message "No process running.")))
+#+end_src
+
 * AWS
 
 #+begin_src conf :tangle ~/.aws/config
