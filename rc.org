@@ -140,6 +140,7 @@ eval, and as the value for lexical-binding in buffers created
 by org-edit-src-code.
 ** TODO do a publish step when tangling environment so I don't lose the compiled versions and can't tangle on stock emacs / or see if I can bootstrap the tangling with default doom?
 Use GitHub releases for this?
+** TODO load config after tangling env
 ** config
 
 *** Lexical binding
