@@ -402,6 +402,14 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
            (advice-add target (car targets) #',symbol))))))
 #+end_src
 
+**** fn
+
+#+begin_src emacs-lisp :tangle ~/.doom.d/config.el
+(defmacro fn (args &rest body)
+  (declare (doc-string 2) (indent defun))
+  `(pcase-lambda ,args ,@body))
+#+end_src
+
 *** TODO Tail buffer minor mode
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
