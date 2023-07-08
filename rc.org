@@ -913,7 +913,7 @@ Does it clashes semantically with actual org environment?
 *** evil
 **** Symex
 
-#+begin_src elisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :noweb-ref packages
 (package! rigpa
   :recipe (:type git :host github :repo "countvajhula/rigpa"))
 (package! symex
@@ -921,8 +921,7 @@ Does it clashes semantically with actual org environment?
            :fork (:host github :protocol ssh :repo "dcostaras/symex.el")))
 #+end_src
 
-#+name: evil-symex
-#+begin_src elisp
+#+begin_src elisp :noweb-ref evil-config
 (use-package! symex
   :hook ((clojure-mode clojurescript-mode clojurec-mode) . my-symex-activation-hook)
 
@@ -1123,8 +1122,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** evil-ex-define-cmd-local
 
-#+name: evil-ex-define-local-cmd
-#+begin_src elisp
+#+begin_src elisp :noweb-ref evil-config
 (use-package! evil-ex)
 
 (defun >evil-ex-define-local-cmd (cmd function)
@@ -1136,8 +1134,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** Recenter buffer after evil motions
 
-#+name: evil-recentering
-#+begin_src elisp
+#+begin_src elisp :noweb-ref evil-config
 (defun my-evil-recenter (&optional count symbol)
   (recenter nil))
 
@@ -1152,16 +1149,14 @@ advises functions to enable or disable features based on user configuration."
 
 **** key-chord
 
-#+name: evil-key-chord
-#+begin_src elisp
+#+begin_src elisp :noweb-ref evil-config
 (use-package key-chord
   :config (key-chord-mode 1))
 #+end_src
 
 **** Hydra paste
 
-#+name: evil-hydra-paste
-#+begin_src elisp
+#+begin_src elisp :noweb-ref evil-config
 (defhydra hydra-paste
   (:color red
    :hint nil)
@@ -1179,8 +1174,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** Evil escape
 
-#+name: evil-escape
-#+begin_src elisp
+#+begin_src elisp :noweb-ref evil-config
 (use-package! evil-escape
   :disabled t
   :init (progn
@@ -1190,8 +1184,7 @@ advises functions to enable or disable features based on user configuration."
 
 **** Motion trainer
 
-#+name: evil-motion-trainer
-#+begin_src elisp
+#+begin_src elisp :noweb-ref evil-config
 ;; (global-evil-motion-trainer-mode 1)
 (setq evil-motion-trainer-threshold 6)
 #+end_src
@@ -1224,14 +1217,7 @@ advises functions to enable or disable features based on user configuration."
 #+begin_src elisp :noweb yes :tangle ~/.doom.d/config.el
 (use-package! evil
   :config
-  <<evil-config>>
-  <<evil-symex>>
-  <<evil-ex-define-local-cmd>>
-  <<evil-recentering>>
-  <<evil-key-chord>>
-  <<evil-hydra-paste>>
-  <<evil-escape>>
-  <<evil-motion-trainer>>)
+  <<evil-config>>)
 #+end_src
 
 *** Doom modeline
