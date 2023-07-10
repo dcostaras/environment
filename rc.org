@@ -4709,6 +4709,7 @@ cask "rectangle"
 cask "secretive"
 cask "slack"
 cask "steam"
+cask "pixelsnap"
 cask "vlc"
 cask "yacreader"
 
