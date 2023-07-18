@@ -2401,14 +2401,19 @@ and switch to REPL"
 #+end_src
 
 *** Clojure
+:PROPERTIES:
+:header-args+: :noweb-ref clojure
+:END:
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
-(after! cider
+#+begin_src elisp :noweb-ref no :tangle ~/.doom.d/config.el
+(use-package! cider
+  :config
+  <<clojure>>)
 #+end_src
 
 **** Settings
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (setq cider-clojure-cli-global-options "-A:debug-tools")
 (setq cider-shadow-cljs-global-options "-A:debug-tools")
 (setq cider-save-file-on-load t)
@@ -2430,7 +2435,7 @@ and switch to REPL"
 
 **** cider-interactive-eval-clj
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (defun cider-interactive-eval-clj (form &optional callback bounds additional-params)
   "Evaluate FORM and dispatch the response to CALLBACK.
 If the code to be evaluated comes from a buffer, it is preferred to use a
@@ -2470,7 +2475,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** Mode hooks
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (defun my-define-clojure-mode-hooks (hook-function)
   (message "bar")
   (add-hook!
@@ -2480,7 +2485,7 @@ arguments and only proceed with evaluation if it returns nil."
    hook-function))
 #+end_src
 
-**** my-clojure-def-and-name-regex
+**** COMMENT my-clojure-def-and-name-regex
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
 ;; Not used
@@ -2496,7 +2501,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** Font lock
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (rx-define my-clojure-defining-macro-forms
   (or (seq ">def" (optional "n"))
       "defsc"
@@ -2523,7 +2528,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** Aggressive indent
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (after! aggressive-indent
   (add-hook! clojure-mode
     (aggressive-indent-mode 1)))
@@ -2531,7 +2536,7 @@ arguments and only proceed with evaluation if it returns nil."
 
 **** cider report mode
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (defhydra my-cider-report-hydra ()
   "zoom"
   ("g" text-scale-increase "in")
@@ -2543,8 +2548,7 @@ arguments and only proceed with evaluation if it returns nil."
  "q" 'cider-popup-buffer-quit)
  #+end_src
 
-**** Eval commands
-
+**** COMMENT Eval commands
 Three ways to eval a string:
 
 Evals in environment but doesn't print
@@ -2628,7 +2632,7 @@ Inserts literal form into repl and eval (second arg is `t`)
 
 **** Indentation
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (define-clojure-indent
  ;; Fulcro
  (>defn :defn)
@@ -2672,7 +2676,7 @@ Inserts literal form into repl and eval (second arg is `t`)
 
 **** Testing
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (defvar kaocha-windows-rx (rx bol (* any) "kaocha" (* any)))
 
 (setq display-buffer-alist '((kaocha-windows-rx (display-buffer-pop-up-frame display-buffer-reuse-window display-buffer-same-window))))
@@ -2831,7 +2835,7 @@ Supports the fulcro-spec `specification' macro"
 **** Minor modes
 ***** pprint-eval-mode
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (define-minor-mode pprint-eval-mode
   "When active swaps `cider-eval-defun-at-point' with `cider-pprint-eval-defun-at-point'"
   nil nil nil
@@ -2847,7 +2851,7 @@ Supports the fulcro-spec `specification' macro"
 
 ***** clear-reveal-eval-mode
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (defun my-clear-reveal-and-eval ()
   (interactive)
   (my-cider-clear-reveal)
@@ -2865,7 +2869,7 @@ Supports the fulcro-spec `specification' macro"
 
 ***** reload-tilley-mode
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (defun eval-top-level-form-and-reload-tilley ()
   (interactive)
   (cider-eval-defun-at-point)
@@ -2894,11 +2898,11 @@ Supports the fulcro-spec `specification' macro"
 
 **** Jet
 
-#+begin_src elisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :noweb-ref packages
 (package! jet)
 #+end_src
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (use-package! jet)
 
 (defconst special-rx
@@ -2929,7 +2933,7 @@ Supports the fulcro-spec `specification' macro"
 
 **** REBL
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 ;; Similar to C-x C-e, but sends to REBL
 (defun rebl-eval-last-sexp ()
   (interactive)
@@ -2954,7 +2958,7 @@ Supports the fulcro-spec `specification' macro"
             (local-set-key (kbd "C-x C-r") #'rebl-eval-last-sexp)))
 #+end_src
 
-**** Possible nREPL code injection
+**** COMMENT Possible nREPL code injection
 
 I came up with a working PoC for injections using NREPL.  Is there a more straight-forward way to accomplish this?
 
@@ -2996,7 +3000,7 @@ While I could refactor this to instrument variable middleware and injection form
 
 **** LSP
 
-#+begin_src elisp :tangle ~/.doom.d/config.el
+#+begin_src elisp
 (after! lsp-mode
   (push "\\.shadow-cljs" lsp-file-watch-ignored)
   (push "\\.clj-kondo" lsp-file-watch-ignored)
@@ -3016,23 +3020,19 @@ While I could refactor this to instrument variable middleware and injection form
 ;; (use-package! cider
 ;;   :config
 ;;   (set-lookup-handlers! 'cider-mode nil))
-  #+end_src
+;; Newline below is required for tangling
 
-**** TODO Tempel
+#+end_src
 
-#+begin_src elisp :tangle ~/.doom.d/packages.el
+**** TODO COMMENT Tempel
+
+#+begin_src elisp :noweb-ref doom-init
 (package! tempel)
 (package! tempel-clojure
   :recipe (:type git
            :host github
            :files ("tempel-clojure.el" "templates")
            :repo "mpenet/tempel-clojure"))
-#+end_src
-
-**** End
-
-#+begin_src elisp :tangle ~/.doom.d/config.el
-)
 #+end_src
 
 *** Lispy
