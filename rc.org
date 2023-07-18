@@ -953,6 +953,38 @@ Does it clashes semantically with actual org environment?
   <<org-tempo>>)
 #+end_src
 
+*** COMMENT poly-mode
+
+#+begin_src elisp :noweb-ref packages
+(package! polymode)
+(package! poly-org)
+#+end_src
+
+#+begin_src elisp :tangle ~/.doom.d/config.el
+(use-package! poly-org)
+
+(defun poly-org-eval-region (beg end msg)
+  (pcase msg
+   ("Eval chunk"
+    (org-babel-execute-src-block-maybe))
+   ("Eval region"
+    (+eval/region beg end))))
+
+(defun poly-org-mode-setup ()
+  (setq-local polymode-eval-region-function #'poly-org-eval-region))
+#+end_src
+
+#+begin_src elisp
+(prn 'evalling)
+(prn 'other-evalling)
+(+ 1 1)
+(- 1 1)
+#+end_src
+
+#+begin_src elisp
+(add-hook! org-mode #'poly-org-mode-setup)
+#+end_src
+
 *** Babashka
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
