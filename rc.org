@@ -2185,6 +2185,18 @@ Can turn this on once I've worked to fix at least the multiple undo points
   :config (back-button-mode 1))
 #+end_src
 
+*** yequake
+
+#+begin_src elisp :noweb-ref packages
+(package! yequake)
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config :noweb-prefix no
+(use-package! yequake
+  :config
+  (nconc yequake-frames '(<<yequake-frames>>)))
+#+end_src
+
 *** Magit
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
