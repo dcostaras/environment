@@ -4468,6 +4468,10 @@ fi
 
 *** emacsen
 
+#+begin_src sh :shebang #!/bin/zsh :tangle ~/bin/e
+/opt/homebrew/bin/emacsclient -e -n "$@"
+#+end_src
+
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/spacemacs
 open /Applications/Emacs-alt-icon.app -n --args --with-profile spacemacs
 #+end_src
