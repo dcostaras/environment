@@ -151,6 +151,7 @@ Use GitHub releases for this?
 #+end_src
 
 *** Settings
+
 #+begin_src elisp :tangle ~/.doom.d/config.el
 (setq
 
@@ -3454,10 +3455,8 @@ If buffer-or-name is nil return current buffer's mode."
 (package! popon
   :recipe (:type git :repo "https://codeberg.org/akib/emacs-popon"))
 
-
 ;; (package! org-special-block-extras
 ;;   :recipe (:type git :host github :repo "alhassy/org-special-block-extras"))
-
 
 (package! swift-mode)
 (package! fennel-mode)
@@ -4311,22 +4310,22 @@ fi
 
 *** emacsen
 
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/spacemacs
-    open /Applications/Emacs-alt-icon.app -n --args --with-profile spacemacs
-  #+end_src
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/spacemacs
+open /Applications/Emacs-alt-icon.app -n --args --with-profile spacemacs
+#+end_src
 
  ~/bin/emacs
-  #+begin_src sh :shebang "#!/bin/bash" :tangle no
-    open /Applications/Emacs.app --args --with-profile emacs
-  #+end_src
+#+begin_src sh :shebang "#!/bin/bash" :tangle no
+open /Applications/Emacs.app --args --with-profile emacs
+#+end_src
 
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-config-editor
-    open /Applications/Emacs-alt-icon.app -n --args --with-profile emacs
-  #+end_src
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-config-editor
+open /Applications/Emacs-alt-icon.app -n --args --with-profile emacs
+#+end_src
 
-  #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-raw
-    open /Applications/Emacs.app -n --args --with-profile raw
-  #+end_src
+#+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/emacs-raw
+open /Applications/Emacs.app -n --args --with-profile raw
+#+end_src
 
 *** elit
 **** elit-cli
