@@ -442,6 +442,9 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 #+end_src
 
 *** Org
+
+"Organize your plain life in plain text"
+
 **** TODO Fixing current issues with searching in org buffers
 
 #+begin_src elisp :noweb-ref org-init
@@ -479,8 +482,8 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 
 (setq org-startup-folded t)
 
-(setq org-directory "~/Documents/org")
-(setq org-agenda-files (list "~/Documents/org/inbox.org"))
+(setq org-directory "~/org")
+(setq org-agenda-files (list "~/org/inbox.org"))
 #+end_src
 
 **** Org buffers
@@ -908,9 +911,24 @@ Does it clashes semantically with actual org environment?
   :config (global-org-modern-mode))
 #+end_src
 
+**** org-roam
+
+#+begin_src elisp :noweb-ref org-config
+(use-package! org-roam
+  :custom
+  (org-roam-directory (concat org-directory "/roam")))
+#+end_src
+
 **** Package
 
-#+begin_src elisp :tangle ~/.doom.d/packages.el
+#+begin_src elisp :noweb-ref doom-init-lang
+(org +pomodoro
+     +dragndrop
+     +pandoc
+     +roam2)
+#+end_src
+
+#+begin_src elisp :noweb-ref packages
 (package! org-contrib)
 #+end_src
 
@@ -3216,6 +3234,12 @@ If buffer-or-name is nil return current buffer's mode."
   (define-key lispy-mode-map (kbd "<f12>") 'my/lispy-cheat-sheet/body))
 #+end_src
 
+** config
+
+#+begin_src elisp :tangle ~/.doom.d/config.el
+<<doom-config>>
+#+end_src
+
 ** init
 
 #+begin_src elisp :tangle ~/.doom.d/init.el
@@ -3364,9 +3388,6 @@ If buffer-or-name is nil return current buffer's mode."
        ;;nim               ; python + lisp at the speed of c
        ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
-       (org +pomodoro
-            +dragndrop
-            +pandoc)       ; organize your plain life in plain text
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
        ;;purescript        ; javascript, but functional
@@ -3386,6 +3407,7 @@ If buffer-or-name is nil return current buffer's mode."
        ;;terra             ; Earth and Moon in alignment for performance.
        (web +css)          ; the tubes
        yaml                ; JSON, but readable
+       <<doom-init-lang>>
 
        :email
        ;;(mu4e +gmail)
