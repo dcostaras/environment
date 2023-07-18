@@ -2231,13 +2231,7 @@ property if that property exists, else use the
   (expand-file-name sub-path
                     (or (org-entry-get (point) "tangle-dir" 'inherit)
                         (default-directory))))
-
-(defun >snippet-properties (directory)
-  (s-join "\n" (list (s-lex-format ":tangle-dir: ~/.doom.d/snippets/${directory}/")
-                     ":header-args+: :comments no")))
 #+end_src
-
-#+MACRO: snippet-dir (eval (>snippet-properties $1))
 
 **** TODO could I turn this into a new header?
 Something like:
@@ -2261,7 +2255,8 @@ Something like:
 
 **** Snippets
 :PROPERTIES:
-{{{snippet-dir(emacs-lisp-mode)}}}
+:tangle-dir: ~/.doom.d/snippets/emacs-lisp/
+:header-args+: :comments no
 :END:
 
 #+begin_src snippet :tangle (>tangle-dir "test")
