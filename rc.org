@@ -985,6 +985,84 @@ Does it clashes semantically with actual org environment?
 (add-hook! org-mode #'poly-org-mode-setup)
 #+end_src
 
+*** OSA
+
+#+begin_src elisp :noweb-ref packages
+(package! osa)
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config
+(use-package! osa
+  :config
+
+  (defun >plist->osa-record (plist)
+    (cl-loop for (k v) on plist by #'cddr
+             collect (cons (string-remove-prefix ":" (symbol-name k))
+                           v)
+             into ret
+             finally return (cons :reco ret)))
+
+  (defun >osa-parse-json (json-string)
+    (json-parse-string json-string :object-type 'plist)))
+#+end_src
+
+**** Notifications
+
+#+begin_src js :tangle ~/bin/osa/notify.js
+function notify(msg, options)
+{
+    if (msg == null) {throw 'Argument "msg" is required';}
+
+    let app  = Application.currentApplication();
+    let args = {};
+
+    app.includeStandardAdditions = true;
+
+    if (typeof options === 'object' && options !== 'null') {
+        if ('title' in options) {
+            args['withTitle'] = options.title;
+        }
+
+        if ('subtitle' in options) {
+            args['subtitle']  = options.subtitle;
+        }
+
+        if ('sound' in options) {
+            args['soundName'] = options.sound;
+        }
+    }
+
+    app.displayNotification(msg, args);
+    return [msg, JSON.stringify(options)]
+
+}
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config
+(cl-defun >osa-notify (msg &rest rest &key title subtitle sound)
+  (osa-eval-file "~/bin/osa/notify.js"
+                 :lang "JavaScript"
+                 :call "notify"
+                 :args (list msg (>plist->osa-record rest))))
+#+end_src
+
+**** Safari
+
+#+name: safari-get-url
+#+begin_src js :cmd osascript -l JavaScript :results output replace
+const tab = Application("Safari").documents[0];
+JSON.stringify({
+  "tab-url": tab.url(),
+  "tab-title": tab.name()
+});
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config
+(defun >osa-safari-get-tab ()
+  (->> (osa-eval <<src-block-value(name="safari-get-url")>> :lang "JavaScript")
+       (>osa-parse-json)))
+#+end_src
+
 *** Babashka
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
