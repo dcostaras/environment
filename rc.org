@@ -268,6 +268,8 @@ Use GitHub releases for this?
 
 #+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! ht)
+(package! xht
+  :recipe (:type git :repo "https://git.sr.ht/~flandrew/xht"))
 (package! s)
 (package! dash)
 (package! loopy)
@@ -275,6 +277,10 @@ Use GitHub releases for this?
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! ht)
+(use-package xht
+  :config
+  (global-xht-fontify-mode)
+  (global-xht-do-mode))
 (use-package! s)
 (use-package! dash
   :config (global-dash-fontify-mode))
