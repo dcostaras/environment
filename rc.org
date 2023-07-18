@@ -801,20 +801,9 @@ Does it clashes semantically with actual org environment?
 #+begin_src elisp
 (defun >tangle-environment ()
   (interactive)
-  (let (temp-org-file-name)
-    (with-current-buffer (find-file-noselect my--environment-file-name)
-      (save-buffer)
-      (let* ((org-babel-exp-code-template "#+begin_src %lang :comments %comments :shebang %shebang :tangle %tangle%switches%flags\n%body\n#+end_src")
-             (org-babel-default-header-args (->> org-babel-default-header-args
-                                                 (cons '(:shebang . ""))
-                                                 (cons '(:comments . "no")))))
-        (setq temp-org-file-name (org-org-export-to-org))
-        ;; (delete-file temp-org-file-name)
-        ))
-    (with-current-buffer (find-file-noselect temp-org-file-name)
-      (let (org-babel-pre-tangle-hook
-            (org-babel-tangle-finished-hook '(>post-tangle-environment-hook)))
-        (org-babel-tangle-file temp-org-file-name)))))
+  (with-current-buffer (find-file-noselect my--environment-file-name)
+    (let ((org-babel-tangle-finished-hook '(>post-tangle-environment-hook)))
+      (org-babel-tangle))))
 #+end_src
 
 #+begin_src elisp
