@@ -525,6 +525,15 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
     (org-babel-tangle)))
 #+end_src
 
+#+name: src-block-value
+#+begin_src elisp :var name="" :noweb-ref no
+(->> (save-excursion
+       (org-babel-goto-named-src-block name)
+       (org-element-at-point))
+     (org-element-property :value)
+     (pp))
+#+end_src
+
 ***** ex commands
 
 #+begin_src elisp :noweb-ref org-init
