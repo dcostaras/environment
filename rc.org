@@ -2997,6 +2997,14 @@ While I could refactor this to instrument variable middleware and injection form
 ;; (remove-hook! 'evil-escape-inhibit-functions #'+lispy-inhibit-evil-escape-fn)
 #+end_src
 
+*** TypeScript
+
+all(hope(abandon(ye(who(enter(here))))))
+
+#+begin_src elisp :noweb-ref doom-init-lang
+(javascript +lsp)
+#+end_src
+
 *** Dired/Eshell
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
@@ -3481,7 +3489,6 @@ If buffer-or-name is nil return current buffer's mode."
        ;;idris             ; a language you can depend on
        ;;json              ; At least it ain't XML
        ;;(java +meghanada) ; the poster child for carpal tunnel syndrome
-       ;;javascript        ; all(hope(abandon(ye(who(enter(here))))))
        ;;julia             ; a better, faster MATLAB
        ;;kotlin            ; a better, slicker Java(Script)
        ;;latex             ; writing papers in Emacs has never been so fun
