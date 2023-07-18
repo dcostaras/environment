@@ -897,7 +897,7 @@ Does it clashes semantically with actual org environment?
   <<org-tempo-config>>)
 #+end_src
 
-**** org-modern
+**** COMMENT org-modern
 
 #+begin_src elisp :noweb-ref packages
 (package! org-modern)
