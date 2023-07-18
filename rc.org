@@ -4769,6 +4769,7 @@ ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
 #+name: yabai-unmanaged-apps
 | ^System Preferences$ |
 | ^Finder$             |
+| Steam                |
 
 *** Rule
 
