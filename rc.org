@@ -1121,8 +1121,12 @@ JSON.stringify({
 
 #+begin_src elisp :noweb-ref doom-config
 (defun >osa-safari-get-tab ()
-  (->> (osa-eval <<src-block-value(name="safari-get-url")>> :lang "JavaScript")
-       (>osa-parse-json)))
+  (pcase (->> (osa-eval <<src-block-value(name="safari-get-url")>> :lang "JavaScript")
+              (>osa-parse-json))
+    ((map (:tab-title "Untitled")
+          (:tab-url :null))
+     nil)
+    (tab tab)))
 #+end_src
 
 *** Babashka
@@ -3821,8 +3825,8 @@ try print(task.run())
 ${tab-url} %?
 #+end_src
 
-#+begin_src elisp :noweb-ref doom-config :noweb yes
-(defun >org-capture-safari-tab ()
+#+begin_src elisp :noweb-ref doom-config
+(defun >org-capture-safari-tab-frame-body ()
   (interactive)
   (let ((org-roam-capture-templates
          '(("d" "default" entry <<src-block-value(name="org-capture-safari-tab-template")>>
@@ -3830,12 +3834,12 @@ ${tab-url} %?
                                    "#+title: ${title}\n"
                                    >org-roam-capture-get-node-path)
             :unnarrowed t))))
-    (yequake-org-roam-capture nil nil :info (>osa-safari-get-tab))))
+    (yequake-org-roam-capture nil nil :info >org-capture-current-safari-tab)))
 #+end_src
 
 #+begin_src elisp :noweb-ref yequake-frames
 ("org-capture-safari-tab"
- (buffer-fns . (>org-capture-safari-tab))
+ (buffer-fns . (>org-capture-safari-tab-frame-body))
  (width . 0.75)
  (height . 0.5)
  (alpha . 0.95)
@@ -3845,9 +3849,13 @@ ${tab-url} %?
 #+end_src
 
 #+begin_src elisp :noweb-ref doom-config
+(defvar >org-capture-current-safari-tab)
+
 (defun >org-capture-safari-tab-frame ()
   (interactive)
-  (yequake-toggle "org-capture-safari-tab"))
+  (if-let ((>org-capture-current-safari-tab (>osa-safari-get-tab)))
+      (yequake-toggle "org-capture-safari-tab")
+    (message "No Safari tab to capture")))
 #+end_src
 
 #+begin_src elisp
