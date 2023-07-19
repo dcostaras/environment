@@ -932,6 +932,12 @@ Does it clashes semantically with actual org environment?
        (list 'file+head+olp path head (funcall olp-fn)))
       (_ target)))
 
+  (defun >yequake-org-roam-capture-finalize-hook (&rest _)
+    (remove-hook! 'org-capture-after-finalize-hook #'>yequake-org-roam-capture-finalize-hook)
+    (vertico-buffer-mode -1)
+    (vertico-posframe-mode)
+    (yequake-retoggle))
+
   (defun yequake-org-roam-capture (&rest args)
     "Call `org-capture' in a Yequake frame.
 Adds a function to `org-capture-after-finalize-hook' that closes
@@ -941,40 +947,36 @@ hook.
 Note: if another Yequake frame is toggled before the capture is
 finalized, when the capture is finalized, the wrong Yequake frame
 will be toggled."
-    (let* ((remove-hook-fn (lambda (&rest args)
-                             (remove-hook 'org-capture-after-finalize-hook #'yequake-retoggle))))
-      (add-hook 'org-capture-after-finalize-hook remove-hook-fn)
-      (add-hook 'org-capture-after-finalize-hook #'yequake-retoggle)
-      ;; MAYBE: Propose an `org-capture-switch-buffer-fn' variable that could be rebound here.
+    (add-hook! 'org-capture-after-finalize-hook #'>yequake-org-roam-capture-finalize-hook)
 
-      ;; NOTE: We override `org-switch-to-buffer-other-window' because
-      ;; it always uses `switch-to-buffer-other-window', and we want to
-      ;; display the template menu and capture buffer in the existing
-      ;; window rather than splitting the frame.
-      (cl-letf* (((symbol-function #'org-switch-to-buffer-other-window)
-                  (symbol-function #'switch-to-buffer)))
-        (condition-case nil
-            (progn
-              ;; (apply #'org-roam-capture args)
-              (vertico-buffer-mode 'toggle)
-              (vertico-posframe-mode 'toggle)
-              (minibuffer-with-setup-hook
-                  (lambda ()
-                    ;; (other-window)
-                    ;; (maximize-window)
-                    ;; (+workspace/close-window-or-workspace)
-                    )
-                (apply #'org-roam-capture args))
-              ;; Be sure to return the "CAPTURE-" buffer, which is the current
-              ;; buffer at this point.
-              ;; (delete-other-windows)
-              (current-buffer))
-          ((error quit)
-           ;; Capture aborted: remove the hook and hide the capture frame.
-           (remove-hook 'org-capture-after-finalize-hook #'yequake-retoggle)
-           (vertico-buffer-mode 'toggle)
-           (vertico-posframe-mode 'toggle)
-           (yequake-retoggle)))))))
+    ;; MAYBE: Propose an `org-capture-switch-buffer-fn' variable that could be rebound here.
+
+    ;; NOTE: We override `org-switch-to-buffer-other-window' because
+    ;; it always uses `switch-to-buffer-other-window', and we want to
+    ;; display the template menu and capture buffer in the existing
+    ;; window rather than splitting the frame.
+    (cl-letf* (((symbol-function #'org-switch-to-buffer-other-window)
+                (symbol-function #'switch-to-buffer)))
+      (condition-case nil
+          (progn
+            (vertico-buffer-mode)
+            (vertico-posframe-mode -1)
+
+            ;; TODO maximizing the minibuffer is a nice idea but I can't get it to work
+            ;; (minibuffer-with-setup-hook
+            ;;     (lambda ()
+            ;;       ;; (other-window)
+            ;;       ;; (maximize-window)
+            ;;       ;; (+workspace/close-window-or-workspace)
+            ;;       )
+            ;;   (apply #'org-roam-capture args))
+
+            (apply #'org-roam-capture args)
+            ;; Be sure to return the "CAPTURE-" buffer, which is the current
+            ;; buffer at this point.
+            (current-buffer))
+        ((error quit)
+         (run-hooks 'org-capture-after-finalize-hook))))))
 #+end_src
 
 #+end_src
