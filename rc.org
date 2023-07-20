@@ -4135,6 +4135,18 @@ try print(task.run())
 
 * Karabiner
 
+** COMMENT Create fake notification
+
+#+begin_src elisp :noweb-ref doom-config
+(defun >foobar-notification ()
+  (>osa-notify "foobar" :title "a title" :subtitle "a subtitle"))
+#+end_src
+
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des ""
+ :rules [[:##right_shift :right_shift nil {:alone "e '(>foobar-notification)'"}]]}
+#+end_src
+
 ** Capture URL in Safari
 
 #+name: org-capture-safari-tab-template
