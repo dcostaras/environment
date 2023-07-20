@@ -5220,36 +5220,6 @@ mkdir -p ~/.config/next
 
 * MacOS config
 
-#+begin_src clojure
-(defmacro ->clj [obj & interops]
-  (let [names (map #(clojure.string/replace (str %) #"[.-]" "") interops)
-        ks (mapv keyword names)
-        exprs (mapv #(list % obj) interops)]
-    `(zipmap ~ks [~@exprs])))
-#+end_src
-
-#+begin_src clojure :shebang #!/usr/bin/env obb :tangle ~/bin/safari-url
-(-> (js/Application "Safari") (.-documents) (aget 0) (.url) (prn))
-#+end_src
-
-#+begin_src clojure :shebang #!/usr/bin/env obb :tangle ~/bin/obb-time-test
-(prn "foo")
-#+end_src
-
-#+begin_src sh :shebang #!/usr/bin/zsh :tangle ~/bin/sh-time-test
-echo "foo"
-#+end_src
-
-#+begin_src swift :shebang #!/usr/bin/swift  :tangle ~/bin/swift-time-test
-print ("foo")
-#+end_src
-
-#+begin_src clojure :shebang #!/usr/bin/env bb :tangle ~/bin/bb-time-test
-(prn "foo")
-#+end_src
-
-#+end_src
-
 ** Use Touch ID for sudo
   /etc/pam.d/sudo
 
