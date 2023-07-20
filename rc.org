@@ -1062,6 +1062,67 @@ See [[cite:&${=key=}]]
                        "%?"))))))
 #+end_src
 
+**** Hide property drawers
+
+#+begin_src elisp :noweb-ref org-config
+(defun >org-hide-properties ()
+  "Hide all org-mode headline property drawers in buffer. Could be slow if it has a lot of overlays."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (re-search-forward
+            (rx line-start
+                (* " ")
+                (seq ":" (or "properties" "PROPERTIES") ":")
+                "\n"
+                (+ (or (minimal-match
+                        (* " ")
+                        ":"
+                        (group "ROAM_REFS")
+                        ":"
+                        (group (* " ") (0+ not-newline))
+                        "\n")
+                       (minimal-match
+                        (* " ")
+                        ":"
+                        (0+ not-newline)
+                        ":"
+                        (0+ not-newline)
+                        "\n")))
+                (* " ")
+                (seq ":" (or "end" "END") ":"))
+            nil t)
+      (if (match-beginning 1)
+          (progn
+            (-doto (make-overlay (match-beginning 0) (match-beginning 1))
+              (overlay-put 'display "")
+              (overlay-put 'hidden-prop-drawer t))
+            (-doto (make-overlay (match-end 1) (match-beginning 2))
+              (overlay-put 'display "")
+              (overlay-put 'hidden-prop-drawer t))
+            (-doto (make-overlay (match-end 2) (match-end 0))
+              (overlay-put 'display "")
+              (overlay-put 'hidden-prop-drawer t)))
+        (-doto (make-overlay (match-beginning 0) (1+ (match-end 0)))
+              (overlay-put 'display "")
+              (overlay-put 'hidden-prop-drawer t)))))
+  (put 'org-toggle-properties-hide-state 'state 'hidden))
+
+(defun >org-show-properties ()
+  "Show all org-mode property drawers hidden by org-hide-properties."
+  (interactive)
+  (remove-overlays (point-min) (point-max) 'hidden-prop-drawer t)
+  (put 'org-toggle-properties-hide-state 'state 'shown))
+
+(defun >org-toggle-properties ()
+  "Toggle visibility of property drawers."
+  (interactive)
+  (if (eq (get 'org-toggle-properties-hide-state 'state) 'hidden)
+      (>org-show-properties)
+    (>org-hide-properties)))
+
+;; call org-hide-properties after inserting a new node
+(add-hook 'org-roam-post-node-insert-hook (fn (&rest _) (>org-hide-properties)))
 #+end_src
 
 **** Package
