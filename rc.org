@@ -994,6 +994,54 @@ will be toggled."
          (run-hooks 'org-capture-after-finalize-hook))))))
 #+end_src
 
+**** COMMENT org-ref
+
+#+begin_src elisp :noweb-ref packages
+(package! org-ref)
+#+end_src
+
+#+name: bibtex-completion-notes-template-multiple-files-template
+#+begin_src org
+,* ${author-or-editor}, ${title}, ${journal}, (${year}) :${=type=}:
+
+See [[cite:&${=key=}]]
+#+end_src
+
+#+begin_src elisp :noweb-ref org-config
+(use-package! org-ref
+  :config
+ (setq bibtex-completion-bibliography '("~/Dropbox/emacs/bibliography/references.bib"
+                                        "~/Dropbox/emacs/bibliography/dei.bib"
+                                        "~/Dropbox/emacs/bibliography/master.bib"
+                                        "~/Dropbox/emacs/bibliography/archive.bib")
+        bibtex-completion-library-path '("~/Dropbox/emacs/bibliography/bibtex-pdfs/")
+        bibtex-completion-notes-path "~/Dropbox/emacs/bibliography/notes/"
+        bibtex-completion-notes-template-multiple-files <<src-block-value(name="bibtex-completion-notes-template-multiple-files-template")>>
+
+        bibtex-completion-additional-search-fields '(keywords)
+        bibtex-completion-display-formats
+        '((article . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${journal:40}")
+          (inbook . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} Chapter ${chapter:32}")
+          (incollection . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (inproceedings . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*} ${booktitle:40}")
+          (t . "${=has-pdf=:1}${=has-note=:1} ${year:4} ${author:36} ${title:*}"))
+        bibtex-completion-pdf-open-function
+        (lambda (fpath)
+          (call-process "open" nil 0 nil fpath))
+        )
+
+  (use-package! bibtex
+    :config
+    (setq bibtex-autokey-year-length 4
+          bibtex-autokey-name-year-separator "-"
+          bibtex-autokey-year-title-separator "-"
+          bibtex-autokey-titleword-separator "-"
+          bibtex-autokey-titlewords 2
+          bibtex-autokey-titlewords-stretch 1
+          bibtex-autokey-titleword-length 5)))
+
+#+end_src
+
 #+end_src
 
 **** Package
