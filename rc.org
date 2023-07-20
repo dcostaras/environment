@@ -4,14 +4,15 @@
 #+email: d.costaras@gmail.com
 
 * Emacs
-** TODO turn "_" into the vim action to comment with #_ an object
-** TODO turn "p" into the vim action to comment with #p an object
-** TODO set C-M-\ to nil to train self to use indentation evil verb "="
-** TODO org src buffers to be added to workspace
-** TODO cider switch to last buffer from repl (C-c C-z) should do so across frames
-** TODO C-h sometimes doesn't work as back level in counsel find file
-** TODO figure out how to have uncharged time in org clocktables
-** TODO clj-kondo/clojure-lsp can't find reference if it's used a default destructuring arg
+** todos
+*** TODO turn "_" into the vim action to comment with #_ an object
+*** TODO turn "p" into the vim action to comment with #p an object
+*** TODO set C-M-\ to nil to train self to use indentation evil verb "="
+*** TODO org src buffers to be added to workspace
+*** TODO cider switch to last buffer from repl (C-c C-z) should do so across frames
+*** TODO C-h sometimes doesn't work as back level in counsel find file
+*** TODO figure out how to have uncharged time in org clocktables
+*** TODO clj-kondo/clojure-lsp can't find reference if it's used a default destructuring arg
 
 currency-format is in the :or map of the next function
 #+begin_src clojure
@@ -30,13 +31,13 @@ currency-format is in the :or map of the next function
    content))
 #+end_src
 
-** TODO clj-kondo/clojure-lsp clean-ns doesn't see aliases used in keywords as usage and removes the entries
-** TODO clj-kondo/clojure-lsp can't autocomplete locals
-** TODO auto complete refers in ns forms
-** TODO auto complete should support symbols in refer blocks
-** TODO eval last/current sexp text object
+*** TODO clj-kondo/clojure-lsp clean-ns doesn't see aliases used in keywords as usage and removes the entries
+*** TODO clj-kondo/clojure-lsp can't autocomplete locals
+*** TODO auto complete refers in ns forms
+*** TODO auto complete should support symbols in refer blocks
+*** TODO eval last/current sexp text object
 so one can yank eval last sexp
-** TODO Investigate with-undo-collapse
+*** TODO Investigate with-undo-collapse
 (defmacro with-undo-collapse (&rest body)
   "Like `progn' but perform BODY with undo collapsed."
   (declare (indent 0) (debug t))
@@ -58,9 +59,9 @@ so one can yank eval last sexp
              (accept-change-group ,handle)
              (undo-amalgamate-change-group ,handle))
            (cancel-change-group ,handle))))))
-** TODO investigate binky mode
+*** TODO investigate binky mode
 https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780cf8
-** TODO pcase-defun
+*** TODO pcase-defun
 >  (defun eval-feature-expression (form)
 >    (pcase form
 >     ((pred atom) (featurep form nil))
@@ -74,9 +75,9 @@ https://github.com/liuyinz/binky-mode/tree/b430ad8b6bcc03830cd910d0540e149f68780
 >      (or (eval-feature-expression form1)
 >          (eval-feature-expression (cons 'or forms))))
 >     (t (error "Invalid feature expression: %s" form)))))
-** TODO investigate using src blocks as templates for babel and export
-** TODO make a tangle like option called :compile
-** TODO Investigate using +default/search-buffer for evil search
+*** TODO investigate using src blocks as templates for babel and export
+*** TODO make a tangle like option called :compile
+*** TODO Investigate using +default/search-buffer for evil search
 
 Based on https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1328110153
 
@@ -105,7 +106,7 @@ Based on https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1328110
   (+default/search-buffer)
   (org-show-current-heading-tidily))
 #+end_src
-** TODO make certain minor modes for auto compile, tangle, etc.
+*** TODO make certain minor modes for auto compile, tangle, etc.
 
 ;; (defun eval-and-run ()
 ;;   (interactive)
@@ -117,10 +118,10 @@ Based on https://github.com/doomemacs/doomemacs/issues/6478#issuecomment-1328110
 ;; (general-define-key
 ;;  :keymaps 'org-src-mode-map
 ;;  "C-c C-c" #'eval-and-run)
-** TODO comment blocks in elisp
-** TODO bug in [[file:~/.config/doom-emacs/.local/straight/repos/org/lisp/ob-exp.el::defmacro org-babel-exp--at-source (&rest body][org macro debug declaration]]
-** TODO think of defun prefix for personal functions like `+` in doom emacs
-** TODO add :lexical t globally to all elisp src blocks
+*** TODO comment blocks in elisp
+*** TODO bug in [[file:~/.config/doom-emacs/.local/straight/repos/org/lisp/ob-exp.el::defmacro org-babel-exp--at-source (&rest body][org macro debug declaration]]
+*** TODO think of defun prefix for personal functions like `+` in doom emacs
+*** TODO add :lexical t globally to all elisp src blocks
 
 org-babel-default-header-args:elisp is a variable defined in
 ob-emacs-lisp.el.
@@ -138,10 +139,10 @@ lexical scoping.  It can also be an alist mapping symbols to
 their value.  It is used both as the optional LEXICAL argument to
 eval, and as the value for lexical-binding in buffers created
 by org-edit-src-code.
-** TODO do a publish step when tangling environment so I don't lose the compiled versions and can't tangle on stock emacs / or see if I can bootstrap the tangling with default doom?
+*** TODO do a publish step when tangling environment so I don't lose the compiled versions and can't tangle on stock emacs / or see if I can bootstrap the tangling with default doom?
 Use GitHub releases for this?
-** TODO load config after tangling env
-** TODO investigate doom popups module
+*** TODO load config after tangling env
+*** TODO investigate doom popups module
 ** config
 
 *** Lexical binding
