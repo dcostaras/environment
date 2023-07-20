@@ -467,7 +467,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 
 #+name: org-api
 #+begin_src elisp
-(defun my--unfold-heading (heading)
+(defun >unfold-heading (heading)
   (->> (org-ml-parse-headlines 'all)
        (org-ml-match-do `((:raw-value ,heading)) #'org-ml-unfold)))
 #+end_src
@@ -684,9 +684,9 @@ Does it clashes semantically with actual org environment?
 ****** Machinary
 
 #+begin_src elisp
-(defvar my--org-export-environments)
+(defvar >org-export-environments)
 
-(defun my--org-babel-exp-code-template (&optional environments)
+(defun >org-babel-exp-code-template (&optional environments)
   ;; TODO split the orig var instead of hard coding
   ;; TODO this doesn't work for things with a `-` in them
   (concat "#+begin_src %lang%switches%flags"
@@ -696,21 +696,21 @@ Does it clashes semantically with actual org environment?
           ;;            (map-keys environments))
           "\n%body\n#+end_src"))
 
-(setq org-babel-exp-code-template (my--org-babel-exp-code-template))
+(setq org-babel-exp-code-template (>org-babel-exp-code-template))
 
-(defun my--org-block-attr-value (block attr)
+(defun >org-block-attr-value (block attr)
   (let* ((block-info (org-with-point-at (org-element-property :begin block)
                        (org-babel-get-src-block-info)))
          (attr-value-or-template (assoc-default (symbol->keyword attr) (elt block-info 2))))
     (unless (s-equals? attr-value-or-template (format "%%%s" attr))
       attr-value-or-template)))
 
-(defun my--org-export-environment-templates (org-block backend-key)
+(defun >org-export-environment-templates (org-block backend-key)
   (loopy
    (named outer)
-   (map (environment-name . instances) my--org-export-environments)
+   (map (environment-name . instances) >org-export-environments)
 
-   (set block-instance-name (my--org-block-attr-value org-block environment-name))
+   (set block-instance-name (>org-block-attr-value org-block environment-name))
    (unless block-instance-name (skip))
 
    (loopy
@@ -720,30 +720,30 @@ Does it clashes semantically with actual org environment?
 
    (finally-return templates)))
 
-(defun my--org-export-apply-templates (result templates)
+(defun >org-export-apply-templates (result templates)
   (if templates
       (map-let (before after) (car templates)
-        (my--org-export-apply-templates (concat before result after) (cdr templates)))
+        (>org-export-apply-templates (concat before result after) (cdr templates)))
     result))
 
-(defun my--org-latex-src-block (old-func src-block _contents info)
+(defun >org-latex-src-block (old-func src-block _contents info)
   (let ((result (funcall old-func src-block _contents info))
-        (templates (my--org-export-environment-templates src-block 'latex)))
-    (my--org-export-apply-templates result templates)))
+        (templates (>org-export-environment-templates src-block 'latex)))
+    (>org-export-apply-templates result templates)))
 
-(advice-add 'org-latex-src-block :around #'my--org-latex-src-block)
+(advice-add 'org-latex-src-block :around #'>org-latex-src-block)
 
-(defun my--org-html-src-block (old-func src-block _contents info)
+(defun >org-html-src-block (old-func src-block _contents info)
   (let ((result (funcall old-func src-block _contents info))
-        (templates (my--org-export-environment-templates src-block 'html)))
-    (my--org-export-apply-templates result templates)))
+        (templates (>org-export-environment-templates src-block 'html)))
+    (>org-export-apply-templates result templates)))
 
-(advice-add 'org-html-src-block :around #'my--org-html-src-block)
+(advice-add 'org-html-src-block :around #'>org-html-src-block)
 
-(defun my--org-element-has-tag? (heading tag)
+(defun >org-element-has-tag? (heading tag)
   (member tag (org-element-property :tags heading)))
 
-(defun my--org-export-process-backend (backend-block)
+(defun >org-export-process-backend (backend-block)
   (let ((backend (ht)))
     (org-element-map backend-block 'src-block
       (lambda (src-block)
@@ -756,14 +756,14 @@ Does it clashes semantically with actual org environment?
           (map-put! backend part value))))
     backend))
 
-(defun my--org-export-create-environments ()
+(defun >org-export-create-environments ()
   (let ((environments (ht)))
     (cl-flet ((name (element) (->> element
                                    (org-ml-get-property :raw-value)
                                    (string->symbol))))
       (org-element-map (org-element-parse-buffer) 'headline
         (lambda (environment)
-          (when (my--org-element-has-tag? environment "environment")
+          (when (>org-element-has-tag? environment "environment")
             (loopy
              (with (instances (ht))
                    (environment-name (name environment)))
@@ -772,7 +772,7 @@ Does it clashes semantically with actual org environment?
              (loopy
               (with (backends (ht)))
               (list backend (org-ml-get-children instance))
-              (do (map-put! backends (name backend) (my--org-export-process-backend backend)))
+              (do (map-put! backends (name backend) (>org-export-process-backend backend)))
               (after-do (map-put! instances (name instance) backends)))
 
              (after-do (map-put! environments environment-name instances))))))
@@ -812,13 +812,13 @@ Does it clashes semantically with actual org environment?
 #+end_src
 
 #+begin_src elisp
-(defvar my--environment-file-name <<environment-file-name()>>)
+(defvar >environment-file-name <<environment-file-name()>>)
 #+end_src
 
 #+begin_src elisp
 (defun >tangle-environment ()
   (interactive)
-  (with-current-buffer (find-file-noselect my--environment-file-name)
+  (with-current-buffer (find-file-noselect >environment-file-name)
     (let ((org-babel-tangle-finished-hook '(>post-tangle-environment-hook)))
       (org-babel-tangle))))
 #+end_src
@@ -1327,7 +1327,7 @@ JSON.stringify({
 *** Babashka
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
-(defun my--bb-tasks-for-project ()
+(defun >bb-tasks-for-project ()
   (interactive)
   (let* ((default-directory (projectile-project-root))
          (tasks-string (shell-command-to-string "bb tasks | tail -n +3 | cut -f1 -d ' '")))
@@ -1336,49 +1336,49 @@ JSON.stringify({
              tasks-string
              'omit-nulls)))
 
-(defun my--bb-task-sentinel (process event)
+(defun >bb-task-sentinel (process event)
   (if (string-equal event "finished\n")
       (setq mode-name (propertize mode-name 'face 'mode-line-highlight))
     (setq mode-name (propertize mode-name 'face 'font-lock-warning-face))))
 
-(defun my--bb-task (task)
+(defun >bb-task (task)
   (setq mode-name (propertize mode-name 'face 'font-lock-string-face))
   (let ((default-directory (projectile-project-root)))
     (set-process-sentinel
      (start-process-shell-command task task (format "bb %s" task))
-     'my--bb-task-sentinel)))
+     '>bb-task-sentinel)))
 
-(defvar my--bb-task-consult-items
+(defvar >bb-task-consult-items
   (list :name "BB Tasks"
-        :action #'my--bb-task
+        :action #'>bb-task
         :enabled #'projectile-project-root
         :items (lambda ()
-                 (my--bb-tasks-for-project))))
+                 (>bb-tasks-for-project))))
 
-(defun my--bb-run-task ()
+(defun >bb-run-task ()
   (interactive)
-  (consult--multi '(my--bb-task-consult-items)
+  (consult--multi '(>bb-task-consult-items)
                   :prompt "Run: "))
 
-(map! :leader "cc" #'my--bb-run-task)
+(map! :leader "cc" #'>bb-run-task)
 #+end_src
 
 *** Latex
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
-(defun my--bb-compile-latex ()
+(defun >bb-compile-latex ()
   (interactive)
-  (my--bb-task "compile"))
+  (>bb-task "compile"))
 
-(defun my--latex-mode-hook ()
-  (add-hook 'after-save-hook #'my--bb-compile-latex nil 'make-it-local))
+(defun >latex-mode-hook ()
+  (add-hook 'after-save-hook #'>bb-compile-latex nil 'make-it-local))
 
-(define-minor-mode my--compile-latex-on-save-mode
+(define-minor-mode >compile-latex-on-save-mode
   nil nil nil
   :global t
-  (if my--compile-latex-on-save-mode
-      (add-hook! tex-mode #'my--latex-mode-hook)
-    (remove-hook! tex-mode #'my--latex-mode-hook)))
+  (if >compile-latex-on-save-mode
+      (add-hook! tex-mode #'>latex-mode-hook)
+    (remove-hook! tex-mode #'>latex-mode-hook)))
 #+end_src
 
 *** Auto dim other buffers
@@ -1413,7 +1413,7 @@ JSON.stringify({
 
 #+begin_src elisp :noweb-ref evil-config
 (use-package! symex
-  :hook ((clojure-mode clojurescript-mode clojurec-mode) . my-symex-activation-hook)
+  :hook ((clojure-mode clojurescript-mode clojurec-mode) . >symex-activation-hook)
 
   :general
 
@@ -1432,7 +1432,7 @@ JSON.stringify({
   (:keymaps 'symex-editing-mode-map
    :states '(symex)
    ",p" 'lispy-ace-paren
-   ",s" 'my-lispy-ace-symbol
+   ",s" '>lispy-ace-symbol
 
    ;; Motion
    "h" 'symex-go-backward
@@ -1563,7 +1563,6 @@ JSON.stringify({
 
   :config
 
-  (defun my-symex-activation-hook ()
   (add-hook! 'doom-escape-hook
     (defun >symex->normal-state-doom-escape-hook ()
       (when (evil-symex-state-p)
@@ -1571,9 +1570,10 @@ JSON.stringify({
           (evil-normal-state)
           t))))
 
+  (defun >symex-activation-hook ()
     (symex-mode-interface))
 
-  (defun my-lispy-ace-symbol (arg)
+  (defun >lispy-ace-symbol (arg)
     "Jump to a symbol within the current sexp and mark it.
 Sexp is obtained by exiting the list ARG times."
     (interactive "p")
@@ -1592,7 +1592,7 @@ Sexp is obtained by exiting the list ARG times."
                               (lispy--in-string-or-comment-p))))
                      lispy-avy-style-symbol))))))
 
-  (defun my-symex-initialize ()
+  (defun >symex-initialize ()
     "Initialize symex mode.
 This registers symex mode for use in all recognized Lisp modes, and also
 advises functions to enable or disable features based on user configuration."
@@ -1612,7 +1612,7 @@ advises functions to enable or disable features based on user configuration."
   (setq evil-symex-state-cursor (list (doom-color 'orange) 'box))
   (setq evil-normal-state-cursor (list (doom-color 'green) 'box))
 
-  (my-symex-initialize))
+  (>symex-initialize))
 #+end_src
 
 **** evil-ex-define-cmd-local
@@ -1630,16 +1630,16 @@ advises functions to enable or disable features based on user configuration."
 **** Recenter buffer after evil motions
 
 #+begin_src elisp :noweb-ref evil-config
-(defun my-evil-recenter (&optional count symbol)
+(defun >evil-recenter (&optional count symbol)
   (recenter nil))
 
 ;; Evil
-(advice-add 'evil-ex-search-word-forward :after #'my-evil-recenter)
-(advice-add 'evil-ex-search-next :after #'my-evil-recenter)
-(advice-add 'evil-goto-mark-line :after #'my-evil-recenter)
+(advice-add 'evil-ex-search-word-forward :after #'>evil-recenter)
+(advice-add 'evil-ex-search-next :after #'>evil-recenter)
+(advice-add 'evil-goto-mark-line :after #'>evil-recenter)
 
 ;; Info
-(advice-add 'Info-follow-nearest-node :after #'my-evil-recenter)
+(advice-add 'Info-follow-nearest-node :after #'>evil-recenter)
 #+end_src
 
 **** key-chord
@@ -2671,7 +2671,7 @@ a test snippet
 
 (defvar-local prev-scheme-file nil)
 
-(defun my-scheme-load-file ()
+(defun >scheme-load-file ()
   "Load `buffer-file-name' into current inferior Scheme process
 and switch to REPL"
   (interactive)
@@ -2684,7 +2684,7 @@ and switch to REPL"
 
 (add-hook 'scheme-mode-hook (lambda ()
                               (local-set-key (kbd "C-h C-j")
-                                             'my-scheme-load-file)))
+                                             '>scheme-load-file)))
 
 (defun switch-to-scheme-interp ()
   (let ((initial-buffer (current-buffer)))
@@ -2778,7 +2778,7 @@ arguments and only proceed with evaluation if it returns nil."
 **** Mode hooks
 
 #+begin_src elisp
-(defun my-define-clojure-mode-hooks (hook-function)
+(defun >define-clojure-mode-hooks (hook-function)
   (message "bar")
   (add-hook!
    '(clojure-mode-hook
@@ -2787,11 +2787,11 @@ arguments and only proceed with evaluation if it returns nil."
    hook-function))
 #+end_src
 
-**** COMMENT my-clojure-def-and-name-regex
+**** COMMENT >clojure-def-and-name-regex
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
 ;; Not used
-;; (defconst my-clojure-def-and-name-regex
+;; (defconst >clojure-def-and-name-regex
 ;;   (rx
 ;;    (seq bol
 ;;         (* blank) "(" (* blank)
@@ -2804,7 +2804,7 @@ arguments and only proceed with evaluation if it returns nil."
 **** Font lock
 
 #+begin_src elisp
-(rx-define my-clojure-defining-macro-forms
+(rx-define >clojure-defining-macro-forms
   (or (seq ">def" (optional "n"))
       "defsc"
       "defmutation"
@@ -2814,18 +2814,18 @@ arguments and only proceed with evaluation if it returns nil."
       "defpage"
       "deffragment"))
 
-(defun my-defining-forms-font-lock ()
+(defun >defining-forms-font-lock ()
   (font-lock-add-keywords
    nil
    `((,(rx "("
            (* (syntax whitespace))
-           (group my-clojure-defining-macro-forms)
+           (group >clojure-defining-macro-forms)
            (+ (syntax whitespace))
            (group (+ (or (syntax word) (syntax symbol)))))
       (1 font-lock-keyword-face)
       (2 font-lock-function-name-face)))))
 
-(my-define-clojure-mode-hooks #'my-defining-forms-font-lock)
+(>define-clojure-mode-hooks #'>defining-forms-font-lock)
 #+end_src
 
 **** Aggressive indent
@@ -2839,7 +2839,7 @@ arguments and only proceed with evaluation if it returns nil."
 **** cider report mode
 
 #+begin_src elisp
-(defhydra my-cider-report-hydra ()
+(defhydra >cider-report-hydra ()
   "zoom"
   ("g" text-scale-increase "in")
   ("l" text-scale-decrease "out"))
@@ -2878,58 +2878,58 @@ Inserts literal form into repl and eval (second arg is `t`)
 #+end_src
 
 #+begin_src elisp :noweb-prefix no :tangle ~/.doom.d/config.el
-(defun my-cider-reset ()
+(defun >cider-reset ()
   (interactive)
   (projectile-save-project-buffers)
   (cider-interactive-eval-clj "(do (in-ns 'user) (restart-system))"))
 
-(defun my-cider-reset-all ()
+(defun >cider-reset-all ()
   (interactive)
   (projectile-save-project-buffers)
   (cider-interactive-eval-clj "(do (in-ns 'user) (restart-all-system))"))
 
-(setq my-cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
+(setq >cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
 
-(defun my-kill-cider-repls ()
+(defun >kill-cider-repls ()
   (interactive)
-  (kill-matching-buffers my-cider-repl-name-rx nil t))
+  (kill-matching-buffers >cider-repl-name-rx nil t))
 
-(defun my-cider-load-reveal-tap-log ()
+(defun >cider-load-reveal-tap-log ()
   (interactive)
   (cider-interactive-eval
    (format "%s" '((requiring-resolve 'vlaaad.reveal/tap-log)))))
 
-(defun my-cider-clear-reveal ()
+(defun >cider-clear-reveal ()
   (interactive)
   (cider-interactive-eval
    (format "%s" '(do (require 'vlaaad.reveal)
                      (vlaaad.reveal/submit-command! (vlaaad.reveal/clear-output))))))
 
-(defun my-cider-start-system ()
+(defun >cider-start-system ()
   (interactive)
-  (my-kill-cider-repls)
+  (>kill-cider-repls)
   (cider-connect-clj)
   (cider-insert-in-repl "(start-system)" t)
   (cider-connect-sibling-clj '())
   (cider-repl-switch-to-other)
   (cider-insert-in-repl "(start-client)" t)
-  (my-cider-load-reveal-tap-log))
+  (>cider-load-reveal-tap-log))
 
-(defmacro my-cider-interactive-eval (&rest body)
+(defmacro >cider-interactive-eval (&rest body)
   `(cider-interactive-eval ,(format "%s" `(do ,@body))))
 
-(defun my-cider-load-debug-tools ()
+(defun >cider-load-debug-tools ()
   (interactive)
-  (my-cider-interactive-eval <<cider-load-debug-tools>>))
+  (>cider-interactive-eval <<cider-load-debug-tools>>))
 
 (map! (:localleader
        (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
              (:prefix ("r" . "repl")
-                      "r" #'my-cider-reset
-                      "R" #'my-cider-reset-all
-                      "s" #'my-cider-start-system
-                      "t" #'my-cider-load-reveal-tap-log
-                      "c" #'my-cider-clear-reveal))))
+                      "r" #'>cider-reset
+                      "R" #'>cider-reset-all
+                      "s" #'>cider-start-system
+                      "t" #'>cider-load-reveal-tap-log
+                      "c" #'>cider-clear-reveal))))
 #+end_src
 
 **** Indentation
@@ -2992,7 +2992,7 @@ Inserts literal form into repl and eval (second arg is `t`)
           (cider-test-show-report-on-success nil))
       (cider-test-run-ns-tests nil 'soft))))
 
-(defun my-kaocha-runner--show-details-window (original-buffer min-height)
+(defun >kaocha-runner--show-details-window (original-buffer min-height)
   "Show details from the test run with a MIN-HEIGHT, but switch back to ORIGINAL-BUFFER afterwards."
   (let ((window (get-buffer-window kaocha-runner--out-buffer t)))
     (when (not window)
@@ -3001,7 +3001,7 @@ Inserts literal form into repl and eval (second arg is `t`)
         (switch-to-buffer kaocha-runner--out-buffer)
         (set-window-dedicated-p window t)))))
 
-(defun my-kaocha-runner--run-tests (testable-sym &optional run-all? background? original-buffer)
+(defun >kaocha-runner--run-tests (testable-sym &optional run-all? background? original-buffer)
   "Run kaocha tests.
 
 If RUN-ALL? is t, all tests are run, otherwise attempt a run with the provided
@@ -3064,25 +3064,25 @@ Given an ORIGINAL-BUFFER, use that instead of (current-buffer) when switching ba
                (switch-to-buffer-other-window kaocha-runner--err-buffer))))
          (when done?
            (if any-errors?
-               (my-kaocha-runner--show-details-window original-buffer kaocha-runner-failure-win-min-height))))))))
+               (>kaocha-runner--show-details-window original-buffer kaocha-runner-failure-win-min-height))))))))
 
-(defvar my-test-runner 'kaocha)
+(defvar >test-runner 'kaocha)
 
-(defun my-execute-test (ns test-var code-buffer)
-  (cond ((eq my-test-runner 'kaocha)
-         (my-kaocha-runner--run-tests
+(defun >execute-test (ns test-var code-buffer)
+  (cond ((eq >test-runner 'kaocha)
+         (>kaocha-runner--run-tests
           (kaocha-runner--testable-sym ns test-var (eq major-mode 'clojurescript-mode))
           nil
           t
           code-buffer))
-        ((eq my-test-runner 'cider)
+        ((eq >test-runner 'cider)
          (progn
            (cider-test-update-last-test ns (list test-var))
            (cider-test-execute ns (list test-var))))))
 
-(defvar my-last-executed-test nil)
+(defvar >last-executed-test nil)
 
-(defun my-run-test ()
+(defun >run-test ()
   "Run Clojure test at point.
 
 Supports the fulcro-spec `specification' macro"
@@ -3100,12 +3100,12 @@ Supports the fulcro-spec `specification' macro"
           (message "%s" ns)
           (if (not (string= "nil" test-var))
               (progn
-                (setq my-last-executed-test (list ns test-var))
-                (my-execute-test ns test-var code-buffer))
-            (when my-last-executed-test
-              (my-execute-test
-               (car my-last-executed-test)
-               (cadr my-last-executed-test)
+                (setq >last-executed-test (list ns test-var))
+                (>execute-test ns test-var code-buffer))
+            (when >last-executed-test
+              (>execute-test
+               (car >last-executed-test)
+               (cadr >last-executed-test)
                code-buffer))))
         nil
         nil
@@ -3117,10 +3117,10 @@ Supports the fulcro-spec `specification' macro"
   :global t
   (if tdd-mode
       (progn
-        (advice-add 'cider-eval-defun-at-point :after #'my-run-test)
+        (advice-add 'cider-eval-defun-at-point :after #'>run-test)
         (add-hook 'cider-file-loaded-hook #'tdd-test))
     (progn
-      (advice-remove 'cider-eval-defun-at-point #'my-run-test)
+      (advice-remove 'cider-eval-defun-at-point #'>run-test)
       (remove-hook 'cider-file-loaded-hook #'tdd-test))))
 
 (use-package kaocha-runner
@@ -3154,9 +3154,9 @@ Supports the fulcro-spec `specification' macro"
 ***** clear-reveal-eval-mode
 
 #+begin_src elisp
-(defun my-clear-reveal-and-eval ()
+(defun >clear-reveal-and-eval ()
   (interactive)
-  (my-cider-clear-reveal)
+  (>cider-clear-reveal)
   (eval-top-level-form-and-reload-tilley))
 
 (define-minor-mode clear-reveal-eval-mode
@@ -3164,9 +3164,9 @@ Supports the fulcro-spec `specification' macro"
   :global t
   (if clear-reveal-eval-mode
       (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
-            [remap eval-top-level-form-and-reload-tilley] #'my-clear-reveal-and-eval)
+            [remap eval-top-level-form-and-reload-tilley] #'>clear-reveal-and-eval)
     (map! :mode (clojure-mode clojurec-mode clojurescript-mode)
-          [remap my-clear-reveal-and-eval] #'eval-top-level-form-and-reload-tilley)))
+          [remap >clear-reveal-and-eval] #'eval-top-level-form-and-reload-tilley)))
 #+end_src
 
 ***** reload-tilley-mode
@@ -3212,7 +3212,7 @@ Supports the fulcro-spec `specification' macro"
            (group (*? anything))
            ">")))
 
-(defun my--jet (beginning end)
+(defun >jet (beginning end)
   (interactive "r")
   (narrow-to-region beginning end)
 
@@ -3357,14 +3357,14 @@ While I could refactor this to instrument variable middleware and injection form
 ;;   (defun +lispy-inhibit-evil-escape-fn ()
 ;;     (and lispy-mode (evil-insert-state-p))))
 
-;; (defun my-insert-hash-print (arg)
+;; (defun >insert-hash-print (arg)
 ;;   (interactive "p")
 ;;   (if (lispy-left-p)
 ;;       (insert "#p ")
 ;;     (self-insert-command arg)))
 
 ;; (map! :map lispy-mode-map-special :i
-;;       "p" #'my-insert-hash-print
+;;       "p" #'>insert-hash-print
 ;;       ;; "f" #'lispy-flow
 ;;       ;; "d" #'lispy-different
 ;;       )
@@ -3559,7 +3559,7 @@ waiting browser."
 *** Dired/Eshell
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
-(defun my-buffer-mode (&optional buffer-or-name)
+(defun >buffer-mode (&optional buffer-or-name)
   "Return the major mode associated with a buffer.
 If buffer-or-name is nil return current buffer's mode."
   (interactive)
@@ -3569,10 +3569,10 @@ If buffer-or-name is nil return current buffer's mode."
        (get-buffer buffer-or-name)
      (current-buffer))))
 
-(defun my-buffer-path ()
+(defun >buffer-path ()
   (file-name-directory (or  (buffer-file-name) default-directory)))
 
-(defun my-eshell ()
+(defun >eshell ()
   (interactive)
   (unless (persp-with-name-exists-p "shell")
     (+workspace/load "shell"))
@@ -3583,8 +3583,8 @@ If buffer-or-name is nil return current buffer's mode."
 
   Usage: M-x eshell-cwd"
   (interactive)
-  (let ((path (my-buffer-path)))
-    (my-eshell)
+  (let ((path (>buffer-path)))
+    (>eshell)
     (switch-to-buffer "*eshell*")
     (cd path)
     (eshell-send-input)))
@@ -3596,11 +3596,11 @@ If buffer-or-name is nil return current buffer's mode."
 
 (defun dired-or-eshell ()
   (interactive)
-  (let ((mode (my-buffer-mode)))
+  (let ((mode (>buffer-mode)))
     (cond
      ((eq 'eshell-mode mode) (+workspace/other))
      ((eq 'dired-mode mode) (eshell-cwd))
-     (t (my-eshell)))))
+     (t (>eshell)))))
 
 (map! :n "-" #'dired-or-eshell)
 #+end_src
@@ -3631,7 +3631,7 @@ If buffer-or-name is nil return current buffer's mode."
 **** JRT functions
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
-(defun my-process-cost-line-item ()
+(defun >process-cost-line-item ()
   (interactive)
   (goto-char (point-min))
   (while (not (eobp))
@@ -3660,7 +3660,7 @@ If buffer-or-name is nil return current buffer's mode."
       (forward-line 1))))
 
 ;; Excel file that Nick sent on 23 Jan 2022
-(defun my-process-cop-budgets-tool-excel ()
+(defun >process-cop-budgets-tool-excel ()
   (interactive)
   (goto-char (point-min))
   (let ((columns '("Custom Work"
@@ -3699,13 +3699,13 @@ If buffer-or-name is nil return current buffer's mode."
 **** Music downloads fixer
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
-(defun my-file-fixer--finalize ()
+(defun >file-fixer--finalize ()
   (interactive)
   (evil-next-line)
   (dired-goto-next-file)
   (recenter nil))
 
-(defun my-file-fixer--remove-original-mix* ()
+(defun >file-fixer--remove-original-mix* ()
   (kill-region (point)
                (line-end-position))
   (insert
@@ -3714,23 +3714,23 @@ If buffer-or-name is nil return current buffer's mode."
     ""
     (string-trim (current-kill 0 t)))))
 
-(defun my-file-fixer--next-line ()
+(defun >file-fixer--next-line ()
   (interactive)
   (evil-next-line)
   (recenter nil))
 
-(defun my-file-fixer--previous-line ()
+(defun >file-fixer--previous-line ()
   (interactive)
   (evil-previous-line)
   (recenter nil))
 
-(defun my-file-fixer--remove-original-mix ()
+(defun >file-fixer--remove-original-mix ()
   (interactive)
   (dired-goto-next-file)
-  (my-file-fixer--remove-original-mix*)
-  (my-file-fixer--finalize))
+  (>file-fixer--remove-original-mix*)
+  (>file-fixer--finalize))
 
-(defun my-file-fixer--bandcamp-directory-fixer ()
+(defun >file-fixer--bandcamp-directory-fixer ()
   (interactive)
   (dired-goto-next-file)
   (kill-region (point)
@@ -3740,16 +3740,16 @@ If buffer-or-name is nil return current buffer's mode."
     (rx (seq (submatch (not " ")) "- "))
     "\\1, "
     (string-trim (current-kill 0 t))))
-  (my-file-fixer--finalize))
+  (>file-fixer--finalize))
 
-(defun my-file-fixer--bandcamp-directory-fixer-remove-artist ()
+(defun >file-fixer--bandcamp-directory-fixer-remove-artist ()
   (interactive)
   (dired-goto-next-file)
   (kill-region (search-forward " - ")
                (search-forward " - "))
-  (my-file-fixer--bandcamp-directory-fixer))
+  (>file-fixer--bandcamp-directory-fixer))
 
-(defun my-file-fixer--bandcamp-buzzcut* ()
+(defun >file-fixer--bandcamp-buzzcut* ()
   (dired-goto-next-file)
   (when (= 4 (count-matches "- " (point) (line-end-position)))
     (kill-region (point)
@@ -3759,28 +3759,28 @@ If buffer-or-name is nil return current buffer's mode."
   (kill-region (point)
                (search-forward "- ")))
 
-(defun my-file-fixer--bandcamp-buzzcut ()
+(defun >file-fixer--bandcamp-buzzcut ()
   "Remove artist and album from each song filename"
   (interactive)
-  (my-file-fixer--bandcamp-buzzcut*)
+  (>file-fixer--bandcamp-buzzcut*)
 
   (forward-char 3)
   (insert "- ")
-  (my-file-fixer--remove-original-mix*)
-  (my-file-fixer--finalize))
+  (>file-fixer--remove-original-mix*)
+  (>file-fixer--finalize))
 
-(defun my-file-fixer--bandcamp-buzzcut-remove-artist ()
+(defun >file-fixer--bandcamp-buzzcut-remove-artist ()
   "Remove artist and album from each song filename"
   (interactive)
-  (my-file-fixer--bandcamp-buzzcut*)
+  (>file-fixer--bandcamp-buzzcut*)
   (forward-char 3)
   (kill-region (point)
                (search-forward "- "))
   (insert "- ")
-  (my-file-fixer--remove-original-mix*)
-  (my-file-fixer--finalize))
+  (>file-fixer--remove-original-mix*)
+  (>file-fixer--finalize))
 
-(defun my-file-fixer--move-key-after-track-number ()
+(defun >file-fixer--move-key-after-track-number ()
   "Move key after track number"
   (interactive)
   (dired-goto-next-file)
@@ -3789,20 +3789,20 @@ If buffer-or-name is nil return current buffer's mode."
   (search-forward "- ")
   (insert (string-trim (current-kill 0 t)))
   (insert " ")
-  (my-file-fixer--finalize))
+  (>file-fixer--finalize))
 
-(defhydra my-music-filename-fixer (global-map "C-c C-m")
+(defhydra >music-filename-fixer (global-map "C-c C-m")
   "zoom"
-  ("j" my-file-fixer--next-line)
-  ("k" my-file-fixer--previous-line)
+  ("j" >file-fixer--next-line)
+  ("k" >file-fixer--previous-line)
   ("u" evil-undo)
   ("z z" evil-scroll-line-to-center)
-  ("d" my-file-fixer--bandcamp-directory-fixer "Fix Bandcamp directory name")
-  ("D" my-file-fixer--bandcamp-directory-fixer-remove-artist "Fix Bandcamp directory name and remove artist")
-  ("t" my-file-fixer--move-key-after-track-number "Key after track number")
-  ("b" my-file-fixer--bandcamp-buzzcut "Fix Bandcamp filename")
-  ("B" my-file-fixer--bandcamp-buzzcut-remove-artist "Fix Bandcamp filename and remove artist")
-  ("o" my-file-fixer--remove-original-mix "Remove original mix from filename"))
+  ("d" >file-fixer--bandcamp-directory-fixer "Fix Bandcamp directory name")
+  ("D" >file-fixer--bandcamp-directory-fixer-remove-artist "Fix Bandcamp directory name and remove artist")
+  ("t" >file-fixer--move-key-after-track-number "Key after track number")
+  ("b" >file-fixer--bandcamp-buzzcut "Fix Bandcamp filename")
+  ("B" >file-fixer--bandcamp-buzzcut-remove-artist "Fix Bandcamp filename and remove artist")
+  ("o" >file-fixer--remove-original-mix "Remove original mix from filename"))
 #+end_src
 
 ** Lispy bindings
@@ -5027,7 +5027,7 @@ op get item 'JRA AWS' --fields "aws_access_key_id,aws_secret_access_key" | 1pass
 (require '[clojure.java.io :as io])
 (require '[clojure.set :refer [rename-keys]])
 
-(defn my-fn
+(defn >fn
   [value]
   (-> value
       (assoc "Version" 1)
@@ -5037,13 +5037,13 @@ op get item 'JRA AWS' --fields "aws_access_key_id,aws_secret_access_key" | 1pass
 ;;One can do the following as well (note the last nil) without the -o arg to bb
 (-> *in*
     json/parse-stream
-    my-fn
+    >fn
     (json/generate-stream (io/writer *out*) {:pretty true}))
 nil
 
 ;; (-> *in*
 ;;     json/parse-stream
-;;     my-fn
+;;     >fn
 ;;     (json/generate-string #_(io/writer *out*) {:pretty true}))
 #+end_src
 *** git annex
