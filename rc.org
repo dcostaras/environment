@@ -790,6 +790,20 @@ Does it clashes semantically with actual org environment?
 :header-args+: :noweb-ref org-tangle
 :END:
 
+#+begin_src emacs-lisp
+(defun >org-babel-find-tangled-file ()
+  (interactive)
+  (let ((file (--> (org-ml-parse-this-element)
+                   (nth 1 it)
+                   (map-elt it :parameters)
+                   (org-babel-parse-header-arguments it)
+                   (map-elt it :tangle))))
+    (when (and file (not (equal "no" file)))
+      (find-file file)
+      t)))
+;; (map! :leader "e" #'>org-babel-find-tangled-file)
+#+end_src
+
 ***** Environment
 
 #+name: environment-file-name
