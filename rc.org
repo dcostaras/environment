@@ -929,10 +929,41 @@ Does it clashes semantically with actual org environment?
 
 #+begin_src elisp :noweb-ref org-config
 (use-package! org-roam
-  :custom
-  (org-roam-directory (concat org-directory "/roam"))
+  :init
+  (setq
+   org-roam-directory
+   (concat org-directory "/roam")
+
+   org-roam-node-display-template
+   (s-join " " (list "${>hierarchy:100}"
+                     (propertize "${doom-tags:20}" 'face 'org-tag)))
+
+   org-roam-node-annotation-function
+   (lambda (node) (marginalia--time (org-roam-node-file-mtime node))))
 
   :config
+  (cl-defmethod org-roam-node->hierarchy ((node org-roam-node))
+    "Return hierarchy for NODE, constructed of its file title, OLP and direct title.
+If some elements are missing, they will be stripped out."
+    (let ((title     (-> (org-roam-node-title node)
+                         (propertize 'face '(consult-file italic))))
+          (olp       (->> (org-roam-node-olp node)
+                          (mapcar (fn (path)
+                                    (propertize path 'face '(consult-key italic))))))
+          (level     (org-roam-node-level node))
+          (filetitle (-> (org-roam-node-doom-filetitle node)
+                         (propertize 'face '(consult-bookmark italic))))
+          (separator (propertize org-eldoc-breadcrumb-separator 'face 'consult-buffer)))
+      (cl-case level
+        ;; node is a top-level file
+        (0 filetitle)
+        ;; node is a level 1 heading
+        (1 (concat filetitle
+                   separator title))
+        ;; node is a heading with an arbitrary outline path
+        (t (concat filetitle
+                   separator (s-join separator olp)
+                   separator title)))))
 
   (defun >org-roam-capture-get-node-path ()
     (if (eq 0 (org-roam-node-level org-roam-capture--node))
