@@ -556,6 +556,16 @@ Keybindings are defined manually in the ~:config~ block because they need to ove
  "C-c '" #'org-edit-src-exit)
 #+end_src
 
+***** ob-http
+
+#+begin_src elisp :noweb-ref packages
+(package! ob-http)
+#+end_src
+
+#+begin_src elisp
+(use-package! ob-http)
+#+end_src
+
 **** Auto tangling
 ***** COMMENT org-auto-tangle
 
@@ -629,16 +639,6 @@ uses:
         (todo   . " ")
         (tags   . " %i %-12:c")
         (search . " %i %-12:c")))
-#+end_src
-
-**** ob-http
-
-#+begin_src elisp :noweb-ref packages
-(package! ob-http)
-#+end_src
-
-#+begin_src elisp :noweb-ref org-config
-(use-package! ob-http)
 #+end_src
 
 **** org-ml
