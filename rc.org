@@ -621,26 +621,32 @@ uses:
 **** Agenda
 
 #+begin_src elisp :noweb-ref org-config
-(setq org-capture-templates
-      `(("i" "Inbox" entry  (file "inbox.org")
-         ,(concat "* TODO %?\n"
-                  "/Entered on/ %U"))))
-(map! "C-c c" 'org-capture)
+(use-package! org-agenda
+  :init
+  (setq org-agenda-files
+        (list (concat org-directory "/inbox.org"))
 
-(defun org-capture-inbox ()
-  (interactive)
-  (call-interactively 'org-store-link)
-  (org-capture nil "i"))
+        org-capture-templates
+        `(("i" "Inbox" entry  (file ,(concat org-directory "/inbox.org"))
+           ,(concat "* TODO %?\n"
+                    "/Entered on/ %U")))
 
-(map! "C-c i" 'org-capture-inbox)
+        org-agenda-hide-tags-regexp
+        "."
 
-(map! "C-c a" 'org-agenda)
-(setq org-agenda-hide-tags-regexp ".")
-(setq org-agenda-prefix-format
-      '((agenda . " %i %-12:c%?-12t% s")
-        (todo   . " ")
-        (tags   . " %i %-12:c")
-        (search . " %i %-12:c")))
+        org-agenda-prefix-format
+        '((agenda . " %i %-12:c%?-12t% s")
+          (todo   . " ")
+          (tags   . " %i %-12:c")
+          (search . " %i %-12:c")))
+
+  :config
+  (map! :leader "X" #'>org-capture-inbox)
+
+  (defun >org-capture-inbox ()
+    (interactive)
+    (call-interactively 'org-store-link)
+    (org-capture nil "i")))
 #+end_src
 
 **** org-ml
