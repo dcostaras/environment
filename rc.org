@@ -935,9 +935,10 @@ Does it clashes semantically with actual org environment?
   :config
 
   (defun >org-roam-capture-get-node-path ()
-    (if-let ((olp (org-roam-node-olp org-roam-capture--node)))
-        (append olp (list (org-roam-node-title org-roam-capture--node)))
-      '()))
+    (if (eq 0 (org-roam-node-level org-roam-capture--node))
+        '()
+      (append (org-roam-node-olp org-roam-capture--node)
+              (list (org-roam-node-title org-roam-capture--node)))))
 
   (defadvice! >org-roam-capture-process-target (target)
     :filter-return #'org-roam-capture--get-target
