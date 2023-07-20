@@ -1025,6 +1025,26 @@ will be toggled."
          (run-hooks 'org-capture-after-finalize-hook))))))
 #+end_src
 
+***** capture templates
+
+#+name: org-roam-capture-default-template
+#+begin_src org
+,* title
+:PROPERTIES:
+:ID: %(org-id-new)
+:END:
+%?
+#+end_src
+
+#+begin_src elisp :noweb-ref org-config
+(setq org-roam-capture-templates
+      '(("d" "default" entry <<src-block-value(name="org-roam-capture-default-template")>>
+         :target (file+head+olp "%<%Y%m%d%H%M%S>-${slug}.org"
+                                "#+title: ${title}\n"
+                                >org-roam-capture-get-node-path)
+         :unnarrowed t)))
+#+end_src
+
 **** COMMENT org-ref
 
 #+begin_src elisp :noweb-ref packages
