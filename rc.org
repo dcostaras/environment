@@ -2404,7 +2404,98 @@ Can turn this on once I've worked to fix at least the multiple undo points
 #+begin_src elisp :noweb-ref doom-config :noweb-prefix no
 (use-package! yequake
   :config
-  (nconc yequake-frames '(<<yequake-frames>>)))
+  (setq yequake-frames '(<<yequake-frames>>))
+  <<yequake-config>>)
+#+end_src
+
+**** Emacs command launcher
+
+#+begin_src emacs-lisp :noweb-ref yequake-config
+(progn
+
+  (setq >items '("foo"
+                 "bar"))
+
+  (defun >builder (input)
+    (pcase-let ((`(,arg . ,_) (consult--command-split input)))
+      (cons (list "commands")
+            (cdr (consult--default-regexp-compiler arg 'basic t)))))
+
+  (defun >formatter (lines)
+    lines)
+
+  (defun >consult (&optional initial)
+    (interactive)
+    ;; (consult--read
+    ;;     (consult--async-command #'consult--man-builder
+    ;;       (consult--async-transform consult--man-format)
+    ;;       (consult--async-highlight #'consult--man-builder))
+    ;;     :prompt "Manual entry: "
+    ;;     :require-match t
+    ;;     :category 'consult-man
+    ;;     :lookup (apply-partially #'consult--lookup-prop 'consult-man)
+    ;;     :initial (consult--async-split-initial initial)
+    ;;     :add-history (consult--async-split-thingatpt 'symbol)
+    ;;     :history '(:input consult--man-history))
+    (when-let ((search-result (consult--read
+                               ;; (consult--outline-candidates)
+                               >items
+                               ;; (consult--async-command #'>builder
+                               ;;   (consult--async-transform >formatter)
+                               ;;   (consult--async-highlight #'>builder))
+                               ;; :prompt "Dash: "
+                               ;; :require-match t
+                               ;; :group #'consult-dash--group
+                               ;; :lookup #'consult--lookup-cdr
+                               ;; :category 'consult-dash-result
+                               ;; :annotate #'consult-dash--annotate
+                               ;; :initial (consult--async-split-initial initial)
+                               ;; :add-history (consult--async-split-thingatpt 'symbol)
+                               ;; :history '(:input consult-dash--history)
+                               )))))
+
+  (nconc yequake-frames
+        '(("org-capture"
+           (buffer-fns . (
+                          ;; posframe--fn
+
+                          ;; yequake-test
+                          ;; mx--fn
+                          >consult))
+           ;; (buffer-fns . (miniframe--fn))
+           ;; (buffer-fns . (mx--fn))
+           ;; (buffer-fns . (consult--fn))
+           (width . 0.75)
+           (height . 0.5)
+           (alpha . 0.95)
+           (frame-parameters . ((undecorated . t)
+                                (skip-taskbar . t)
+                                (sticky . t)
+                                (minibuffer . only)
+                                )))))
+
+  (defun >make-frame ()
+    (let ((frame (make-frame '(;; (minibuffer . only)
+                               ;; (minibuffer-exit . t)
+                               (undecorated . t)
+                               (skip-taskbar . t)
+                               (sticky . t)))))
+      (select-frame-set-input-focus frame)
+      (>consult)))
+
+  (defun >custom-frame-test ()
+    (interactive)
+    (>make-frame))
+
+  (defun >yequake-test ()
+    (interactive)
+    (yequake-toggle "org-capture")))
+
+(comment
+ (map! :leader "e" #'>custom-frame-test)
+ (map! :leader "e" #'>yequake-test)
+ (map! :leader "e" #'>consult)
+ )
 #+end_src
 
 *** Magit
@@ -4003,6 +4094,7 @@ If buffer-or-name is nil return current buffer's mode."
 ;; (package! org-special-block-extras
 ;;   :recipe (:type git :host github :repo "alhassy/org-special-block-extras"))
 
+(package! mini-frame)
 (package! swift-mode)
 (package! fennel-mode)
 (package! aggressive-indent)
