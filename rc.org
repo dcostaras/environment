@@ -1417,8 +1417,11 @@ JSON.stringify({
 
   :general
 
-  (:states '(normal insert)
+  (:states '(normal)
    "<escape>" 'symex-mode-interface)
+
+  (:states '(insert)
+   "<escape>" 'evil-normal-state)
 
   (:states '(normal)
    "<enter>" 'symex-mode-interface)
@@ -1561,6 +1564,13 @@ JSON.stringify({
   :config
 
   (defun my-symex-activation-hook ()
+  (add-hook! 'doom-escape-hook
+    (defun >symex->normal-state-doom-escape-hook ()
+      (when (evil-symex-state-p)
+        (progn
+          (evil-normal-state)
+          t))))
+
     (symex-mode-interface))
 
   (defun my-lispy-ace-symbol (arg)
