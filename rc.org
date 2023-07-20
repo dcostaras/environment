@@ -4142,8 +4142,9 @@ try print(task.run())
 ,* ${tab-title}
 :PROPERTIES:
 :ID: %(org-id-new)
+:ROAM_REFS: ${tab-url}
 :END:
-${tab-url} %?
+%?
 #+end_src
 
 #+begin_src elisp :noweb-ref doom-config
