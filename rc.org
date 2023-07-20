@@ -336,7 +336,7 @@ enjoy using a lot.
   (intern string))
 #+end_src
 
-**** Better printing
+**** Printing
 
 #+begin_src elisp :tangle ~/.doom.d/packages.el
 (package! yaml)
