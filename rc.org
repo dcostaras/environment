@@ -1042,6 +1042,26 @@ See [[cite:&${=key=}]]
 
 #+end_src
 
+**** COMMENT doct based capture templates
+
+#+begin_src elisp :noweb-ref packages
+(package! doct)
+#+end_src
+
+#+begin_src elisp :noweb-ref org-config
+(use-package! doct
+  :custom
+  (org-capture-templates
+   (doct '(("Parent" :keys "p"
+            :file "~/example.org"
+            :prepend t
+            :template ("* %^{Description}"
+                       ":PROPERTIES:"
+                       ":Created: %U"
+                       ":END:"
+                       "%?"))))))
+#+end_src
+
 #+end_src
 
 **** Package
