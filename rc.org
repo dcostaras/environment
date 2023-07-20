@@ -4209,6 +4209,12 @@ ${tab-url} %?
          :rules [[:##caps_lock :left_control nil {:alone :escape}]
                  [:##left_control :caps_lock]]}
 
+        {:des "hyper 1 to cleanup personal folder"
+         :rules [[:!!1 "touch ~/Desktop/file.txt"]]}
+
+        {:des "simultaneous j l press to F19"
+         :rules [[[:j :l] "e '(prn (+ 1 1))'"]]}
+
         <<karabiner-rules>>]
  :applications {:chrome ["^com\\.google\\.Chrome$"]
                 :safari ["^com\\.apple\\.Safari$"]}}
