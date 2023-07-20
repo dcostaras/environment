@@ -142,6 +142,8 @@ by org-edit-src-code.
 Use GitHub releases for this?
 *** TODO load config after tangling env
 *** TODO investigate doom popups module
+*** TODO investigate use-package-compute-statistics
+
 ** config
 
 *** Lexical binding
