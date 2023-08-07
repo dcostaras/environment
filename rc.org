@@ -2474,6 +2474,44 @@ org-mode
 (use-package dired+)
 #+end_src
 
+**** git-annex for dired
+
+#+begin_src elisp :noweb-ref packages
+(package! git-annex)
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config
+(use-package! git-annex
+  :after (dired diredfl)
+  :config
+
+  ;; (git-annex-dired-do-to-files "lock" "Annex: locked %d file(s)")
+  ;; (git-annex-dired-do-to-files "unlock" "Annex: unlocked %d file(s)")
+  ;; (define-key git-annex-dired-map "l" 'git-annex-dired-lock-files)
+  ;; (define-key git-annex-dired-map "u" 'git-annex-dired-unlock-files)
+  ;; (define-key git-annex-dired-map "t" 'jmm/dired-git-annex-tag)
+  ;; (bind-keys :map git-annex-dired-map
+  ;;            ("*")
+  ;;            ("* u" . jmm/dired-mark-git-annex-unavailable-files))
+  ;; git-annex.el kinda clobbers dired-marked-face and dired-flagged-face
+
+  (add-to-list 'diredfl-font-lock-keywords-1
+               (list " -> .*\\.git/annex/"
+                     '("\\(.+\\)\\( -> .+\\)" (dired-move-to-filename) nil
+                       (1 git-annex-dired-annexed-unavailable)
+                       (2 git-annex-dired-annexed-invisible))))
+  (add-to-list 'diredfl-font-lock-keywords-1
+               (list 'git-annex-lookup-file
+                     '("\\(.+\\)\\( -> .+\\)" (dired-move-to-filename) nil
+                       (1 git-annex-dired-annexed-available)
+                       (2 git-annex-dired-annexed-invisible)))))
+#+end_src
+
+#+begin_src elisp :noweb-ref faces
+`(git-annex-dired-annexed-unavailable :foreground ,(doom-color 'red))
+`(git-annex-dired-annexed-available :foreground ,(doom-color 'green))
+#+end_src
+
 *** Aggressive indent
 
 Can turn this on once I've worked to fix at least the multiple undo points
