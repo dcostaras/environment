@@ -1126,16 +1126,16 @@ See [[cite:&${=key=}]]
 
 #+begin_src elisp :noweb-ref org-config
 (use-package! doct
-  :custom
-  (org-capture-templates
-   (doct '(("Parent" :keys "p"
-            :file "~/example.org"
-            :prepend t
-            :template ("* %^{Description}"
-                       ":PROPERTIES:"
-                       ":Created: %U"
-                       ":END:"
-                       "%?"))))))
+  :init
+  (setq org-capture-templates
+        (doct '(("Parent" :keys "p"
+                 :file "~/example.org"
+                 :prepend t
+                 :template ("* %^{Description}"
+                            ":PROPERTIES:"
+                            ":Created: %U"
+                            ":END:"
+                            "%?"))))))
 #+end_src
 
 **** Hide property drawers
