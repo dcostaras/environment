@@ -1201,6 +1201,28 @@ See [[cite:&${=key=}]]
 (add-hook 'org-roam-post-node-insert-hook (fn (&rest _) (>org-hide-properties)))
 #+end_src
 
+**** Snippets
+:PROPERTIES:
+:header-args+: :comments no
+:END:
+
+#+begin_src elisp :noweb-ref yasnippet-fixed-indent-modes
+org-mode
+#+end_src
+
+#+begin_src snippet :tangle ~/.doom.d/snippets/org-mode/src-block-haskell
+# name: Haskell src block
+# key: <ha
+# --
+,#+begin_src haskell
+$1 :: $3
+$1 $2 = $0
+
+main = do
+  print \$ $1
+,#+end_src
+#+end_src
+
 **** Package
 
 #+begin_src elisp :noweb-ref doom-init-lang
@@ -2610,13 +2632,27 @@ Can turn this on once I've worked to fix at least the multiple undo points
 *** YASnippet
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
-(defun >tangle-dir (sub-path)
-  "Expand the SUB-PATH into the directory given by the tangle-dir
+(use-package! yasnippet
+  :hook ((<<yasnippet-fixed-indent-modes>>) . >yasnippet-fixed-indent-for-modes-hook)
+
+  :config
+
+  (defun >yasnippet-fixed-indent-for-modes-hook ()
+    (setq-local yas-indent-line 'fixed))
+
+  ;; TODO this doesn't work when tangling with ~-Q~
+  (defun >tangle-dir (sub-path)
+    "Expand the SUB-PATH into the directory given by the tangle-dir
 property if that property exists, else use the
 `default-directory'."
-  (expand-file-name sub-path
-                    (or (org-entry-get (point) "tangle-dir" 'inherit)
-                        (default-directory))))
+    (expand-file-name sub-path
+                      (or (org-entry-get (point) "tangle-dir" 'inherit)
+                          (default-directory)))))
+#+end_src
+
+#+begin_src elisp :noweb-ref org-post-tangle-environment-hook
+(yas-recompile-all)
+(yas-reload-all t)
 #+end_src
 
 **** TODO could I turn this into a new header?
@@ -2641,11 +2677,10 @@ Something like:
 
 **** Snippets
 :PROPERTIES:
-:tangle-dir: ~/.doom.d/snippets/emacs-lisp/
 :header-args+: :comments no
 :END:
 
-#+begin_src snippet :tangle (>tangle-dir "test")
+#+begin_src snippet :tangle ~/.doom.d/snippets/emacs-lisp/test
 # name: test
 # key: test
 # --
