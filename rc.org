@@ -503,11 +503,8 @@ This makes sure that the ~fn~ and ~defn~ functions are available during tangling
 (setq org-time-clocksum-use-effort-durations nil)
 (setq org-duration-format '(("h" . nil) (special . 2)))
 (setq org-effort-durations `(("h" . 60)))
-
 (setq org-startup-folded t)
-
 (setq org-directory "~/org")
-(setq org-agenda-files (list "~/org/inbox.org"))
 #+end_src
 
 **** Org buffers
@@ -5658,7 +5655,7 @@ sudo yabai --load-sa
 <<yabai-config-string()>>
 #+end_src
 
-*** Compile
+*** COMMENT Auto compile
 
 #+begin_src elisp :noweb-ref org-post-tangle-environment-hook
 (let* ((output-buffer (get-buffer-create "*Yabai reload*"))
@@ -5701,21 +5698,6 @@ mkdir -p ~/.config/next
     ;;   "C-x o" 'example
     ;;   "SPACE" 'scroll-page-down)
   #+END_SRC
-
-* MacOS config
-
-** Use Touch ID for sudo
-  /etc/pam.d/sudo
-
-  #+begin_src
-    # sudo: auth account password session
-    auth       sufficient     pam_tid.so
-    auth       sufficient     pam_smartcard.so
-    auth       required       pam_opendirectory.so
-    account    required       pam_permit.so
-    password   required       pam_deny.so
-    session    required       pam_permit.so
-  #+end_src
 
 * Hosts file
 
@@ -5962,7 +5944,6 @@ EscapeChar ^y
 
 AddKeysToAgent yes
 UseKeychain yes
-
 #+END_SRC
 
 * Git
