@@ -435,6 +435,25 @@ This makes sure that the ~fn~ and ~defn~ functions are available during tangling
 <<fn-and-defn()>>
 #+end_src
 
+**** Process
+
+#+begin_src elisp :noweb-ref :tangle ~/.doom.d/config.el
+(defun >start-sudo-process (cmd)
+  (with-temp-buffer
+    (cd "/sudo::/")
+    (>start-process cmd)))
+
+(defun >start-process (cmd)
+  (let* ((output-buffer (get-buffer-create (concat "*" cmd "*")))
+         (proc (apply #'start-process cmd output-buffer (s-split " " cmd)))
+         (sentinel (lambda (process signal)
+                     (when (memq (process-status process) '(exit signal))
+                       (message "Done: %s" cmd)))))
+    (if (process-live-p proc)
+        (set-process-sentinel proc sentinel)
+      (message "No process running: %s" cmd))))
+#+end_src
+
 *** TODO Tail buffer minor mode
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
