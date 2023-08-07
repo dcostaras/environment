@@ -2631,25 +2631,49 @@ Can turn this on once I've worked to fix at least the multiple undo points
  )
 #+end_src
 
-*** Magit
+*** magit
+
+"a git porcelain for Emacs"
+
+#+begin_src elisp :noweb-ref doom-init-tools
+magit
+#+end_src
+
+#+begin_src elisp :noweb-ref packages
+;; (package! magit-delta)
+#+end_src
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! magit
   :init
-  (setq auth-sources '("~/.authinfo")))
+  (setq auth-sources '("~/.authinfo"))
 
-(use-package! magit-todos-mode
-  :disabled t
-  :after magit
-  :config (magit-todos-mode))
-
-(use-package! magit-delta
-  :disabled t
-  :after magit
   :config
-  (setq magit-delta-default-dark-theme "OneHalfDark"
-        magit-delta-default-light-theme "OneHalfLight")
-  (magit-delta-mode))
+
+  (use-package! magit-todos-mode
+    :disabled t
+    :after magit
+    :config (magit-todos-mode))
+
+  (use-package! magit-delta
+    :disabled t
+    :after magit
+    :config
+    (setq magit-delta-default-dark-theme "OneHalfDark"
+          magit-delta-default-light-theme "OneHalfLight")
+    (magit-delta-mode))
+
+  <<magit-config>>)
+#+end_src
+
+**** magit-annex
+
+#+begin_src elisp :noweb-ref packages
+(package! magit-annex)
+#+end_src
+
+#+begin_src elisp :noweb-ref magit-config
+(use-package! magit-annex)
 #+end_src
 
 *** LSP
@@ -4085,7 +4109,6 @@ If buffer-or-name is nil return current buffer's mode."
        ;;gist              ; interacting with github gists
        lookup              ; navigate your code and its documentation
        lsp
-       magit               ; a git porcelain for Emacs
        make                ; run make tasks from Emacs
        ;;pass              ; password manager for nerds
        ;;pdf               ; pdf enhancements
@@ -4095,6 +4118,7 @@ If buffer-or-name is nil return current buffer's mode."
        ;;terraform         ; infrastructure as code
        ;;tmux              ; an API for interacting with tmux
        ;;upload            ; map local to remote projects via ssh/ftp
+       <<doom-init-tools>>
 
        :os
        (:if IS-MAC macos)  ; improve compatibility with macOS
@@ -4252,7 +4276,6 @@ If buffer-or-name is nil return current buffer's mode."
 ;; (package! writeroom-mode)
 (package! key-chord)
 ;; (package! pcre2el)
-(package! magit-delta)
 (package! kaocha-runner)
 (package! evil-motion-trainer
   :recipe (:host github :repo "martinbaillie/evil-motion-trainer"))
