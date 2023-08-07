@@ -414,6 +414,7 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
 
 **** fn and defn
 
+#+name: fn-and-defn
 #+begin_src emacs-lisp :tangle ~/.doom.d/config.el
 (defmacro fn (args &rest body)
   (declare (doc-string 2) (indent defun))
@@ -427,6 +428,11 @@ DOCSTRING and BODY are as in `defun'. Use :mode MODE to limit the advice to a mo
   `(defalias ',name
      (pcase-lambda ,arglist ,@body)
      ,docstring))
+#+end_src
+
+This makes sure that the ~fn~ and ~defn~ functions are available during tangling with a stock emacs. When this block is tangled the block named by the noweb call is evaluated for it's side effects and we discard the result of tangling.
+#+begin_src emacs-lisp :tangle /tmp/throw-away
+<<fn-and-defn()>>
 #+end_src
 
 *** TODO Tail buffer minor mode
