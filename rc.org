@@ -5,9 +5,7 @@
 
 * Emacs
 ** todos
-*** TODO turn "_" into the vim action to comment with #_ an object
-*** TODO turn "p" into the vim action to comment with #p an object
-*** TODO set C-M-\ to nil to train self to use indentation evil verb "="
+*** DONE set C-M-\ to nil to train self to use indentation evil verb "="
 *** TODO org src buffers to be added to workspace
 *** TODO cider switch to last buffer from repl (C-c C-z) should do so across frames
 *** TODO C-h sometimes doesn't work as back level in counsel find file
@@ -143,7 +141,8 @@ Use GitHub releases for this?
 *** TODO load config after tangling env
 *** TODO investigate doom popups module
 *** TODO investigate use-package-compute-statistics
-
+*** TODO :tangle property to take into account :dir property prefix
+*** TODO backup scripts for annexes using prodigy
 ** config
 
 *** Lexical binding
