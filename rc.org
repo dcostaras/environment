@@ -552,12 +552,15 @@ This makes sure that the ~fn~ and ~defn~ functions are available during tangling
 #+end_src
 
 #+name: src-block-value
-#+begin_src elisp :var name="" :noweb-ref no
-(->> (save-excursion
-       (org-babel-goto-named-src-block name)
-       (org-element-at-point))
-     (org-element-property :value)
-     (pp))
+#+begin_src elisp :var name="" :var nl="" :noweb-ref no
+(let* ((element (save-excursion
+                  (org-babel-goto-named-src-block name)
+                  (org-element-at-point)))
+       (value (org-element-property :value element)))
+  (prn nl)
+  (if (s-equals? "nil" nl)
+      (pp (replace-regexp-in-string "\n" "" value))
+    (pp value)))
 #+end_src
 
 ***** ex commands
