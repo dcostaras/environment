@@ -3665,6 +3665,211 @@ waiting browser."
 (define-key js2-mode-map (kbd "C-c C-c") #'nodejs-repl-eval-defun)
 (define-key js2-mode-map (kbd "C-c C-k") #'nodejs-repl-eval-buffer)
 #+end_src
+*** Haskell
+
+"a language that's lazier than I am"
+
+#+begin_src nix :noweb-ref system-packages
+cabal-install
+cabal2nix
+ghc
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-init-lang
+(haskell +lsp +tree-sitter)
+#+end_src
+
+#+begin_src elisp :noweb-ref org-babel-languages
+(haskell . t)
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config
+;; (use-package! haskell-interactive-mode)
+;; (use-package! haskell-process)
+;; (define-key haskell-mode-map (kbd "C-c C-l") 'haskell-process-load-or-reload)
+;; (define-key haskell-mode-map (kbd "C-`") 'haskell-interactive-bring)
+;; (define-key haskell-mode-map (kbd "C-c C-t") 'haskell-process-do-type)
+;; (define-key haskell-mode-map (kbd "C-c C-i") 'haskell-process-do-info)
+;; (define-key haskell-mode-map (kbd "C-c C-c") 'haskell-process-build)
+;; (define-key haskell-interactive-mode-map (kbd "C-c C-c") 'haskell-process-build)
+;; (define-key haskell-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+;; (define-key haskell-mode-map (kbd "C-c c") 'haskell-process-cabal)
+
+(use-package! haskell
+  :config
+  (setq
+   haskell-process-suggest-remove-import-lines t
+   haskell-process-auto-import-loaded-modules t
+   haskell-process-log t)
+
+  (defun >haskell-interactive-mode-send-expr (expr)
+    "Run the given expression."
+    (let* ((session (haskell-interactive-session))
+           (buffer (haskell-session-interactive-buffer session))
+           (process (haskell-interactive-process)))
+      (haskell-process-queue-command
+       process
+       (make-haskell-command
+        :state (list session process expr 0)
+        :go (lambda (state)
+              (with-current-buffer buffer
+                (insert "\n\n"))
+              (setq haskell-interactive-mode-result-end
+                    (point-max))
+              (haskell-process-send-string (cadr state)
+                                           (haskell-interactive-mode-multi-line (cl-caddr state)))
+              (haskell-process-set-evaluating (cadr state) t))
+        :live (lambda (state buffer)
+                (unless (and (string-prefix-p ":q" (cl-caddr state))
+                             (string-prefix-p (cl-caddr state) ":quit"))
+                  (let* ((cursor (cl-cadddr state))
+                         (next (replace-regexp-in-string
+                                haskell-process-prompt-regex
+                                ""
+                                (substring buffer cursor))))
+                    (haskell-interactive-mode-eval-result (car state) next)
+                    (setf (cl-cdddr state) (list (length buffer)))
+                    nil)))
+        :complete
+        (lambda (state response)
+          (haskell-process-set-evaluating (cadr state) nil)
+          (unless (haskell-interactive-mode-trigger-compile-error state response)
+            (haskell-interactive-mode-expr-result state response)))))))
+
+  (defun >haskell-process-load-or-reload (&optional toggle)
+    (interactive "P")
+    (if toggle
+        (progn (setq haskell-reload-p (not haskell-reload-p))
+               (message "%s (No action taken this time)"
+                        (if haskell-reload-p
+                            "Now running :reload."
+                          "Now running :load <buffer-filename>.")))
+      (if haskell-reload-p (haskell-process-reload) (haskell-process-load-file)))
+    (let* ((session (haskell-session))
+           (buffer (haskell-session-interactive-buffer session)))
+      (>haskell-interactive-mode-send-expr "main")))
+
+  (define-key interactive-haskell-mode-map (kbd "C-c C-l") #'>haskell-process-load-or-reload)
+  (define-key haskell-mode-map (kbd "C-c C-z") #'haskell-interactive-switch)
+
+  ;; (define-key haskell-mode-map (kbd "C-c C-n C-t") 'haskell-process-do-type)
+  ;; (define-key haskell-mode-map (kbd "C-c C-n C-i") 'haskell-process-do-info)
+  ;; (define-key haskell-mode-map (kbd "C-c C-n C-c") 'haskell-process-cabal-build)
+  ;; (define-key haskell-mode-map (kbd "C-c C-n c") 'haskell-process-cabal)
+  ;; (define-key haskell-cabal-mode-map (kbd "C-c C-z") 'haskell-interactive-switch)
+  ;; (define-key haskell-cabal-mode-map (kbd "C-c C-k") 'haskell-interactive-mode-clear)
+  ;; (define-key haskell-cabal-mode-map (kbd "C-c C-c") 'haskell-process-cabal-build)
+  ;; (define-key haskell-cabal-mode-map (kbd "C-c c") 'haskell-process-cabal)
+
+
+  ;; --------------------------------------------------
+  ;; This seems to try make the org src buffer a real file
+  ;;
+  ;; (defconst fn/haskell-file-extension ".hs"
+  ;;   "The de facto haskell file extension.")
+
+  ;; (defun fn/add-haskell-file-extension (name)
+  ;;   "Add the extension of .hs to a file or buffer NAME."
+  ;;   (if (string/ends-with name fn/haskell-file-extension)
+  ;;       name (concat name fn/haskell-file-extension)))
+
+
+  ;; (defvar fn/org-haskell-mode-hook (list)
+  ;;   "Hook when buffer is haskellized."
+  ;;   ;; :type 'hook
+  ;;   )
+  ;; ;; (defvar fn/org-haskell-mode-hook nil
+  ;; ;;   "Hook when buffer is haskellized.")
+
+  ;; (defun fn/haskellize-buffer-file (&optional buffer)
+  ;;   "Renames an BUFFER with a .hs extension if it doesn't have one."
+  ;;   (interactive)
+  ;;   (with-current-buffer (or buffer (current-buffer))
+  ;;     (save-buffer)
+  ;;     (let ((name (buffer-name))
+  ;;           (file-name (buffer-file-name)))
+  ;;       (if (not (and file-name (file-exists-p file-name)))
+  ;;           (error "Buffer '%s' has no backing file" name)
+  ;;         (let ((haskellized-name (fn/add-haskell-file-extension name))
+  ;;               (haskellized-file-name (fn/add-haskell-file-extension file-name)))
+  ;;           (cond
+  ;;            ((get-buffer haskellized-name)
+  ;;             (error "A buffer named '%s' already exists" haskellized-name))
+  ;;            ((string-equal name haskellized-name)
+  ;;             (message "Buffer %s is already haskellized" haskellized-name))
+  ;;            (t
+  ;;             (rename-file file-name haskellized-file-name t)
+  ;;             (rename-buffer haskellized-name)
+  ;;             (set-visited-file-name haskellized-file-name)
+  ;;             (set-buffer-modified-p nil)
+  ;;             (message "Buffer %s is now haskellized" haskellized-name))))))))
+
+  ;; (defun fn/org-haskell-buffer-p (&optional buffer)
+  ;;   "Check if BUFFER is an org-haskell buffer."
+  ;;   (with-current-buffer (or buffer (current-buffer))
+  ;;     (and (eq major-mode 'haskell-mode)
+  ;;        (fboundp 'org-src-edit-buffer-p)
+  ;;        (org-src-edit-buffer-p))))
+
+  ;; (defun fn/haskellize-org-haskell-buffer (&rest _)
+  ;;   "Haskellize org haskell buffer."
+  ;;   (when (fn/org-haskell-buffer-p)
+  ;;     (fn/haskellize-buffer-file (current-buffer))
+  ;;     (run-hooks 'fn/org-haskell-mode-hook)))
+
+  ;; (defun fn/save-org-haskell-buffer (&rest _)
+  ;;   "Save haskell buffer along with the edit buffer."
+  ;;   (when (fn/org-haskell-buffer-p)
+  ;;     (save-buffer)))
+
+  ;; (defun fn/cleanup-org-haskell-buffer (orig-fun &rest args)
+  ;;   "Cleanup the org-haskell buffer when exiting the edit buffer."
+  ;;   (prn '--------------------------------------------------)
+  ;;   (let ((org-haskell-file-name (buffer-file-name))
+  ;;       (org-haskell-buffer-p (fn/org-haskell-buffer-p)))
+  ;;     (prog1
+  ;;         (apply orig-fun args)
+  ;;       (when (and (file-exists-p org-haskell-file-name) org-haskell-buffer-p)
+  ;;         (delete-file org-haskell-file-name)))))
+
+  ;; (remove-hook 'org-src-mode-hook #'fn/haskellize-org-haskell-buffer t)
+
+  ;; (advice-remove 'org-edit-src-save #'fn/save-org-haskell-buffer)
+  ;; (advice-remove 'org-edit-src-exit #'fn/cleanup-org-haskell-buffer)
+
+  ;; (defun fn/haskell-process-load-or-reload ()
+  ;;   "Invoke reload process without switching buffers"
+  ;;   (save-window-excursion
+  ;;     (haskell-process-load-or-reload)))
+
+  ;; (defun fn/haskell-reload-on-save ()
+  ;;   "Reload interactive haskell process on save."
+  ;;   (add-hook 'after-save-hook 'fn/haskell-process-load-or-reload t t))
+
+  ;; (defun fn/hindent-before-save ()
+  ;;   "Reformat before saving."
+  ;;   (interactive)
+  ;;   (add-hook 'before-save-hook 'hindent-reformat-buffer t t))
+
+  ;; (remove-hook 'fn/org-haskell-mode-hook 'fn/haskell-process-load-or-reload)
+  ;; (remove-hook 'fn/org-haskell-mode-hook 'fn/haskell-reload-on-save)
+  ;; (remove-hook 'fn/org-haskell-mode-hook 'fn/hindent-before-save) ;;
+  )
+#+end_src
+
+**** Snippets
+:PROPERTIES:
+:header-args+: :comments no
+:END:
+
+#+begin_src snippet :tangle ~/.doom.d/snippets/haskell-mode/main
+# name: mainp
+# key: mainp
+# --
+main :: IO ()
+main = do
+  print $
+#+end_src
 *** Dired/Eshell
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
@@ -4144,7 +4349,6 @@ If buffer-or-name is nil return current buffer's mode."
        ;;fstar             ; (dependent) types and (monadic) effects and Z3
        ;;gdscript          ; the language you waited for
        ;;(go +lsp)         ; the hipster dialect
-       ;;(haskell +dante)  ; a language that's lazier than I am
        ;;hy                ; readability of scheme w/ speed of python
        ;;idris             ; a language you can depend on
        ;;json              ; At least it ain't XML
