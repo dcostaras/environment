@@ -5585,6 +5585,16 @@ alias vi="nvim"
 | PATH | $PATH:/opt/local/sbin     |
 | PATH | $PATH:/Library/TeX/texbin |
 
+*** XDG
+
+These are the defaults but are here so I can remember them and echo them when needed
+
+#+name: env-xdg
+| XDG_CONFIG_HOME | $HOME/.config      |
+| XDG_CACHE_HOME  | $HOME/.cache       |
+| XDG_DATA_HOME   | $HOME/.local/share |
+| XDG_STATE_HOME  | $HOME/.local/state |
+
 *** AWS
 
 #+name: env-aws
