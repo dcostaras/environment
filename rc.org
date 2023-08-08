@@ -1825,41 +1825,60 @@ advises functions to enable or disable features based on user configuration."
   <<evil-config>>)
 #+end_src
 
-*** Doom modeline
+*** doom-modeline
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! doom-modeline
   :config
   (setq doom-modeline-modal-icon t)
   (setq doom-modeline-bar-width 3)
-
-  (setq-default
-   evil-emacs-state-tag        (propertize "[E]" 'face '(:background "SkyBlue2" :foreground "black"))
-   evil-evilified-state-tag    (propertize "<E>" 'face '(:background "green" :foreground "black"))
-   evil-hybrid-state-tag       (propertize "[H]" 'face '(:background "chartreuse3" :foreground "white"))
-   ;; evil-iedit-insert-state-tag (propertize "<I>" 'face '(:background "green" :foreground "black"))
-   ;; evil-iedit-state-tag        (propertize "<N>" 'face '(:background "green" :foreground "black"))
-   evil-insert-state-tag       (propertize "[I]" 'face '(:background "chartreuse3" :foreground "white"))
-   evil-lisp-state-tag         (propertize "[L]" 'face '(:background "green" :foreground "black"))
-   evil-motion-state-tag       (propertize "[M]" 'face '(:background "plum3" :foreground "white"))
-   evil-normal-state-tag       (propertize "[N]" 'face '(:background "DarkGoldenrod2" :foreground "black"))
-   evil-operator-state-tag     (propertize "[O]" 'face '(:background "purple" :foreground "black"))
-   evil-replace-state-tag      (propertize "[R]" 'face '(:background "green" :foreground "black"))
-   evil-visual-state-tag       (propertize "[V]" 'face '(:background "gray" :foreground "black")))
-
-  (doom-modeline-def-segment evil-state
-    "The current evil state.  Requires `evil-mode' to be enabled."
-    (when (bound-and-true-p evil-local-mode)
-      (concat
-       (doom-modeline-spc)
-       (s-trim-right (evil-state-property evil-state :tag t)))))
+  (setq doom-modeline-persp-name t)
 
   (doom-modeline-def-modeline 'main
-    '(bar workspace-name window-number
-          ;; modals
-          evil-state
-          matches buffer-info remote-host buffer-position word-count parrot selection-info)
-    '(objed-state misc-info persp-name battery grip irc mu4e gnus github debug repl lsp minor-modes input-method indent-info buffer-encoding major-mode process vcs checker)))
+    '(bar
+      window-number
+      matches
+      buffer-info
+      remote-host
+      buffer-position
+      word-count
+      selection-info)
+    '(persp-name
+      battery
+      grip
+      irc
+      mu4e
+      gnus
+      github
+      debug
+      repl
+      lsp
+      minor-modes
+      input-method
+      indent-info
+      buffer-encoding
+      major-mode
+      process
+      vcs
+      checker))
+
+  (defun doom-modeline-update-persp-name (&rest _)
+    "Update perspective name in mode-line."
+    (setq doom-modeline--persp-name
+          ;; Support `persp-mode', while not support `perspective'
+          (when (and doom-modeline-persp-name
+                     (bound-and-true-p persp-mode)
+                     (fboundp 'safe-persp-name)
+                     (fboundp 'get-current-persp))
+            (let* ((persp (get-current-persp))
+                   (name (safe-persp-name persp))
+                   (face (if (and persp
+                                  (not (persp-contain-buffer-p (current-buffer) persp)))
+                             'doom-modeline-persp-buffer-not-in-persp
+                           'doom-modeline-persp-name)))
+              (when (or doom-modeline-display-default-persp-name
+                        (not (string-equal persp-nil-name name)))
+                (propertize (propertize name 'face face))))))))
 #+end_src
 
 *** Rigpa
