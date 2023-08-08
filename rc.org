@@ -5720,10 +5720,10 @@ fi
 ~/.config/doom-emacs/bin/doom "$1"
 #+end_src
 
-*** emacsen
+*** Emacs
 
 #+begin_src sh :shebang #!/bin/zsh :tangle ~/bin/e
-/opt/homebrew/bin/emacsclient -e -n "$@"
+/Applications/Emacs.app/Contents/MacOS/bin/emacsclient -e -n "$@"
 #+end_src
 
 #+begin_src sh :shebang "#!/bin/bash" :tangle ~/bin/spacemacs
