@@ -555,7 +555,6 @@ This makes sure that the ~fn~ and ~defn~ functions are available during tangling
                   (org-babel-goto-named-src-block name)
                   (org-element-at-point)))
        (value (org-element-property :value element)))
-  (prn nl)
   (if (s-equals? "nil" nl)
       (pp (replace-regexp-in-string "\n" "" value))
     (pp value)))
