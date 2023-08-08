@@ -467,7 +467,7 @@ This makes sure that the ~fn~ and ~defn~ functions are available during tangling
 ;; (advice-add 'message :after 'message-buffer-goto-end-of-buffer)
 #+end_src
 
-*** Org
+*** org-mode
 
 "Organize your plain life in plain text"
 
@@ -508,22 +508,19 @@ This makes sure that the ~fn~ and ~defn~ functions are available during tangling
 #+end_src
 
 **** Org buffers
-
-#+begin_src elisp :noweb-ref org-config
-;; Org src buffers are real
-(defun org-buffer-p (buffer)
-  (string-match-p "^\\*Org Src" (buffer-name buffer)))
-(push #'org-buffer-p doom-real-buffer-functions)
-
-;; Open org src buffers in same windwo
-(set-popup-rule! "^\\*Org Src" :ignore t)
-(setq org-src-window-setup 'current-window)
-#+end_src
-
 **** Babel
 :PROPERTIES:
 :header-args+: :noweb-ref org-config
 :END:
+
+#+begin_src elisp
+(set-popup-rule! "^\\*Org Src" :ignore t)
+(setq org-src-window-setup 'current-window)
+#+end_src
+
+#+begin_src elisp :noweb-ref real-buffer
+(string-match-p (rx line-start "*Org Src") (buffer-name buffer))
+#+end_src
 
 #+begin_src elisp
 (org-babel-do-load-languages
