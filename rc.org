@@ -1237,6 +1237,8 @@ main = do
 ,#+end_src
 #+end_src
 
+***** TODO this doesn't work with ~emacs -Q~
+
 **** Package
 
 #+begin_src elisp :noweb-ref doom-init-lang
