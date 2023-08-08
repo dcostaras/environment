@@ -3867,6 +3867,22 @@ main :: IO ()
 main = do
   print $
 #+end_src
+*** Nix
+
+"I hereby declare 'nix geht mehr!'"
+
+#+begin_src elisp :noweb-ref doom-init-lang
+nix
+#+end_src
+
+#+begin_src elisp :noweb-ref packages
+(package! ob-nix)
+#+end_src
+
+#+begin_src elisp noweb-ref doom-config
+(use-package! ob-nix)
+#+end_src
+
 *** AppleScript
 
 #+begin_src elisp :noweb-ref packages
@@ -4373,7 +4389,6 @@ If buffer-or-name is nil return current buffer's mode."
        ;;lua               ; one-based indices? one-based indices
        markdown            ; writing docs for people to ignore
        ;;nim               ; python + lisp at the speed of c
-       ;;nix               ; I hereby declare "nix geht mehr!"
        ;;ocaml             ; an objective camel
        ;;php               ; perl's insecure younger brother
        ;;plantuml          ; diagrams for confusing people more
