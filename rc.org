@@ -5584,7 +5584,6 @@ alias vi="nvim"
 | PATH | $PATH:$HOME/bin           |
 | PATH | $PATH:/opt/local/sbin     |
 | PATH | $PATH:/Library/TeX/texbin |
-| PATH | /opt/homebrew/bin:$PATH   |
 
 *** AWS
 
