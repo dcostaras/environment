@@ -645,11 +645,27 @@ uses:
 
 **** Agenda
 
+#+begin_src elisp :noweb-ref real-buffer
+(string-match-p (rx line-start "*Org Agenda*" line-end) (buffer-name buffer))
+#+end_src
+
+Restore org-agenda buffers when loading workspaces
+#+begin_src elisp :noweb-ref persp-mode-config
+(persp-def-buffer-save/load
+ :mode 'org-agenda-mode
+ :tag-symbol 'def-agenda-buffer
+ :mode-restore-function #'(lambda (_mode) (org-agenda nil "t"))
+ :save-vars '(major-mode default-directory))
+#+end_src
+
 #+begin_src elisp :noweb-ref org-config
 (use-package! org-agenda
+  :after org-roam
   :init
   (setq org-agenda-files
-        (list (concat org-directory "/inbox.org"))
+        (list org-directory
+              org-roam-directory
+              <<environment-file-name()>>)
 
         org-capture-templates
         `(("i" "Inbox" entry  (file ,(concat org-directory "/inbox.org"))
