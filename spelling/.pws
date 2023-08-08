@@ -1,4 +1,4 @@
-personal_ws-1.1 en 192
+personal_ws-1.1 en 197
 APIs
 Babashka
 Costaras
@@ -75,6 +75,7 @@ destructured
 destructuring
 dev
 docstring
+dotfiles
 drcostaras
 edn
 elisp
@@ -87,6 +88,7 @@ eval
 evaling
 evalling
 evals
+executables
 flaxseed
 fn
 fns
@@ -117,6 +119,7 @@ kondo
 leiningen
 localhost
 lsp
+macbook
 magit
 malli
 mem
@@ -163,6 +166,7 @@ signInUserSession
 src
 ssl
 stateful
+subcommands
 subform
 symex
 symexes
@@ -187,6 +191,7 @@ uuid
 vals
 varargs
 verifier
+vertico
 whitespace
 workspaces
 yabai
