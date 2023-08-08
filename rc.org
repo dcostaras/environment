@@ -531,7 +531,8 @@ This makes sure that the ~fn~ and ~defn~ functions are available during tangling
  '((emacs-lisp . t)
    (http . t)
    (racket . t)
-   (scheme . t)))
+   (scheme . t)
+   <<org-babel-languages>>))
 #+end_src
 
 #+begin_src elisp
@@ -3895,6 +3896,10 @@ nix
 (use-package! apples-mode)
 (use-package! applescript-mode)
 (use-package! ob-applescript)
+#+end_src
+
+#+begin_src elisp :noweb-ref org-babel-languages
+(applescript . t)
 #+end_src
 
 *** Dired/Eshell
