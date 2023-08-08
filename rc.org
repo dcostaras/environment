@@ -3867,6 +3867,20 @@ main :: IO ()
 main = do
   print $
 #+end_src
+*** AppleScript
+
+#+begin_src elisp :noweb-ref packages
+(package! apples-mode)
+(package! applescript-mode)
+(package! ob-applescript)
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config
+(use-package! apples-mode)
+(use-package! applescript-mode)
+(use-package! ob-applescript)
+#+end_src
+
 *** Dired/Eshell
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
