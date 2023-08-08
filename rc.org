@@ -4869,6 +4869,15 @@ try print(task.run())
 (package-install 'use-package)
 #+end_src
 
+** Install
+
+#+begin_src nix :noweb-ref darwin-config
+# services.emacs = {
+#   enable = true;
+#   package = pkgs.emacs29;
+# };
+#+end_src
+
 * Karabiner
 
 ** Functionality
@@ -5902,6 +5911,57 @@ ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
 
 * Yabai
 
+#+begin_src nix :noweb-ref darwin-config
+services.yabai = {
+  enable = true;
+  package = pkgs.yabai;
+  enableScriptingAddition = true;
+  # config = {
+  #   focus_follows_mouse          = "autoraise";
+  #   mouse_follows_focus          = "off";
+  #   window_placement             = "second_child";
+  #   window_opacity               = "off";
+  #   window_opacity_duration      = "0.0";
+  #   window_border                = "on";
+  #   window_border_placement      = "inset";
+  #   window_border_width          = 2;
+  #   window_border_radius         = 3;
+  #   active_window_border_topmost = "off";
+  #   window_topmost               = "on";
+  #   window_shadow                = "float";
+  #   active_window_border_color   = "0xff5c7e81";
+  #   normal_window_border_color   = "0xff505050";
+  #   insert_window_border_color   = "0xffd75f5f";
+  #   active_window_opacity        = "1.0";
+  #   normal_window_opacity        = "1.0";
+  #   split_ratio                  = "0.50";
+  #   auto_balance                 = "on";
+  #   mouse_modifier               = "fn";
+  #   mouse_action1                = "move";
+  #   mouse_action2                = "resize";
+  #   layout                       = "bsp";
+  #   top_padding                  = 36;
+  #   bottom_padding               = 10;
+  #   left_padding                 = 10;
+  #   right_padding                = 10;
+  #   window_gap                   = 10;
+  # };
+
+  # extraConfig = ''
+  #       # rules
+  #       yabai -m rule --add app='System Preferences' manage=off
+
+  #       # Any other arbitrary config here
+  #     '';
+};
+#+end_src
+
+** SketchyBar
+
+#+begin_src nix :noweb-ref system-packages
+sketchybar
+#+end_src
+
 ** App management
 
 #+name: yabai-unmanaged-apps
@@ -6199,6 +6259,409 @@ cask "font-inconsolata"
    --with-xz \
    --with-zeromq \
    --with-zimg
+
+* Nix
+** COMMENT Environment
+
+#+begin_src nix :tangle ~/.config/nix/env.nix
+with import <nixpkgs> {}; [
+  nix-prefetch-git
+
+  <<nix-env-packages>>
+]
+#+end_src
+
+Install the local Nix environment with ~nix-sync~
+
+#+begin_src sh :shebang #!/bin/zsh :tangle ~/bin/nix-sync
+nix-env -irf ~/.config/nix/env.nix
+#+end_src
+
+** Shell setup
+
+#+begin_src sh :noweb-ref zprofile
+if [[ -f '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh' ]]; then
+  source '/nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh'
+  export NIX_PATH="$XDG_STATE_HOME/nix/defexpr:$NIX_PATH"
+  export NIX_PATH="$XDG_STATE_HOME/nix/defexpr/channels:$NIX_PATH"
+fi
+#+end_src
+
+*** TODO state-home/nix/defexpr seems to be added twice... check this after computer restart
+
+** nix-darwin
+
+To build nix-darwin the first time with a custom config location
+#+begin_src sh
+$(nix-build '<darwin>' -A system --no-out-link)/sw/bin/darwin-rebuild switch -I "darwin-config=$XDG_CONFIG_HOME/nix/darwin/configuration.nix"
+# $(nix-build '<darwin>' -A system --no-out-link)/sw/bin/darwin-rebuild switch -I "darwin-config=$XDG_CONFIG_HOME/nix/darwin/configuration.nix"
+#+end_src
+
+#+begin_src nix :tangle ~/.config/nix/env/nix-darwin/configuration.nix.backup
+{ config, pkgs, ... }:
+
+{
+  nix.settings.experimental-features = "nix-command flakes";
+  # TODO setup PATH
+  nix.nixPath = [
+    "$XDG_STATE_HOME/nix/defexpr/channels"
+    "darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz"
+  ];
+
+  launchd.user.envVariables.PATH = config.environment.systemPath;
+
+  # List packages installed in system profile. To search by name, run:
+  # $ nix-env -qaP | grep wget
+  environment.systemPackages =
+    with pkgs; [
+      vim
+      <<system-packages>>
+    ];
+
+  environment.darwinConfig = (
+    builtins.trace (builtins.getEnv "XDG_CONFIG_HOME")
+      "$XDG_CONFIG_HOME/nix/env/nix-darwin/configuration.nix"
+  );
+
+  # Auto upgrade nix package and the daemon service.
+  services.nix-daemon.enable = true;
+  # nix.package = pkgs.nix;
+
+  # Create /etc/zshrc that loads the nix-darwin environment.
+  programs.zsh.enable = true;  # default shell on catalina
+
+  # Used for backwards compatibility, please read the changelog before changing.
+  # $ darwin-rebuild changelog
+  system.stateVersion = 4;
+
+  security.pam.enableSudoTouchIdAuth = true;
+
+  networking.hostName = "donavan-mbp-darwin";
+  <<darwin-config>>
+}
+#+end_src
+#+begin_src nix :tangle ~/.config/nix/env/nix-darwin/configuration.nix
+{ self }: { pkgs, ... }: {
+  # List packages installed in system profile. To search by name, run:
+  # $ nix-env -qaP | grep wget
+  environment.systemPackages =
+    with pkgs; [
+      vim
+      <<system-packages>>
+    ];
+
+  # Auto upgrade nix package and the daemon service.
+  services.nix-daemon.enable = true;
+  # nix.package = pkgs.nix;
+
+  # Necessary for using flakes on this system.
+  nix.settings.experimental-features = "nix-command flakes";
+
+  # Create /etc/zshrc that loads the nix-darwin environment.
+  programs.zsh.enable = true;  # default shell on catalina
+  # programs.fish.enable = true;
+
+  # Set Git commit hash for darwin-version.
+  system.configurationRevision = self.rev or self.dirtyRev or null;
+
+  # Used for backwards compatibility, please read the changelog before changing.
+  # $ darwin-rebuild changelog
+  system.stateVersion = 4;
+
+  # The platform the configuration will be used on.
+  nixpkgs.hostPlatform = "aarch64-darwin";
+}
+#+end_src
+
+*** Settings
+
+#+begin_src nix :noweb-ref darwin-config
+system.defaults.CustomUserPreferences = {
+  NSGlobalDomain = {
+    # Add a context menu item for showing the Web Inspector in web views
+    WebKitDeveloperExtras = true;
+  };
+  "com.apple.finder" = {
+    ShowExternalHardDrivesOnDesktop = true;
+    ShowHardDrivesOnDesktop = true;
+    ShowMountedServersOnDesktop = true;
+    ShowRemovableMediaOnDesktop = true;
+    # _FXSortFoldersFirst = true;
+    # When performing a search, search the current folder by default
+    FXDefaultSearchScope = "SCcf";
+  };
+  "com.apple.desktopservices" = {
+    # Avoid creating .DS_Store files on network or USB volumes
+    DSDontWriteNetworkStores = true;
+    DSDontWriteUSBStores = true;
+  };
+  "com.apple.screensaver" = {
+    # Require password immediately after sleep or screen saver begins
+    askForPassword = 1;
+    askForPasswordDelay = 0;
+  };
+  "com.apple.screencapture" = {
+    location = "~/Desktop";
+    type = "png";
+  };
+  "com.apple.Safari" = {
+    # Privacy: don’t send search queries to Apple
+    # UniversalSearchEnabled = false;
+    # SuppressSearchSuggestions = true;
+    # Press Tab to highlight each item on a web page
+    WebKitTabToLinksPreferenceKey = true;
+    ShowFullURLInSmartSearchField = true;
+    # Prevent Safari from opening ‘safe’ files automatically after downloading
+    AutoOpenSafeDownloads = false;
+    ShowFavoritesBar = false;
+    IncludeInternalDebugMenu = true;
+    IncludeDevelopMenu = true;
+    WebKitDeveloperExtrasEnabledPreferenceKey = true;
+    WebContinuousSpellCheckingEnabled = true;
+    # WebAutomaticSpellingCorrectionEnabled = false;
+    AutoFillFromAddressBook = false;
+    AutoFillCreditCardData = false;
+    AutoFillMiscellaneousForms = false;
+    WarnAboutFraudulentWebsites = true;
+    WebKitJavaEnabled = false;
+    WebKitJavaScriptCanOpenWindowsAutomatically = false;
+    "com.apple.Safari.ContentPageGroupIdentifier.WebKit2TabsToLinks" = true;
+    "com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled" = true;
+    "com.apple.Safari.ContentPageGroupIdentifier.WebKit2BackspaceKeyNavigationEnabled" = false;
+    "com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabled" = false;
+    "com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaEnabledForLocalFiles" = false;
+    "com.apple.Safari.ContentPageGroupIdentifier.WebKit2JavaScriptCanOpenWindowsAutomatically" = false;
+  };
+  "com.apple.mail" = {
+    # Disable inline attachments (just show the icons)
+    DisableInlineAttachmentViewing = true;
+  };
+  "com.apple.AdLib" = {
+    allowApplePersonalizedAdvertising = false;
+  };
+  "com.apple.print.PrintingPrefs" = {
+    # Automatically quit printer app once the print jobs complete
+    "Quit When Finished" = true;
+  };
+  "com.apple.SoftwareUpdate" = {
+    AutomaticCheckEnabled = true;
+    # Check for software updates daily, not just once per week
+    ScheduleFrequency = 1;
+    # Download newly available updates in background
+    AutomaticDownload = 1;
+    # Install System data files & security updates
+    CriticalUpdateInstall = 1;
+  };
+  "com.apple.TimeMachine".DoNotOfferNewDisksForBackup = true;
+  # Prevent Photos from opening automatically when devices are plugged in
+  "com.apple.ImageCapture".disableHotPlug = true;
+  # Turn on app auto-update
+  "com.apple.commerce".AutoUpdate = true;
+};
+#+end_src
+
+**** Auto activate settings
+
+Following line should allow us to avoid a logout/login cycle
+
+#+begin_src nix :noweb-ref darwing-config
+system.activationScripts.postUserActivation.text = "/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u";
+#+end_src
+
+*** COMMENT Auto rebuild
+
+#+begin_src elisp :noweb-ref org-post-tangle-environment-hook
+(>start-sudo-process "darwin-rebuild switch")
+#+end_src
+
+** Pinned defexpr
+
+See [[id:63f3bd33-8510-4810-9f5e-d7618bfba029][Using Nix on macOS]] for scripts that determine the revision to use
+
+~import <nixpkgs>~ seems to really need ~defexpr/nixpkgs~ to be a directory.
+
+#+begin_src nix :tangle ~/.local/state/nix/defexpr/nixpkgs/default.nix
+import (fetchTarball "https://github.com/NixOS/nixpkgs/archive/7b138d80b4cc04cd9d4df6944dd914234fcc090a.tar.gz")
+#+end_src
+
+*** Updating the revision
+#+begin_src sh :shebang #!/usr/bin/env nix-shell :tangle ~/bin/nix-update-revision
+#!nix-shell -i bash -p bash curl jq
+# shellcheck shell=bash
+
+# Just go with the revision that works for stable darwin. Might as well for now
+# unless there's an issue.
+
+set -euo pipefail
+
+dryrun=1
+
+usage() {
+  cat <<USAGEEOF
+Usage: $0 [OPTIONS]
+
+Options:
+  -h  --help      show this help
+  -n  --dry-run   do not make any changes
+USAGEEOF
+}
+
+for arg in "$@"; do
+  case ${arg} in
+    '-n' | '--dry-run')
+      dryrun=1
+      ;;
+    '-h' | '--help')
+      usage
+      exit 0
+      ;;
+    *)
+      echo "$0: Unexpected argument: ${arg}" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+done
+
+
+revision=$(curl --silent --show-error 'https://monitoring.nixos.org/prometheus/api/v1/query?query=channel_revision' \
+  | jq -r '.data.result[]|select(.metric.status == "stable" and .metric.variant == "darwin").metric.revision')
+nixexpr="import (fetchTarball \"https://github.com/NixOS/nixpkgs/archive/${revision}.tar.gz\")"
+nixpkgsfile="$XDG_STATE_HOME/nix/defexpr/nixpkgs/default.nix"
+
+mkdir -p "$(dirname "${nixpkgsfile}")"
+if [[ -f "${nixpkgsfile}" ]] && diff -q "${nixpkgsfile}" - <<< "${nixexpr}" >/dev/null; then
+  echo 'nixpkgs already up to date'
+  exit 0
+fi
+
+if [[ ${dryrun} -ne 0 ]]; then
+  echo "This would set nixpkgs to revision ${revision}"
+else
+  echo "Setting nixpkgs to revision ${revision}"
+  # echo "${nixexpr}" >${nixpkgsfile}
+fi
+
+nix-diff "${revision}"
+#+end_src
+
+#+begin_src sh :shebang #!/usr/bin/env nix-shell :tangle ~/bin/nix-diff
+#!nix-shell -i bash -p bash jq
+# shellcheck shell=bash
+
+# Usage: nix-diff [revision]
+# where revision is the full nixpkgs revision.
+
+set -euo pipefail
+
+declare -A cur
+
+query() {
+  nix-env --query --json "$@" | jq -r '.[] | .pname + " " + .version'
+}
+
+query_args=()
+
+if [[ $# -eq 1 ]]; then
+  query_args=('--file' "https://github.com/NixOS/nixpkgs/archive/$1.tar.gz")
+fi
+
+while read -r name version; do
+  cur[${name}]=${version}
+done < <(query "${query_args[@]}")
+
+ret=0
+while read -r name version; do
+  if [[ -n ${cur[${name}]:-} ]]; then
+    if [[ "${version}" != "${cur[${name}]}" ]]; then
+      echo -e "\033[33mM ${name} ${cur[${name}]} ➤ ${version}\033[0m"
+      ret=1
+    fi
+    unset "cur[${name}]"
+  else
+    echo -e "\033[32mA ${name} ${version}\033[0m"
+    ret=1
+  fi
+done < <(query -af "$HOME/.config/nix/env.nix")
+
+for name in "${!cur[@]}"; do
+  echo -e "\033[31mD ${name} ${cur[${name}]}\033[0m"
+  ret=1
+done
+
+if [[ ${ret} -ne 0 ]]; then
+  # Disable SC2016 (info): Expressions don't expand in single quotes, use double quotes for that.
+  # shellcheck disable=SC2016
+  echo 'Run `nix-env -irf ~/.config/nix/env.nix` to make these changes'
+fi
+
+exit "${ret}"
+
+# vim: set sw=2 sts=2 ts=8 et ft=bash:
+#+end_src
+
+** nix.conf
+
+#+begin_src conf :tangle ~/.config/nix/nix.conf
+experimental-features = nix-command flakes
+#+end_src
+
+** Flakes
+
+#+begin_src nix :tangle ~/.config/nix/env/flake.nix
+# {
+#   description = "Environment";
+
+#   inputs = {
+#     stable.url = "github:nixos/nixpkgs/nixos-21.11";
+#     unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+
+#     nixpkgs.follows = "unstable";
+
+#     darwin = {
+#       url = "github:lnl7/nix-darwin";
+#       inputs.nixpkgs.follows = "nixpkgs";
+#     };
+
+#   };
+
+#   outputs = {nixpkgs, darwin, ...}: {
+#     darwinConfigurations = rec {
+#       "Donavans-Virtual-Machine" = darwin.lib.darwinSystem {
+#         system = "aarch64-darwin";
+#         modules = [ ./nix-darwin/configuration.nix ];
+#       };
+#     };
+#   };
+# }
+{
+  description = "Example Darwin system flake";
+
+  inputs = {
+    stable.url = "github:nixos/nixpkgs/nixos-21.11";
+    unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+
+    nixpkgs.follows = "unstable";
+
+    nix-darwin = {
+      url = "github:lnl7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+  };
+
+  outputs = { self, nix-darwin, nixpkgs, ...}:
+      {
+        darwinConfigurations."Donavans-Virtual-Machine" = nix-darwin.lib.darwinSystem {
+          modules = [ (import ./nix-darwin/configuration.nix {self = self;}) ];
+          # modules = [ configuration ];
+        };
+
+        # Expose the package set, including overlays, for convenience.
+        darwinPackages = self.darwinConfigurations."Donavans-Virtual-Machine".pkgs;
+      };
+}
+#+end_src
 
 * ssh
 
