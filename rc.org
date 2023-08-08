@@ -5609,7 +5609,7 @@ These are the defaults but are here so I can remember them and echo them when ne
 | JAVA_TOOL_OPTIONS | $JAVA_TOOL_OPTIONS -Dapple.awt.UIElement=true               |
 | JAVA_HOME         | /Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home |
 
-*** zshenv
+*** zshenv and zprofile
 
 #+name: set-env
 #+begin_src elisp :var env-block='()
@@ -5624,16 +5624,31 @@ These are the defaults but are here so I can remember them and echo them when ne
 #+end_src
 
 #+begin_src sh :tangle ~/.zshenv
-<<set-env(env-block="path")>>
-<<set-env(env-block="aws")>>
-<<set-env(env-block="java")>>
-<<set-env(env-block="chemacs")>>
+# [[ -o login ]] && export PATH='/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
 source ~/.zprofile
 #+end_src
 
-** 1Password
+#+begin_src sh :tangle ~/.zprofile
+<<set-env(env-block="path")>>
+<<set-env(env-block="xdg")>>
+<<set-env(env-block="aws")>>
+<<set-env(env-block="java")>>
+<<set-env(env-block="chemacs")>>
+<<zprofile>>
+#+end_src
 
-#+begin_src sh :tangle no
+**** TODO would be nice to be able to split up the tables that hold path env vars
+
+This won't work because we're using ~org-babel-ref-resolve~ and it's finding the first one. If there is another identifier that we can use to collect them all and then process them we could split up the path tables per client like we do with noweb refs
+#+name: env-path
+| PATH | $PATH:$HOME/bin |
+
+#+name: env-path
+| PATH | $PATH:/tmp |
+
+** COMMENT 1Password
+
+#+begin_src sh
 eval $(op signin my)
 #+end_src
 
