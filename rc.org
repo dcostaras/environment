@@ -1995,14 +1995,18 @@ advises functions to enable or disable features based on user configuration."
                     (rigpa-enter-mode "word"))))
 #+end_src
 
-*** Ivy/Vertico
+*** vertico
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
 (after! vertico
   (map! :map vertico-map
         "C-h" #'vertico-directory-delete-char
         "C-l" #'vertico-insert))
+#+end_src
 
+**** COMMENT ivy
+
+#+begin_src elisp
 (after! ivy
 
   (setq ivy-extra-directories '())
@@ -2022,6 +2026,9 @@ advises functions to enable or disable features based on user configuration."
    '(("i" ivy-copy-to-buffer-action "insert")
      ("y" ivy-yank-action "yank"))))
 #+end_src
+**** TODO Support shifting the posframe around when needed
+
+(setq vertico-posframe-poshandler #'posframe-poshandler-frame-top-center)
 
 *** Corfu
 
