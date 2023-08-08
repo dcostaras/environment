@@ -1450,6 +1450,26 @@ JSON.stringify({
 (use-package! general)
 #+end_src
 
+*** Theme
+
+#+begin_src elisp :tangle ~/.doom.d/config.el
+(setq doom-theme 'doom-monokai-pro)
+
+(custom-theme-set-faces! '(doom-monokai-pro)
+  ;; `(doom-modeline-bar :background ,(doom-color 'black) :foreground ,(doom-color 'black))
+  <<faces>>
+
+  ;; `(mode-line :foreground ,(doom-color 'blue))
+  ;; `(mode-line-buffer-id :foreground ,(doom-color 'fg) :background "#000000")
+  ;; '(mode-line-success-highlight :background \"#00FF00\")
+  ;; '(org-tag :background \"#4499FF\")
+  ;; '(org-ellipsis :inherit org-tag)
+  ;; '(which-key-docstring-face :inherit font-lock-comment-face)
+  )
+
+(load-theme 'doom-monokai-pro t)
+#+end_src
+
 *** evil
 **** Symex
 
@@ -1659,9 +1679,6 @@ advises functions to enable or disable features based on user configuration."
       (advice-add #'symex-go-forward :around #'symex--forget-branch-positions))
     (symex--add-selection-advice))
 
-  (setq evil-symex-state-cursor (list (doom-color 'orange) 'box))
-  (setq evil-normal-state-cursor (list (doom-color 'green) 'box))
-
   (>symex-initialize))
 #+end_src
 
@@ -1755,6 +1772,49 @@ advises functions to enable or disable features based on user configuration."
 `(evil-goggles-yank-face :background ,(doom-color 'green))
 `(evil-goggles-paste-face :background ,(doom-color 'violet))
 `(evil-goggles-delete-face :background ,(doom-color 'red))
+#+end_src
+
+**** State indicators
+
+#+begin_src elisp :noweb-ref evil-config
+(setq >evil-symex-state-colour (doom-color 'orange))
+(setq >evil-normal-state-colour (doom-color 'green))
+(setq >evil-insert-state-colour (doom-color 'violet))
+(setq >evil-visual-state-colour (doom-color 'yellow))
+(setq >evil-motion-state-colour (doom-color 'red))
+(setq >evil-replace-state-colour (doom-color 'orange))
+(setq >evil-operator-state-colour (doom-color 'blue))
+
+(setq evil-symex-state-cursor (list >evil-symex-state-colour 'box))
+(setq evil-normal-state-cursor (list >evil-normal-state-colour 'box))
+(setq evil-insert-state-cursor (list >evil-insert-state-colour 'bar))
+(setq evil-visual-state-cursor (list >evil-visual-state-colour 'hollow))
+(setq evil-motion-state-cursor (list >evil-motion-state-colour 'box))
+(setq evil-replace-state-cursor (list >evil-replace-state-colour 'hbar))
+(setq evil-operator-state-cursor (list >evil-operator-state-colour #'evil-half-cursor))
+
+(defun >evil-state-string->colour (state-string)
+  (concat ">evil-" state-string "-state-colour"))
+
+(defun >evil-states-entry-hook ()
+  (let ((colour (-> evil-state
+                    symbol->string
+                    >evil-state-string->colour
+                    string->symbol
+                    symbol-value)))
+    (custom-set-faces!
+      (list 'line-number :foreground colour :slant 'normal)
+      (list 'line-number-current-line :foreground "black" :background colour))))
+
+(add-hook!
+ '(evil-symex-state-entry-hook
+   evil-normal-state-entry-hook
+   evil-insert-state-entry-hook
+   evil-visual-state-entry-hook
+   evil-motion-state-entry-hook
+   evil-replace-state-entry-hook
+   evil-operator-state-entry-hook)
+ #'>evil-states-entry-hook)
 #+end_src
 
 **** Package
@@ -4030,28 +4090,6 @@ If buffer-or-name is nil return current buffer's mode."
      (t (>eshell)))))
 
 (map! :n "-" #'dired-or-eshell)
-#+end_src
-
-*** Theme
-
-#+begin_src elisp :tangle ~/.doom.d/config.el
-(setq doom-theme 'doom-monokai-pro)
-
-(custom-theme-set-faces! '(doom-monokai-pro)
-  `(line-number :foreground ,(doom-color 'green))
-  `(line-number-current-line :foreground ,(doom-color 'red))
-  `(doom-modeline-bar :background ,(doom-color 'black) :foreground ,(doom-color 'black))
-  <<faces>>
-
-  ;; `(mode-line :foreground ,(doom-color 'blue))
-  ;; `(mode-line-buffer-id :foreground ,(doom-color 'fg) :background "#000000")
-  ;; '(mode-line-success-highlight :background \"#00FF00\")
-  ;; '(org-tag :background \"#4499FF\")
-  ;; '(org-ellipsis :inherit org-tag)
-  ;; '(which-key-docstring-face :inherit font-lock-comment-face)
-  )
-
-(load-theme 'doom-monokai-pro t)
 #+end_src
 
 *** Functions
