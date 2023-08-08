@@ -859,6 +859,10 @@ Does it clashes semantically with actual org environment?
       (org-babel-tangle))))
 #+end_src
 
+#+begin_src elisp :noweb-ref org-post-tangle-environment-hook
+(load-file "~/.doom.d/config.el")
+#+end_src
+
 #+begin_src elisp
 (defun >post-tangle-environment-hook ()
   <<org-post-tangle-environment-hook>>)
