@@ -2,6 +2,6 @@
 #+property: header-args+ :mkdirp yes
 #+property: header-args+ :noweb yes
 #+property: header-args+ :comments link
-#+property: header-args:emacs-lisp+ :lexical t
+#+property: header-args:elisp+ :lexical t
 
 #+options: prop:t
