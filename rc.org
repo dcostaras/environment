@@ -4722,6 +4722,32 @@ If buffer-or-name is nil return current buffer's mode."
   :kill-process-buffer-on-stop t)
 #+end_src
 
+*** TODO add all annexes to services and make sure everything is up to date
+
+
+- [X] org/books
+- [X] comics
+- [ ] audio
+  - [ ] Need to check desktop for lost stuff in audio-old folder
+  - [ ] projects
+    - [ ] need to setup size split annex attr
+    - [ ] need to selvage what I can from old folder
+  - [ ] application data
+  - [ ] dj sets
+  - [ ] plugins
+    - [ ] add new misc plugins to annex
+    - [ ] need to selvage what I can from old folder
+  - [ ] samples
+    - [ ] need to selvage what I can from old folder
+  - [ ] tutorials
+    - [ ] need to selvage what I can from old folder
+  - [ ] patches
+    - [ ] need to setup git
+    - [ ] setup annex and remotes
+    - [ ] need to selvage what I can from old folder
+- [ ] rsync
+  - [ ] delete brain dir
+
 ** .dir-locals
 
 #+begin_src elisp
