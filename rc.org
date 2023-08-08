@@ -2689,6 +2689,69 @@ magit
   (setq lsp-ui-sideline-show-hover t))
 #+end_src
 
+*** Workspaces
+
+"tab emulation, persistence & separate workspaces"
+
+#+begin_src elisp :noweb-ref doom-ui
+workspaces
+#+end_src
+
+**** persp-mode
+:PROPERTIES:
+:header-args+: :noweb-ref persp-mode-config
+:END:
+
+persp-mode functionality is disabled by Doom for buffers that Doom considers 'unreal'. This allows us to make certain buffers 'real'.
+#+begin_src elisp
+(defun >real-buffer-p (buffer)
+  (or
+   <<real-buffer>>))
+
+(push #'>real-buffer-p doom-real-buffer-functions)
+#+end_src
+
+***** Package
+
+#+begin_src elisp :noweb-ref doom-config
+(use-package! persp-mode
+  :config
+  <<persp-mode-config>>)
+#+end_src
+
+***** TODO COMMENT persp-mode configs to check out
+
+#+begin_src elisp
+(with-eval-after-load "persp-mode-autoload"
+  (with-eval-after-load "dired"
+    (persp-def-auto-persp "dired"
+                          :parameters '((dont-save-to-file . t))
+                          :mode 'dired-mode
+                          :dyn-env '(after-switch-to-buffer-functions ;; prevent recursion
+                                     (persp-add-buffer-on-find-file nil)
+                                     persp-add-buffer-on-after-change-major-mode)
+                          :hooks '(after-switch-to-buffer-functions)
+                          :switch 'window)))
+
+(defun my/roam-buffer (_buffer state)
+  (let ((name (buffer-file-name)))
+    (when (and name (s-contains-p "/org-roam/" name))
+      (if (null state)
+          't
+        state))))
+
+(with-eval-after-load 'org-roam
+  ;; (setq org-roam-db-location (expand-file-name "~/.org-roam.sqlite"))
+  (persp-def-auto-persp "org-roam"
+                        :parameters '((dont-save-to-file . t))
+                        :predicate 'my/roam-buffer
+                        :dyn-env '(after-switch-to-buffer-functions ;; prevent recursion
+                                   (persp-add-buffer-on-find-file nil)
+                                   persp-add-buffer-on-after-change-major-mode)
+                        :hooks '(after-switch-to-buffer-functions)
+                        :switch 'frame))
+#+end_src
+
 *** YASnippet
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
@@ -4299,8 +4362,8 @@ If buffer-or-name is nil return current buffer's mode."
        vc-gutter           ; vcs diff in the fringe
        vi-tilde-fringe     ; fringe tildes to mark beyond EOB
        window-select       ; TODO check +numbers visually switch windows
-       workspaces          ; tab emulation, persistence & separate workspaces
        zen                 ; distraction-free coding or writing
+       <<doom-ui>>
 
        :editor
        (evil +everywhere)  ; come to the dark side, we have cookies
