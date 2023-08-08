@@ -4871,19 +4871,23 @@ try print(task.run())
 
 * Karabiner
 
-** COMMENT Create fake notification
+** Functionality
 
-#+begin_src elisp :noweb-ref doom-config
-(defun >foobar-notification ()
-  (>osa-notify "foobar" :title "a title" :subtitle "a subtitle"))
+#+name: karabiner-shell
+#+begin_src elisp var cmd=""
+(let ((command (s-split " " cmd)))
+  (setcar command (executable-find (car command)))
+  (format "\"%s\"" (s-join " " command)))
 #+end_src
 
-#+begin_src clojure :noweb-ref karabiner-rules
-{:des ""
- :rules [[:##right_shift :right_shift nil {:alone "e '(>foobar-notification)'"}]]}
+#+name: karabiner-e
+#+begin_src elisp var cmd=""
+(let ((arg (format "'%s'" cmd))
+      (e (executable-find "e")))
+  (s-lex-format "\"${e} ${arg}\""))
 #+end_src
 
-** Capture URL in Safari
+** Org capture current Safari URL
 
 #+name: org-capture-safari-tab-template
 #+begin_src org
@@ -4934,11 +4938,10 @@ try print(task.run())
 #+end_src
 
 #+begin_src clojure :noweb-ref karabiner-rules
-{:des ""
- :rules [[:##right_shift :right_shift nil {:alone "e '(>org-capture-safari-tab-frame)'"}]]}
+{:des "Right shift by itself calls >org-capture-safari-tab-fram"
+ :rules [[:##right_shift :right_shift nil {:alone <<karabiner-e(cmd="(>org-capture-safari-tab-frame)")>>}]]}
 #+end_src
 
-** TODO errors in e evaluations are swallowed
 ** Config
 
 #+begin_src clojure :tangle ~/.config/karabiner.edn
@@ -4952,7 +4955,7 @@ try print(task.run())
 ;;          :rules [[:a :1] [:b :2] [:c [:1 :2 :3]]]}]}
 
 ;; or we can separate them into three manipulators
-{:main [{:des "a to 1 only in chrome and safari" :rules [[:a :1 [:chrome]]]}
+{:main [;; {:des "a to 1 only in chrome and safari" :rules [[:a :1 [:chrome]]]}
 
         {:des "caps_lock to esc when pressed alone, to ctrl as modifier"
          :rules [[:##caps_lock :left_control nil {:alone :escape}]
@@ -5071,18 +5074,43 @@ try print(task.run())
 ;;               :##a "keycode a optional any"
 ;;               :!!a "mandatory hyper(control command option shift) a "}}
 #+end_src
+** Spaces
 
-** Compile
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des "Move between spaces"
+ :rules [[:!CTh <<karabiner-shell(cmd="yabai -m space --focus prev")>>]
+         [:!CTl <<karabiner-shell(cmd="yabai -m space --focus next")>>]]}
+#+end_src
+
+** goku
+
+#+begin_src nix :noweb-ref system-packages
+goku
+#+end_src
 
 #+begin_src elisp :noweb-ref org-post-tangle-environment-hook
-(let* ((output-buffer (get-buffer-create "*Goku compile*"))
-       (proc (start-process "goku" output-buffer "goku"))
-       (sentinel (lambda (process signal)
-                   (when (memq (process-status process) '(exit signal))
-                     (message "Done")))))
-  (if (process-live-p proc)
-      (set-process-sentinel proc sentinel)
-    (message "No process running.")))
+(>start-process "goku")
+#+end_src
+
+** Install
+
+#+begin_src nix :noweb-ref darwin-config
+services.karabiner-elements = {
+  enable = true;
+};
+#+end_src
+
+** TODO errors in e evaluations are swallowed
+** COMMENT Create fake notification
+
+#+begin_src elisp :noweb-ref doom-config
+(defun >foobar-notification ()
+  (>osa-notify "foobar" :title "a title" :subtitle "a subtitle"))
+#+end_src
+
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des ""
+ :rules [[:##right_shift :right_shift nil {:alone "e '(>foobar-notification)'"}]]}
 #+end_src
 
 * Clojure environment
