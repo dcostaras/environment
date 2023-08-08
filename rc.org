@@ -4665,6 +4665,75 @@ If buffer-or-name is nil return current buffer's mode."
 
 ** services
 
+*** git annex
+
+#+begin_src elisp :tangle ~/.doom.d/config.el
+(prodigy-define-tag
+  :name 'annex-backup
+  :command "git"
+  :stop-signal 'sigkill
+  :kill-process-buffer-on-stop t
+  :on-output (lambda (&rest args)
+               (let ((output (plist-get args :output))
+                     (service (plist-get args :service)))
+                 (when (s-matches? "recording state in git..." output)
+                   (prodigy-set-status service 'stopped)))))
+#+end_src
+
+#+begin_src elisp :tangle ~/.doom.d/config.el
+(prodigy-define-tag
+  :name 'org
+  :cwd "~/org")
+
+(prodigy-define-service
+  :tags '(org annex-backup)
+  :name "Org: annex copy --all --to rsync"
+  :args (->> "annex copy --all --to rsync"
+             (s-split " ")))
+
+(prodigy-define-service
+  :tags '(org annex-backup)
+  :name "Org: annex copy --all --to drive"
+  :args (->> "annex copy --all --to drive"
+             (s-split " ")))
+
+(prodigy-define-service
+  :name "Org add books"
+  :command "git"
+  :args (->> "annex add ."
+             (s-split " "))
+  :cwd "~/org/books"
+  :tags '(annex-add))
+#+end_src
+
+#+begin_src elisp :tangle ~/.doom.d/config.el
+(prodigy-define-tag
+  :name 'tracks
+  :cwd "~/tracks")
+
+(prodigy-define-service
+  :tags '(tracks annex-backup)
+  :name "Tracks: annex copy --all --to rsync"
+  :args (->> "annex copy --all --to rsync"
+             (s-split " ")))
+
+(prodigy-define-service
+  :tags '(tracks annex-backup)
+  :name "Tracks: annex copy --all --to drive"
+  :args (->> "annex copy --all --to drive"
+             (s-split " ")))
+
+;; (prodigy-define-service
+;;   :name "Org add books"
+;;   :command "git"
+;;   :args (->> "annex add ."
+;;              (s-split " "))
+;;   :cwd "~/org/books"
+;;   :tags '(annex-add))
+#+end_src
+
+*** COMMENT JRA
+
 #+begin_src elisp :tangle ~/.doom.d/config.el
 (prodigy-define-service
   :name "fulcro template"
