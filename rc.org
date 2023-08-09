@@ -2641,6 +2641,18 @@ org-mode
 `(git-annex-dired-annexed-available :foreground ,(doom-color 'green))
 #+end_src
 
+**** COMMENT dirvish
+
+#+begin_src elisp :noweb-ref packages
+(package! dirvish)
+#+end_src
+
+#+begin_src elisp
+(use-package! dirvish
+  :config
+  (dirvish-override-dired-mode))
+#+end_src
+
 *** Aggressive indent
 
 Can turn this on once I've worked to fix at least the multiple undo points
