@@ -1252,6 +1252,11 @@ main = do
   (org-mode . org-sticky-header-mode))
 #+end_src
 
+**** TODO org-appear
+Investigate
+
+**** TODO org-edna
+Investigate
 
 **** Package
 
