@@ -1238,6 +1238,20 @@ main = do
 #+end_src
 
 ***** TODO this doesn't work with ~emacs -Q~
+**** org-sticky-header
+
+#+begin_src elisp :noweb-ref packages
+(package! org-sticky-header)
+#+end_src
+
+#+begin_src elisp
+(use-package! org-sticky-header
+  :custom
+  (org-sticky-header-full-path 'full)
+  :hook
+  (org-mode . org-sticky-header-mode))
+#+end_src
+
 
 **** Package
 
