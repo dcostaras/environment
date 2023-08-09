@@ -2653,6 +2653,23 @@ org-mode
   (dirvish-override-dired-mode))
 #+end_src
 
+*** vundo
+
+#+begin_src elisp :noweb-ref packages
+(package! vundo)
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config
+(use-package! vundo
+  :config
+  (setq vundo-glyph-alist vundo-unicode-symbols)
+  (setq vundo-compact-display t)
+  (map! :map vundo-mode-map
+        [remap doom/escape] #'vundo-quit)
+  (map! :leader
+        :desc "Visual Undo Tree" "b U" #'vundo))
+#+end_src
+
 *** Aggressive indent
 
 Can turn this on once I've worked to fix at least the multiple undo points
@@ -4504,8 +4521,8 @@ If buffer-or-name is nil return current buffer's mode."
        dired               ; making dired pretty [functional]
        electric            ; smarter, keyword-based electric-indent
        ibuffer             ; interactive buffer management
-       undo                ; persistent, smarter undo for your inevitable mistakes
        vc                  ; version-control and Emacs, sitting in a tree
+       <<doom-init-emacs>>
 
        :term
        eshell              ; the elisp shell that works everywhere
