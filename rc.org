@@ -6840,6 +6840,103 @@ tell application "UTM"
 end tell
 #+end_src
 
+* Bootstrap
+
+** Install Nix
+
+#+begin_src sh
+sh <(curl -L https://nixos.org/nix/install)
+#+end_src
+
+** Tangle minimal env
+
+#+begin_src sh :eval never
+rm -rf ~/env && cd /tmp && curl --location --output env.zip https://github.com/dcostaras/environment/archive/refs/heads/master.zip && unzip env.zip && mv environment-master ~/env && cd ~/env && nix --extra-experimental-features "nix-command flakes" shell --impure --expr "{pkgs ? import <nixpkgs> {}}:pkgs.emacsWithPackages  (epkgs: (with epkgs.melpaStablePackages;    [dash s nix-mode ]))" --command emacs --batch --eval "(progn  (require 'org)  (require 's)  (require 'dash)  (require 'nix-mode)  (setq org-confirm-babel-evaluate nil)  (org-babel-tangle-file \"rc.org\" nil \"nix\"))"
+#+end_src
+
+*** Download and extract environment repo manually
+
+#+name: env-extract
+#+begin_src sh
+cd /tmp &&
+    curl --location --output env.zip https://github.com/dcostaras/environment/archive/refs/heads/master.zip &&
+    unzip env.zip &&
+    mv environment-master ~/env &&
+    cd ~/env
+#+end_src
+
+#+name: env-tangle
+#+begin_src elisp
+(progn
+  (require 'org)
+  (require 's)
+  (require 'dash)
+  (require 'nix-mode)
+  (setq org-confirm-babel-evaluate nil)
+  (org-babel-tangle-file "rc.org" nil "nix"))
+#+end_src
+
+#+name: env-emacs
+#+begin_src nix
+{pkgs ? import <nixpkgs> {}}:
+pkgs.emacsWithPackages (
+  epkgs: (
+    with epkgs.melpaStablePackages;
+    [
+      dash
+      s
+      nix-mode
+    ]
+  )
+)
+#+end_src
+
+Tangle environment
+#+begin_src sh :eval never
+rm -rf ~/env &&
+    <<env-extract>> &&
+    nix --extra-experimental-features "nix-command flakes" \
+    shell --impure --expr <<src-block-value(name="env-emacs",nl="nil")>> \
+    --command emacs --batch --eval <<src-block-value(name="env-tangle",nl="nil")>>
+#+end_src
+
+** COMMENT Old install
+
+#+begin_src sh
+cd ~/.config/nix/env &&
+    XDG_CONFIG_HOME="$HOME/.config" \
+    nix-build \
+    -I "darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz" \
+    -I "darwin-config=$HOME/.config/nix/env/nix-darwin/configuration.nix" \
+    https://github.com/LnL7/nix-darwin/archive/master.tar.gz -A installer
+#+end_src
+
+#+begin_src sh
+cd ~/.config/nix/env &&
+    XDG_CONFIG_HOME="$HOME/.config" \
+    ./result/sw/bin/darwin-rebuild \
+    -I "/nix/var/nix/profiles/per-user/root/channels" \
+    -I "$HOME/.nix-defexpr/channels" \
+    -I "darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz" \
+    -I "darwin-config=$HOME/.config/nix/env/nix-darwin/configuration.nix" \
+    -v \
+    switch
+#+end_src
+
+# NIX_PATH="$NIX_PATHdarwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz:darwin-config=$HOME/.config/nix/env/nix-darwin/configuration.nix" \
+
+#+begin_src sh
+cd ~/.config/nix/env &&
+    XDG_CONFIG_HOME="$HOME/.config" \
+    ./result/bin/darwin-installer -I "darwin=https://github.com/LnL7/nix-darwin/archive/master.tar.gz"
+#+end_src
+
+** Switch
+
+#+begin_src sh
+cd ~/.config/nix/env && sudo nix --extra-experimental-features "nix-command flakes" run nix-darwin -- switch --flake .
+#+end_src
+
 * TODO Quicklook plugins
 Works: --------------------
   # Preview source code files with syntax highlighting (like colored .JS files)
