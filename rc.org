@@ -2670,6 +2670,26 @@ org-mode
         :desc "Visual Undo Tree" "b U" #'vundo))
 #+end_src
 
+*** topsy
+
+#+begin_src elisp :noweb-ref packages
+(package! topsy)
+#+end_src
+
+#+begin_src elisp :noweb-ref doom-config
+(use-package! topsy
+  :defer t
+  :init
+  (add-hook! prog-mode
+    (unless (memq major-mode '(+doom-dashboard-mode org-mode dirvish-mode))
+      (topsy-mode 1)))
+
+  :config
+  (custom-set-faces!
+    '(header-line :family "Victor Mono"
+      :inherit default)))
+#+end_src
+
 *** Aggressive indent
 
 Can turn this on once I've worked to fix at least the multiple undo points
