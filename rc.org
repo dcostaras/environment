@@ -6260,6 +6260,19 @@ cask "font-inconsolata"
    --with-zeromq \
    --with-zimg
 
+** shell setup
+
+#+begin_src sh :noweb-ref zprofile
+eval "$(/opt/homebrew/bin/brew shellenv)"
+#+end_src
+
+* MacPorts
+
+#+begin_src sh :noweb-ref zprofile
+export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
+export MANPATH="/opt/local/share/man:$MANPATH"
+#+end_src
+
 * Nix
 ** COMMENT Environment
 
