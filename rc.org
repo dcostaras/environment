@@ -1701,6 +1701,10 @@ advises functions to enable or disable features based on user configuration."
   (>symex-initialize))
 #+end_src
 
+#+begin_src elisp :noweb-ref faces
+`(symex--current-node-face :background ,(doom-darken (doom-color 'orange) 0.7))
+#+end_src
+
 **** evil-ex-define-cmd-local
 
 #+begin_src elisp :noweb-ref evil-config
@@ -1834,6 +1838,10 @@ advises functions to enable or disable features based on user configuration."
    evil-replace-state-entry-hook
    evil-operator-state-entry-hook)
  #'>evil-states-entry-hook)
+#+end_src
+
+#+begin_src elisp :noweb-ref faces
+`(region :background ,(doom-darken >evil-visual-state-colour 0.75))
 #+end_src
 
 **** Package
