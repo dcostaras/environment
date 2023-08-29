@@ -547,14 +547,17 @@ This makes sure that the ~fn~ and ~defn~ functions are available during tangling
 #+end_src
 
 #+name: src-block-value
-#+begin_src elisp :var name="" :var nl="" :noweb-ref no
+#+begin_src elisp :var name="" :var nl="" :var lang="" :noweb-ref no
 (let* ((element (save-excursion
                   (org-babel-goto-named-src-block name)
                   (org-element-at-point)))
        (value (org-element-property :value element)))
-  (if (s-equals? "nil" nl)
-      (pp (replace-regexp-in-string "\n" "" value))
-    (pp value)))
+  (cond
+   ((s-equals? "nil" nl)
+    (pp (replace-regexp-in-string "\n" "" value)))
+   ((s-equals? "clojure" lang)
+    (pp (concat "(do " value ")")))
+   (t (pp value))))
 #+end_src
 
 ***** ex commands
@@ -1469,10 +1472,20 @@ JSON.stringify({
 (use-package! general)
 #+end_src
 
-*** Theme
+*** Theme and faces
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
 (setq doom-theme 'doom-monokai-pro)
+
+(load-theme 'doom-monokai-pro t)
+
+(setq >evil-symex-state-colour (doom-color 'orange))
+(setq >evil-normal-state-colour (doom-color 'green))
+(setq >evil-insert-state-colour (doom-color 'violet))
+(setq >evil-visual-state-colour (doom-color 'yellow))
+(setq >evil-motion-state-colour (doom-color 'red))
+(setq >evil-replace-state-colour (doom-color 'orange))
+(setq >evil-operator-state-colour (doom-color 'blue))
 
 (custom-theme-set-faces! '(doom-monokai-pro)
   ;; `(doom-modeline-bar :background ,(doom-color 'black) :foreground ,(doom-color 'black))
@@ -1485,8 +1498,6 @@ JSON.stringify({
   ;; '(org-ellipsis :inherit org-tag)
   ;; '(which-key-docstring-face :inherit font-lock-comment-face)
   )
-
-(load-theme 'doom-monokai-pro t)
 #+end_src
 
 *** evil
@@ -1792,22 +1803,15 @@ advises functions to enable or disable features based on user configuration."
 #+end_src
 
 #+begin_src elisp :noweb-ref faces
-`(evil-goggles-yank-face :background ,(doom-color 'green))
-`(evil-goggles-paste-face :background ,(doom-color 'violet))
+`(evil-goggles-yank-face :background ,>evil-operator-state-colour)
+`(evil-goggles-change-face :background ,>evil-insert-state-colour)
+`(evil-goggles-paste-face :background ,>evil-normal-state-colour)
 `(evil-goggles-delete-face :background ,(doom-color 'red))
 #+end_src
 
 **** State indicators
 
 #+begin_src elisp :noweb-ref evil-config
-(setq >evil-symex-state-colour (doom-color 'orange))
-(setq >evil-normal-state-colour (doom-color 'green))
-(setq >evil-insert-state-colour (doom-color 'violet))
-(setq >evil-visual-state-colour (doom-color 'yellow))
-(setq >evil-motion-state-colour (doom-color 'red))
-(setq >evil-replace-state-colour (doom-color 'orange))
-(setq >evil-operator-state-colour (doom-color 'blue))
-
 (setq evil-symex-state-cursor (list >evil-symex-state-colour 'box))
 (setq evil-normal-state-cursor (list >evil-normal-state-colour 'box))
 (setq evil-insert-state-cursor (list >evil-insert-state-colour 'bar))
@@ -2183,7 +2187,6 @@ advises functions to enable or disable features based on user configuration."
               cape-sgml
               cape-rfc1345
               cape-abbrev
-              cape-ispell
               cape-dict
               cape-symbol
               cape-line)
@@ -2191,15 +2194,15 @@ advises functions to enable or disable features based on user configuration."
    (add-to-list 'completion-at-point-functions #'cape-file)
    (when +corfu-ispell-in-comments-and-strings
      (defalias 'corfu--ispell-in-comments-and-strings
-       (cape-super-capf (cape-capf-inside-comment #'cape-ispell)
-                        (cape-capf-inside-string #'cape-ispell)))
+       (cape-super-capf (cape-capf-inside-comment #'cape-dict)
+                        (cape-capf-inside-string #'cape-dict)))
      (add-hook 'prog-mode-hook
                (lambda ()
                  (add-to-list 'completion-at-point-functions #'corfu--ispell-in-comments-and-strings))))
    (dolist (sym +corfu-ispell-completion-modes)
      (add-hook (intern (concat (symbol-name sym) "-hook"))
                (lambda ()
-                 (add-to-list 'completion-at-point-functions #'cape-ispell))))
+                 (add-to-list 'completion-at-point-functions #'cape-dict))))
    (add-hook! '(TeX-mode-hook LaTeX-mode-hook org-mode-hook)
      (lambda ()
        (add-to-list 'completion-at-point-functions #'cape-tex t))
@@ -2690,7 +2693,7 @@ org-mode
       :inherit default)))
 #+end_src
 
-*** topspace
+*** COMMENT topspace
 
 #+begin_src elisp :noweb-ref packages
 (package! topspace)
@@ -3121,6 +3124,13 @@ and switch to REPL"
 (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
 (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
 #+end_src
+**** Hooks
+
+#+begin_src elisp
+(defun >clojure-modes-hook ()
+  (prn '--------------------------------------------------)
+  <<clojure-modes-hook>>)
+#+end_src
 
 **** cider-interactive-eval-clj
 
@@ -3166,7 +3176,6 @@ arguments and only proceed with evaluation if it returns nil."
 
 #+begin_src elisp
 (defun >define-clojure-mode-hooks (hook-function)
-  (message "bar")
   (add-hook!
    '(clojure-mode-hook
      clojurec-mode-hook
@@ -3237,26 +3246,26 @@ arguments and only proceed with evaluation if it returns nil."
  "q" 'cider-popup-buffer-quit)
  #+end_src
 
-**** COMMENT Eval commands
+**** Eval commands
 Three ways to eval a string:
 
 Evals in environment but doesn't print
-#+begin_src elisp
+#+begin_src elisp :noweb-ref no
 (cider-nrepl-sync-request:eval "(form)")
 #+end_src
 
 Evals in environment and prints
-#+begin_src elisp
+#+begin_src elisp :noweb-ref no
 (cider-interactive-eval-clj "(form)")
 #+end_src
 
 Inserts literal form into repl and eval (second arg is `t`)
-#+begin_src elisp
+#+begin_src elisp :noweb-ref no
 (cider-insert-in-repl "(form)" t)
 #+end_src
 
 #+name: cider-load-debug-tools
-#+begin_src clojure
+#+begin_src clojure :noweb-ref no
 (require '[com.gfredericks.debug-repl :refer [break! unbreak! unbreak!!]])
 (require '[hashp.core])
 (use 'hyperfiddle.rcf)
@@ -3265,21 +3274,31 @@ Inserts literal form into repl and eval (second arg is `t`)
 #+end_src
 
 #+begin_src elisp :noweb-prefix no :tangle ~/.doom.d/config.el
+(setq >cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
+
+(defun >cider-kill-all-repls ()
+  (interactive)
+  (kill-matching-buffers >cider-repl-name-rx nil t))
+
+(defun >cider-start-system ()
+  (interactive)
+  (>cider-kill-all-repls)
+  (cider-connect-clj)
+  (cider-connect-sibling-clj '())
+  (cider-repl-switch-to-other)
+  (cider-insert-in-repl "(start-client)" t)
+  ;; (>cider-load-reveal-tap-log)
+  )
+
 (defun >cider-reset ()
   (interactive)
   (projectile-save-project-buffers)
   (cider-interactive-eval-clj "(do (in-ns 'user) (restart-system))"))
 
-(defun >cider-reset-all ()
+(defun >cider-refresh-all ()
   (interactive)
   (projectile-save-project-buffers)
-  (cider-interactive-eval-clj "(do (in-ns 'user) (restart-all-system))"))
-
-(setq >cider-repl-name-rx (rx (seq bol "*cider-repl " (1+ not-newline) "*")))
-
-(defun >kill-cider-repls ()
-  (interactive)
-  (kill-matching-buffers >cider-repl-name-rx nil t))
+  (cider-interactive-eval-clj "(do (in-ns 'user) (refresh-all))"))
 
 (defun >cider-load-reveal-tap-log ()
   (interactive)
@@ -3292,28 +3311,15 @@ Inserts literal form into repl and eval (second arg is `t`)
    (format "%s" '(do (require 'vlaaad.reveal)
                      (vlaaad.reveal/submit-command! (vlaaad.reveal/clear-output))))))
 
-(defun >cider-start-system ()
-  (interactive)
-  (>kill-cider-repls)
-  (cider-connect-clj)
-  (cider-insert-in-repl "(start-system)" t)
-  (cider-connect-sibling-clj '())
-  (cider-repl-switch-to-other)
-  (cider-insert-in-repl "(start-client)" t)
-  (>cider-load-reveal-tap-log))
-
-(defmacro >cider-interactive-eval (&rest body)
-  `(cider-interactive-eval ,(format "%s" `(do ,@body))))
-
 (defun >cider-load-debug-tools ()
   (interactive)
-  (>cider-interactive-eval <<cider-load-debug-tools>>))
+  (>cider-interactive-eval <<src-block-value(name="cider-load-debug-tools",lang="clojure")>>))
 
 (map! (:localleader
        (:map (clojure-mode-map clojurescript-mode-map clojurec-mode-map)
              (:prefix ("r" . "repl")
                       "r" #'>cider-reset
-                      "R" #'>cider-reset-all
+                      "R" #'>cider-refresh-all
                       "s" #'>cider-start-system
                       "t" #'>cider-load-reveal-tap-log
                       "c" #'>cider-clear-reveal))))
@@ -3711,6 +3717,70 @@ While I could refactor this to instrument variable middleware and injection form
 ;;   (set-lookup-handlers! 'cider-mode nil))
 ;; Newline below is required for tangling
 
+#+end_src
+
+**** Completion
+
+#+begin_src elisp
+(defun >clojure-modes-completion-hook ()
+  (prn completion-at-point-functions)
+  (add-hook! 'completion-at-point-functions :local #'lsp-completion-at-point)
+  ;; (setq completion-at-point-functions
+  ;;             '(cape-dabbrev))
+  (prn completion-at-point-functions)
+  )
+
+(setq dabbrev-check-other-buffers nil)
+(defun dabbrev-capf ()
+  "Dabbrev completion function for `completion-at-point-functions'."
+  (dabbrev--reset-global-variables)
+  (let* ((abbrev (dabbrev--abbrev-at-point))
+         (beg (progn (search-backward abbrev) (point)))
+         (end (progn (search-forward abbrev) (point)))
+         ;; (dabbrev--last-table nil)
+         ;; (dabbrev--last-expansion-location nil)
+         ;; (dabbrev--last-buffer nil)
+         ;; (dabbrev-check-other-buffers nil)
+         (ignore-case-p (dabbrev--ignore-case-p abbrev))
+         (list 'uninitialized)
+         ;; (table
+         ;;  (save-excursion
+         ;;    ;;--------------------------------
+         ;;    ;; New abbreviation to expand.
+         ;;    ;;--------------------------------
+         ;;    (setq dabbrev--last-abbreviation abbrev)
+         ;;    ;; Find all expansion
+         ;;    (let ((completion-list
+         ;;           (dabbrev--find-all-expansions abbrev ignore-case-p))
+         ;;          (completion-ignore-case ignore-case-p))
+         ;;      (or (consp completion-list)
+         ;;          (user-error "No dynamic expansion for \"%s\" found%s"
+         ;;                      abbrev
+         ;;                      (if dabbrev--check-other-buffers
+         ;;                          "" " in this-buffer")))
+         ;;      (setq list
+         ;;            (cond
+         ;;             ((not (and ignore-case-p dabbrev-case-replace))
+         ;;              completion-list)
+         ;;             ((string= abbrev (upcase abbrev))
+         ;;              (mapcar #'upcase completion-list))
+         ;;             ((string= (substring abbrev 0 1)
+         ;;                       (upcase (substring abbrev 0 1)))
+         ;;              (mapcar #'capitalize completion-list))
+         ;;             (t
+         ;;              (mapcar #'downcase completion-list)))))))
+         )
+    (list 409 411 '("foobar"))
+    ;; (list beg end table)
+    ))
+
+(add-hook! '(lsp-mode-hook lispy-mode-hook lispyville-mode-hook)
+  (defun >lsp-mode-hook ()
+    (add-hook! 'completion-at-point-functions :local #'lsp-completion-at-point)
+    ;; (add-hook! 'completion-at-point-functions :local #'cape-dabbrev)
+    (add-hook! 'completion-at-point-functions :local #'dabbrev-capf)
+    (prn completion-at-point-functions)))
+(>define-clojure-mode-hooks #'>clojure-modes-completion-hook)
 #+end_src
 
 **** TODO COMMENT Tempel
@@ -4530,7 +4600,7 @@ If buffer-or-name is nil return current buffer's mode."
 (doom! :input
 
        :completion
-       ;; (corfu +icons +tng)
+       (corfu +icons +tng)
        ;company             ; the ultimate code completion backend
        (vertico +icons +childframe)
        ;ivy                 ; a search engine for love and life
@@ -6097,7 +6167,7 @@ sketchybar
 
 #+name: yabai-config
 | mouse_follows_focus         | on           | test |
-| focus_follows_mouse         | autoraise    |      |
+| focus_follows_mouse         | off          |      |
 | window_origin_display       | default      |      |
 | window_placement            | second_child |      |
 | window_zoom_persist         | on           |      |
@@ -6154,17 +6224,10 @@ sudo yabai --load-sa
 <<yabai-config-string()>>
 #+end_src
 
-*** COMMENT Auto compile
+*** Auto compile
 
 #+begin_src elisp :noweb-ref org-post-tangle-environment-hook
-(let* ((output-buffer (get-buffer-create "*Yabai reload*"))
-       (proc (start-process "reload yabai" output-buffer "yabai" "--restart-service"))
-       (sentinel (lambda (process signal)
-                   (when (memq (process-status process) '(exit signal))
-                     (message "Done")))))
-  (if (process-live-p proc)
-      (set-process-sentinel proc sentinel)
-    (message "No process running.")))
+(>start-process "yabai --restart-service")
 #+end_src
 
 * AWS
@@ -6466,6 +6529,7 @@ $(nix-build '<darwin>' -A system --no-out-link)/sw/bin/darwin-rebuild switch -I 
   <<darwin-config>>
 }
 #+end_src
+
 #+begin_src nix :tangle ~/.config/nix/env/nix-darwin/configuration.nix
 { self }: { pkgs, ... }: {
   # List packages installed in system profile. To search by name, run:
