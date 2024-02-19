@@ -3222,6 +3222,67 @@ arguments and only proceed with evaluation if it returns nil."
       (2 font-lock-function-name-face)))))
 
 (>define-clojure-mode-hooks #'>defining-forms-font-lock)
+
+(rx-define >electric-forms
+  (or "e/server"
+      "e/client"
+      ))
+
+(defvar >match 'match)
+
+(defun >electric-forms-font-lock ()
+  (font-lock-add-keywords
+   nil
+   `((,(rx "("
+           (* (syntax whitespace))
+           (group "e/server"))
+      (1 font-lock-warning-face))))
+  (font-lock-add-keywords
+   nil
+   `((,(rx "("
+           (* (syntax whitespace))
+           (group "e/client"))
+      (1 font-lock-function-name-face)))))
+
+(>define-clojure-mode-hooks #'>electric-forms-font-lock)
+   #+end_src
+
+**** Electric Clojure
+
+#+begin_src elisp
+(defun hf-electric-not-a-real-paren (p)
+  (let ((parse-state (syntax-ppss p)))
+    ;;   string?             comment?            escaped?
+    (or (nth 3 parse-state) (nth 4 parse-state) (eq (char-before p)?\\))))
+
+(defun hf-electric-same-overlay-checker (beg face)
+  (lambda (o)
+    (and (eq 'hf-electric (overlay-get o 'category)) (eq face (overlay-get o 'face)) (eq beg (overlay-start o)))))
+
+(defun hf-electric-apply-overlay (face beg)
+  (let ((end (save-excursion (goto-char beg) (forward-sexp) (point))))
+    (if-let ((existing (cl-find-if (hf-electric-same-overlay-checker beg face) (overlays-at beg))))
+        (progn (move-overlay existing beg end) (overlay-put existing 'face face))
+      (let ((new (make-overlay beg end))) (overlay-put new 'category 'hf-electric) (overlay-put new 'face face)))))
+
+(defun hf-electric-?apply-overlay (p)
+  (cond ((looking-at "(e/client") (hf-electric-apply-overlay '(:background "#470109") p))
+        ((looking-at "(e/server") (hf-electric-apply-overlay '(:background "#044412") p))))
+
+(defun hf-electric-overlay-region (_beg end)
+  (save-excursion
+    (beginning-of-defun)
+    (while (and (< (point) end) (re-search-forward "(" end 'noerror))
+      (backward-char)
+      (unless (hf-electric-not-a-real-paren (point)) (hf-electric-?apply-overlay (point)))
+      (forward-char))))
+
+;;;###autoload
+(define-minor-mode hf-electric-mode
+  "Highlight electric client/server code"
+  :init-value nil
+  (when hf-electric-mode
+    (jit-lock-register 'hf-electric-overlay-region t)))
 #+end_src
 
 **** Aggressive indent
@@ -3792,6 +3853,83 @@ While I could refactor this to instrument variable middleware and injection form
            :host github
            :files ("tempel-clojure.el" "templates")
            :repo "mpenet/tempel-clojure"))
+#+end_src
+**** One off functions
+***** Humble
+****** Card props -> dynamic card props
+#+begin_src clojure :noweb-ref none :shebang "#!/usr/bin/env bb -i" :tangle ~/bin/humble-dynamic-card-props
+(println
+ (transduce
+  (comp (map (fn [string]
+               (-> string
+                   (str/replace #":title" ":component.card/title")
+                   (str/replace #":subtitle" ":component.card/subtitle")
+                   (str/replace #":link-to" ":component.card/link")
+                   (str/replace #":fa-icon" ":component.card/icon")
+                   (str/replace #":powered-by" ":component.card/powered-by")
+                   (str/replace #":type" ":component.card/type"))))
+        (interpose "\n"))
+  str
+  ,*input*))
+#+end_src
+
+#+begin_src elisp
+(defun >humble-namespace-card-props (beginning end)
+  (interactive "r")
+  (narrow-to-region beginning end)
+
+  ;; Replace string representation of atoms with contents
+  (goto-char (point-min))
+
+  (shell-command-on-region
+   (point-min)
+   (point-max)
+   "humble-dynamic-card-props"
+   (current-buffer)
+   t
+   "*humble-dynamic-card-props error buffer*"
+   t)
+
+  (widen))
+#+end_src
+****** CSS to hiccup
+
+#+begin_src clojure :noweb-ref none :shebang "#!/usr/bin/env bb -i" :tangle ~/bin/css-to-hiccup
+;; FIXME comments come through
+;; FIXME newlines come through
+(println
+ (transduce
+  (map (fn [string]
+         (let [[property value] (-> string
+                                    (str/trim)
+                                    (str/replace #"(:|;)" "")
+                                    (str/split #" " 2))]
+           (str ":" property
+                " "
+                "\"" value "\""
+                "\n"))))
+  str
+  ,*input*))
+#+end_src
+
+#+begin_src elisp
+(defun >css-to-hiccup (beginning end)
+  (interactive "r")
+  (narrow-to-region beginning end)
+
+  ;; Replace string representation of atoms with contents
+  (goto-char (point-min))
+
+  (shell-command-on-region
+   (point-min)
+   (point-max)
+   "css-to-hiccup"
+   (current-buffer)
+   t
+   "*css-to-hiccup error buffer*"
+   t)
+
+  (widen))
 #+end_src
 
 *** Lispy
@@ -4680,7 +4818,7 @@ If buffer-or-name is nil return current buffer's mode."
        prodigy             ; FIXME managing external services & code builders
        ;;rgb               ; creating color strings
        taskrunner          ; taskrunner for all your projects
-       ;;terraform         ; infrastructure as code
+       terraform           ; infrastructure as code
        ;;tmux              ; an API for interacting with tmux
        ;;upload            ; map local to remote projects via ssh/ftp
        <<doom-init-tools>>
@@ -5156,8 +5294,8 @@ try print(task.run())
         {:des "hyper 1 to cleanup personal folder"
          :rules [[:!!1 "touch ~/Desktop/file.txt"]]}
 
-        {:des "simultaneous j l press to F19"
-         :rules [[[:j :l] "e '(prn (+ 1 1))'"]]}
+        ;; {:des "simultaneous j l press to F19"
+        ;;  :rules [[[:j :l] "e '(prn (+ 1 1))'"]]}
 
         <<karabiner-rules>>]
  :applications {:chrome ["^com\\.google\\.Chrome$"]
@@ -5274,6 +5412,18 @@ try print(task.run())
          [:!CTl <<karabiner-shell(cmd="yabai -m space --focus next")>>]]}
 #+end_src
 
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des "Move space left/right C-A-h/C-A-l "
+ :rules [[:!OTh <<karabiner-shell(cmd="yabai -m space --move prev")>>]
+         [:!OTl <<karabiner-shell(cmd="yabai -m space --move next")>>]]}
+#+end_src
+
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des "Move spaces"
+ :rules [[:!OTh <<karabiner-shell(cmd="yabai -m space --move prev")>>]
+         [:!OTl <<karabiner-shell(cmd="yabai -m space --move next")>>]]}
+#+end_src
+
 ** goku
 
 #+begin_src nix :noweb-ref system-packages
@@ -5306,6 +5456,22 @@ services.karabiner-elements = {
 #+end_src
 
 * Clojure environment
+** pad
+
+#+begin_src clojure :shebang "#!/usr/bin/env bb" :tangle ~/bin/b
+(require '[babashka.deps :as deps])
+;; TODO put back io.github.*
+(deps/add-deps '{:deps {realifelearning/bench {:local/root "/Users/donavan/src/bench"}}})
+
+(ns bench.entrypoint
+  (:require
+   [org.realifelearning.bench.clj-cli :as clj-cli]
+   ;; [org.realifelearning.bench.cli :as cli]
+   ))
+
+(clj-cli/start {})
+#+end_src
+
 ** Inject CIDER dependencies and middleware boot task
 
 :tangle ~/.boot/profile.boot :ns 'nil
@@ -5764,7 +5930,7 @@ bindkey '^h' backward-word
 
 #+BEGIN_SRC sh :tangle ~/.zshrc
 alias cat="bat"
-alias p="prettybat"
+alias pp="prettybat"
 alias vi="nvim"
 #+END_SRC
 
@@ -5788,6 +5954,8 @@ These are the defaults but are here so I can remember them and echo them when ne
 | XDG_STATE_HOME  | $HOME/.local/state |
 
 *** AWS
+
+NOTE: Not active
 
 #+name: env-aws
 | AWS_DEFAULT_REGION | us-east-2 |
@@ -5823,7 +5991,6 @@ source ~/.zprofile
 #+begin_src sh :tangle ~/.zprofile
 <<set-env(env-block="path")>>
 <<set-env(env-block="xdg")>>
-<<set-env(env-block="aws")>>
 <<set-env(env-block="java")>>
 <<set-env(env-block="chemacs")>>
 <<zprofile>>
@@ -5837,6 +6004,13 @@ This won't work because we're using ~org-babel-ref-resolve~ and it's finding the
 
 #+name: env-path
 | PATH | $PATH:/tmp |
+
+** 1Password
+
+#+begin_src sh :tangle ~/.zshrc
+source /Users/donavan/.config/op/plugins.sh
+alias tf="op plugin run -- terraform"
+#+end_src
 
 ** COMMENT 1Password
 
@@ -6148,19 +6322,20 @@ sketchybar
 ** App management
 
 #+name: yabai-unmanaged-apps
-| ^System Preferences$ |
-| ^Finder$             |
-| Steam                |
+| System Settings |
+| Finder          |
+| Steam           |
+| Calendar        |
+| Calculator      |
 
 *** Rule
 
 #+name: yabai-app-management
 #+begin_src elisp :var apps=yabai-unmanaged-apps
 (->> apps
-     (-map (fn (`(,s))
-             (s-lex-format "app='${s}'")))
-     (s-join " ")
-     (concat "yabai -m rule --add manage=off "))
+     (-map (fn (`(,app-name))
+             (s-lex-format "yabai -m rule --add manage=off app='${app-name}'")))
+     (s-join "\n"))
 #+end_src
 
 ** Config
@@ -6234,15 +6409,7 @@ sudo yabai --load-sa
 
 #+begin_src conf :tangle ~/.aws/config
 [default]
-region = us-east-2
-
-[profile admin]
-source = default
-mfa_serial=arn:aws:iam::056866866838:mfa/drcostaras@daitaas.com
-
-[profile root]
-source = default
-mfa_serial=arn:aws:iam::056866866838:mfa/root-account-mfa-device
+region = us-west-2
 #+end_src
 
 * next
@@ -6450,6 +6617,7 @@ export MANPATH="/opt/local/share/man:$MANPATH"
 #+end_src
 
 * Nix
+To reenable nix things like karabiner run ~darwin-rebuild switch~
 ** COMMENT Environment
 
 #+begin_src nix :tangle ~/.config/nix/env.nix
@@ -6481,6 +6649,7 @@ fi
 ** nix-darwin
 
 To build nix-darwin the first time with a custom config location
+
 #+begin_src sh
 $(nix-build '<darwin>' -A system --no-out-link)/sw/bin/darwin-rebuild switch -I "darwin-config=$XDG_CONFIG_HOME/nix/darwin/configuration.nix"
 # $(nix-build '<darwin>' -A system --no-out-link)/sw/bin/darwin-rebuild switch -I "darwin-config=$XDG_CONFIG_HOME/nix/darwin/configuration.nix"
@@ -6664,7 +6833,7 @@ system.activationScripts.postUserActivation.text = "/System/Library/PrivateFrame
 (>start-sudo-process "darwin-rebuild switch")
 #+end_src
 
-** Pinned defexpr
+** COMMENT Pinned defexpr
 
 See [[id:63f3bd33-8510-4810-9f5e-d7618bfba029][Using Nix on macOS]] for scripts that determine the revision to use
 
@@ -6856,6 +7025,15 @@ experimental-features = nix-command flakes
 * ssh
 
 #+BEGIN_SRC conf :tangle ~/.ssh/config :tangle-mode (identity #o600)
+# tmate GH runner debugging
+# ssh zNTjmPPcUegsLZnM7DFZ2QuF5@sfo2.tmate.io
+Host tmate tmate.io
+User zNTjmPPcUegsLZnM7DFZ2QuF5
+Hostname sfo2.tmate.io
+identityfile ~/.ssh/github-dcostaras.pub
+IdentitiesOnly yes
+IdentityAgent ~/Library/Containers/com.maxgoedjen.Secretive.SecretAgent/Data/socket.ssh
+
 Host github github.com
 User git
 Hostname github.com
