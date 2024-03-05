@@ -5456,20 +5456,82 @@ services.karabiner-elements = {
 #+end_src
 
 * Clojure environment
-** pad
+** bench
 
 #+begin_src clojure :shebang "#!/usr/bin/env bb" :tangle ~/bin/b
-(require '[babashka.deps :as deps])
-;; TODO put back io.github.*
-(deps/add-deps '{:deps {realifelearning/bench {:local/root "/Users/donavan/src/bench"}}})
+(babashka.deps/add-deps
+ '{:deps {org.realifelearning/bench {:local/root "/Users/donavan/src/bench"}}})
+((requiring-resolve 'org.realifelearning.bench/start))
+#+end_src
 
-(ns bench.entrypoint
-  (:require
-   [org.realifelearning.bench.clj-cli :as clj-cli]
-   ;; [org.realifelearning.bench.cli :as cli]
-   ))
+#+begin_src  clojure :tangle ~/.config/bench.edn
+{:org.realifelearning.bench/tools
+ {:active-tools #{:cider #_:reveal}}
 
-(clj-cli/start {})
+ :org.realifelearning.bench.system/targets
+ [:org.realifelearning.bench.cli/component
+  :org.realifelearning.bench.nrepl/component
+  :org.realifelearning.bench.emacs/cider-connect]
+
+ :org.realifelearning.bench.deps/local-deps
+ {org.realifelearning/belt {:local/root "/Users/donavan/src/rl-belt"}
+  com.bhauman/rebel-readline {:local/root "/Users/donavan/src/rebel-readline/rebel-readline"}
+  io.github.nivekuil/nexus {:local/root "/Users/donavan/src/nexus"}}}
+ #+end_src
+
+#+begin_src gitignore :tangle ~/.config/git/ignore
+.rebel_readline_history
+_bench.edn
+#+end_src
+
+*** bench
+
+#+begin_src clojure :tangle ~/src/bench/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:nrepl-port 8001}}
+#+end_src
+
+*** humble-app-script
+
+#+begin_src clojure :tangle ~/src/humble-app-script/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:nrepl-port 9001}
+
+ :org.realifelearning.bench.deps/default-aliases
+ [:clj :developer-tools/firebase :developer-tools/firebase-tests]}
+#+end_src
+
+*** hai-ui
+
+#+begin_src clojure :tangle ~/src/hai-ui/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:nrepl-port 9000
+  :cljs-nrepl? true}
+
+ :org.realifelearning.bench.deps/default-aliases
+ [:profile/local :profile/test]
+
+ :shadow/config
+ {:nrepl false}}
+#+end_src
+
+*** hai
+
+#+begin_src clojure :tangle ~/src/hai/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:nrepl-port 9000
+  #_#_:cljs-nrepl? true}
+
+ :org.realifelearning.bench.deps/default-aliases
+ [:local]}
+#+end_src
+
+#+begin_src clojure :tangle ~/src/hai/components/hai-ui/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:cljs-nrepl? true}
+
+ :org.realifelearning.bench.deps/default-aliases
+ [:profile/local :profile/test]}
 #+end_src
 
 ** Inject CIDER dependencies and middleware boot task
@@ -5809,6 +5871,19 @@ services.karabiner-elements = {
     </server>
   </servers>
 </settings>
+#+end_src
+
+** JDK
+
+#+begin_src ruby :tangle ./Brewfile
+cask "zulu"
+#+end_src
+
+** HumbleAI
+
+For firebase
+#+begin_src ruby :tangle ./Brewfile
+cask "google-cloud-sdk"
 #+end_src
 
 * shell
@@ -6563,7 +6638,7 @@ cask "font-source-code-pro"
 cask "font-inconsolata"
 #+end_src
 
-** ffmpeg
+** COMMENT ffmpeg
    brew install ffmpeg \
    --with-chromaprint \
    --with-fdk-aac \
@@ -7110,10 +7185,11 @@ UseKeychain yes
 [user]
  name = Donavan-Ross Costaras
  email = d.costaras@gmail.com
-[protocol "keybase"]
- allow = always
 [github]
  user = dcostaras
+
+[url "ssh://git@github.com/"]
+ insteadOf = https://github.com/
 #+end_src
 
 * UTM
