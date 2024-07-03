@@ -1,4 +1,4 @@
-personal_ws-1.1 en 268
+personal_ws-1.1 en 276
 APIs
 Babashka
 Costaras
@@ -61,6 +61,7 @@ cpcache
 crambe
 creds
 cropmix
+crunchbase
 cssunit
 customisable
 daitaas
@@ -128,7 +129,9 @@ hai
 hoc
 hoverable
 https
+hubspot
 humbleai
+iatom
 ident
 idents
 ifn
@@ -137,6 +140,7 @@ init
 instantiation
 instaparse
 intoschema
+jdbc
 joda
 jra
 js
@@ -176,6 +180,7 @@ noop
 npes
 npx
 nrepl
+nsed
 nss
 onboarding
 overridable
@@ -206,6 +211,7 @@ rebl
 recentering
 recurse
 redux
+relativise
 renderer
 renderers
 repl
@@ -230,6 +236,7 @@ subform
 subheader
 subindexed
 subindexing
+substring
 sut
 svg
 symex
@@ -260,6 +267,7 @@ utils
 uuid
 vals
 varargs
+various
 verifier
 vertico
 vscode

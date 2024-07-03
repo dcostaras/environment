@@ -1602,7 +1602,7 @@ JSON.stringify({
    ;; Evaluation
    ;; "e" 'symex-evaluate
    "e" 'symex-evaluate-definition
-   "E" 'symex-evaluate-remaining
+   "E" 'cider-load-buffer
    "C-M-e" 'symex-evaluate-pretty
    "M-e" 'symex-eval-recursive
    "T" 'symex-evaluate-thunk
@@ -1714,6 +1714,13 @@ advises functions to enable or disable features based on user configuration."
 
 #+begin_src elisp :noweb-ref faces
 `(symex--current-node-face :background ,(doom-darken (doom-color 'orange) 0.7))
+#+end_src
+**** save-file
+
+
+#+begin_src lisp :noweb-ref evil-general
+(:states '(normal insert)
+ "C-s" 'save-buffer)
 #+end_src
 
 **** evil-ex-define-cmd-local
@@ -1848,10 +1855,32 @@ advises functions to enable or disable features based on user configuration."
 `(region :background ,(doom-darken >evil-visual-state-colour 0.75))
 #+end_src
 
+**** Move window
+
+#+begin_src elisp :noweb-ref evil-config
+(general-define-key
+ :states 'normal
+ "s-h" 'evil-window-left
+ "s-l" 'evil-window-right
+ "s-j" 'evil-window-down
+ "s-k" 'evil-window-up
+
+ "s-d" '+workspace/close-window-or-workspace
+ "s-s" 'evil-window-split
+ "s-v" 'evil-window-vsplit
+ "s-." '+workspace/switch-to
+ "s-," '+workspace/other
+ "s-n" '+workspace/new
+ "s-r" '+workspace/rename
+ )
+#+end_src
+
 **** Package
 
 #+begin_src elisp :tangle ~/.doom.d/config.el
 (use-package! evil
+  :general
+  <<evil-general>>
   :config
   <<evil-config>>)
 #+end_src
@@ -1942,7 +1971,7 @@ advises functions to enable or disable features based on user configuration."
                     (rigpa-enter-tower-mode)))
   (global-set-key (kbd "M-<escape>") 'rigpa-enter-mode-mode)
   (global-set-key (kbd "s-<escape>") 'rigpa-enter-mode-mode)
-  (global-set-key (kbd "M-<return>")
+  (global-set-key (kbd "C-<return>")
                   (lambda ()
                     (interactive)
                     (when (eq rigpa--complex rigpa-meta-complex)
@@ -1958,12 +1987,12 @@ advises functions to enable or disable features based on user configuration."
                       (let ((ground (rigpa--get-ground-buffer)))
                         (rigpa-exit-mode-mode)
                         (switch-to-buffer ground)))))
-  (global-set-key (kbd "C-<return>")
-                  (lambda ()
-                    (interactive)
-                    (when (eq rigpa--complex rigpa-meta-tower-complex)
-                      (rigpa-exit-tower-mode)
-                      (rigpa-enter-mode-mode))))
+  ;; (global-set-key (kbd "C-<return>")
+  ;;                 (lambda ()
+  ;;                   (interactive)
+  ;;                   (when (eq rigpa--complex rigpa-meta-tower-complex)
+  ;;                     (rigpa-exit-tower-mode)
+  ;;                     (rigpa-enter-mode-mode))))
 
   ;; indexed entry to various modes
   (global-set-key (kbd "s-n") 'evil-normal-state)
@@ -2693,6 +2722,13 @@ org-mode
       :inherit default)))
 #+end_src
 
+*** ebnf-mode
+
+#+begin_src elisp :tangle ~/.doom.d/config.el
+(require 'ebnf-mode)
+(require 'bnf-mode)
+#+end_src
+
 *** COMMENT topspace
 
 #+begin_src elisp :noweb-ref packages
@@ -3124,6 +3160,67 @@ and switch to REPL"
 (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
 (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
 #+end_src
+**** babel
+
+#+begin_src elisp :noweb-ref org-babel-languages
+(clojure . t)
+#+end_src
+
+#+begin_src elisp :tangle ~/.doom.d/config.el
+(setq org-babel-clojure-backend 'cider
+      org-babel-clojure-sync-nrepl-timeout nil)
+
+;; (defun nrepl-error-p (nrepl-result)
+;;   "True if nrepl-result signaled an error."
+;;   (member "eval-error" (nrepl-dict-get nrepl-result "status")))
+
+;; (defun org-babel-execute:clojure (body params)
+;;   "Execute a block of Clojure code with Babel."
+;;   (let ((expanded (org-babel-expand-body:clojure body params))
+;;         result)
+;;     (let ((result-params (cdr (assoc :result-params params)))
+;;           (nrepl-result (nrepl-sync-request:eval expanded)))
+;;       ;; handle errors, show result
+;;       (if (nrepl-error-p nrepl-result)
+;;           (nrepl-dict-get nrepl-result "err")
+;;         (progn
+;;           (setq result
+;;                 (nrepl-dict-get
+;;                  nrepl-result
+;;                  (if (or (member "output" result-params)
+;;                          (member "pp" result-params)
+;;                          (member "code" result-params))
+;;                      "out"
+;;                    "value")))
+;;           ;; Maybe parse result into table
+;;           (org-babel-result-cond (cdr (assoc :result-params params))
+;;             result
+;;             (condition-case nil (org-babel-script-escape result)
+;;               (error result))))))))
+
+;; Sets M-<return> to evaluate code blocks in the REPL
+;; (defun org-meta-return-around (org-fun &rest args)
+;;   "Run `ober-eval-in-repl' if in source code block,
+;;   `ober-eval-block-in-repl' if at header,
+;;   and `org-meta-return' otherwise."
+;;     (if (org-in-block-p '("src"))
+;;         (let* ((point (point))
+;;                (element (org-element-at-point))
+;;                (area (org-src--contents-area element))
+;;                (beg (copy-marker (nth 0 area))))
+;;           (if (< point beg)
+;;               (ober-eval-block-in-repl)
+;;             (ober-eval-in-repl)))
+;;       (apply org-fun args)))
+
+;; (advice-add 'org-meta-return :around #'org-meta-return-around)
+;; (advice-remove 'org-meta-return #'org-meta-return-around)
+
+;; ;; Prevent eval in repl from moving cursor to the REPL
+;; (with-eval-after-load "eval-in-repl"
+;;   (setq eir-jump-after-eval nil))
+#+end_src
+
 **** Hooks
 
 #+begin_src elisp
@@ -3293,7 +3390,7 @@ arguments and only proceed with evaluation if it returns nil."
     (aggressive-indent-mode 1)))
 #+end_src
 
-**** cider report mode
+**** Cider popup buffer
 
 #+begin_src elisp
 (defhydra >cider-report-hydra ()
@@ -3305,6 +3402,13 @@ arguments and only proceed with evaluation if it returns nil."
  :states 'normal
  :keymaps 'cider-popup-buffer-mode-map
  "q" 'cider-popup-buffer-quit)
+
+(defun >cider-results-buffer-pprint (&rest r)
+  (with-current-buffer cider-result-buffer
+    (setq buffer-read-only nil)
+    (>jet (point-min) (point-max))))
+
+(advice-add 'cider-emit-into-popup-buffer :after #'>cider-results-buffer-pprint)
  #+end_src
 
 **** Eval commands
@@ -4965,6 +5069,8 @@ If buffer-or-name is nil return current buffer's mode."
 ;; (package! org-special-block-extras
 ;;   :recipe (:type git :host github :repo "alhassy/org-special-block-extras"))
 
+(package! ebnf-mode)
+(package! bnf-mode)
 (package! mini-frame)
 (package! swift-mode)
 (package! fennel-mode)
@@ -5199,7 +5305,485 @@ try print(task.run())
 # };
 #+end_src
 
+* Rigpa
+:PROPERTIES:
+:header-args: :tangle ~/.config/rigpa-emacs/init.el
+:END:
+
+#+begin_src elisp :comments no
+;;; -*- lexical-binding: t; -*-
+#+end_src
+
+** COMMENT package
+
+#+begin_src elisp
+(require 'package)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("melpa-stable" . "https://stable.melpa.org/packages/") t)
+(package-initialize)
+#+end_src
+
+** straight
+
+#+begin_src elisp
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name
+        "straight/repos/straight.el/bootstrap.el"
+        (or (bound-and-true-p straight-base-dir)
+            user-emacs-directory)))
+      (bootstrap-version 7))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
+#+end_src
+
+** use-package
+
+#+begin_src elisp
+(straight-use-package 'use-package)
+#+end_src
+
+** general
+
+#+begin_src elisp
+(use-package general
+  :straight t)
+#+end_src
+
+** vertico
+
+#+begin_src elisp
+(use-package vertico
+  :straight t
+  :config
+  (vertico-mode)
+
+  ;; Persist history over Emacs restarts. Vertico sorts by history position.
+  (use-package savehist
+    :init
+    (savehist-mode))
+
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; Add prompt indicator to `completing-read-multiple'.
+    ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+    (defun crm-indicator (args)
+      (cons (format "[CRM%s] %s"
+                    (replace-regexp-in-string
+                     "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                     crm-separator)
+                    (car args))
+            (cdr args)))
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+    ;; Do not allow the cursor in the minibuffer prompt
+    (setq minibuffer-prompt-properties
+          '(read-only t cursor-intangible t face minibuffer-prompt))
+    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+    ;; Support opening new minibuffers from inside existing minibuffers.
+    (setq enable-recursive-minibuffers t)
+
+    ;; Emacs 28 and newer: Hide commands in M-x which do not work in the current
+    ;; mode.  Vertico commands are hidden in normal buffers. This setting is
+    ;; useful beyond Vertico.
+    (setq read-extended-command-predicate #'command-completion-default-include-p))
+
+  ;; Optionally use the `orderless' completion style.
+  (use-package orderless
+    :straight t
+    :init
+    ;; Configure a custom style dispatcher (see the Consult wiki)
+    ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
+    ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+    (setq completion-styles '(orderless basic)
+          completion-category-defaults nil
+          completion-category-overrides '((file (styles partial-completion)))))
+  )
+#+end_src
+
+** evil
+
+#+begin_src elisp
+(use-package evil
+  :straight t
+  :config
+  (evil-mode)
+  (use-package evil-cleverparens))
+
+#+end_src
+
+** symex
+
+#+begin_src elisp
+(message "start symex")
+(use-package symex
+  :straight t
+  :hook ((clojure-mode clojurescript-mode clojurec-mode) . >symex-activation-hook)
+
+  :general
+
+  (:states '(normal)
+           "<escape>" 'symex-mode-interface)
+
+  (:states '(insert)
+           "<escape>" 'evil-normal-state)
+
+  (:states '(normal)
+           "<enter>" 'symex-mode-interface)
+
+  (:states '(symex)
+           "<escape>" 'evil-normal-state)
+
+  (:keymaps 'symex-editing-mode-map
+   :states '(symex)
+   ",p" 'lispy-ace-paren
+   ",s" '>lispy-ace-symbol
+
+   ;; Motion
+   "h" 'symex-go-backward
+   "j" 'symex-go-up
+   "k" 'symex-go-down
+   "l" 'symex-go-forward
+
+   "0" 'symex-goto-first
+   "M-h" 'symex-goto-first
+   "$" 'symex-goto-last
+   "M-l" 'symex-goto-last
+   "M-j" 'symex-goto-highest
+   "M-k" 'symex-goto-lowest
+
+   "f" 'symex-traverse-forward
+   "b" 'symex-traverse-backward
+   "C-f" 'symex-traverse-forward-more
+   "C-b" 'symex-traverse-backward-more
+   "F" 'symex-traverse-forward-skip
+   "B" 'symex-traverse-backward-skip
+
+   "{" 'symex-leap-backward
+   "}" 'symex-leap-forward
+   "M-{" 'symex-soar-backward
+   "M-}" 'symex-soar-forward
+   "C-j" 'symex-climb-branch
+   "C-k" 'symex-descend-branch
+
+   "(" 'symex-create-round
+   "[" 'symex-create-square
+   ")" 'symex-wrap-round
+   "]" 'symex-wrap-square
+   "C-'" 'symex-cycle-quote
+   "C-," 'symex-cycle-unquote
+   "`" 'symex-add-quoting-level
+   "C-`" 'symex-remove-quoting-level
+
+   "y" 'symex-yank
+   "Y" 'symex-yank-remaining
+   "p" 'symex-paste-after
+   "P" 'symex-paste-before
+
+   "d" 'symex-delete
+   "D" 'symex-delete-remaining
+   "X" 'symex-delete-backwards
+
+   "c" 'symex-change
+   "C" 'symex-change-remaining
+   "C--" 'symex-clear
+   "s" 'symex-replace
+   "S" 'symex-change-delimiter
+   "H" 'symex-shift-backward
+   "L" 'symex-shift-forward
+   "M-H" 'symex-shift-backward-most
+   "M-L" 'symex-shift-forward-most
+   "K" 'paredit-raise-sexp
+
+   ;; Capture
+   "C-h" 'symex-capture-backward
+   "C-l" 'symex-capture-forward
+   "C-S-h" 'symex-emit-backward
+   "C-S-l" 'symex-emit-forward
+
+   "z" 'symex-swallow
+   "Z" 'symex-swallow-tail
+
+   ;; Evaluation
+   ;; "e" 'symex-evaluate
+   "e" 'symex-evaluate-definition
+   "E" 'cider-load-buffer
+   "C-M-e" 'symex-evaluate-pretty
+   "M-e" 'symex-eval-recursive
+   "T" 'symex-evaluate-thunk
+   "R" 'symex-repl
+   ;; "r" 'symex-run
+
+   ;; Testing
+   "t" 'cider-test-run-test
+   "r" 'cider-test-rerun-failed-tests
+
+   ":" 'evil-ex
+
+   ;; "t" 'symex-switch-to-scratch-buffer
+   "M" 'symex-switch-to-messages-buffer
+   "|" 'symex-split
+   "&" 'symex-join
+   "-" 'symex-splice
+   "o" 'symex-open-line-after
+   "O" 'symex-open-line-before
+   ">" 'symex-insert-newline
+   "<" 'symex-join-lines-backwards
+   "C->" 'symex-append-newline
+   "C-<" 'symex-join-lines
+   "C-S-o" 'symex-append-newline
+   "J" 'symex-join-lines
+   "M-J" 'symex-collapse
+   "M-<" 'symex-collapse
+   "M->" 'symex-unfurl
+   "C-M-<" 'symex-collapse-remaining
+   "C-M->" 'symex-unfurl-remaining
+
+   "=" 'symex-tidy
+   "<tab>" 'symex-tidy
+   "C-=" 'symex-tidy-remaining
+   "C-<tab>" 'symex-tidy-remaining
+   "M-=" 'symex-tidy-proper
+   "M-<tab>" 'symex-tidy-proper
+   "A" 'symex-append-after
+   "a" 'symex-insert-at-end
+   "i" 'symex-insert-at-beginning
+   "I" 'symex-insert-before
+   "w" 'symex-wrap
+   "W" 'symex-wrap-and-append
+   "C-d" 'symex--evil-scroll-down
+
+   ;; Commenting
+   "_" 'symex-clojure-comment-reader-macro
+   "M-_" 'symex-clojure-comment-remaining-reader-macro
+   ";" 'symex-comment
+   "M-;" 'symex-comment-remaining
+
+   "C-;" 'symex-eval-print
+   "s-;" 'symex-evaluate
+   "H-h" 'symex--toggle-highlight
+   "C-?" 'symex-describe
+   "<return>" 'symex-enter-lower
+   "<escape>" 'symex-escape-higher)
+
+  :config
+
+  (message "symex config")
+   
+  ;; (add-hook! 'doom-escape-hook
+  ;;   (defun >symex->normal-state-doom-escape-hook ()
+  ;;     (when (evil-symex-state-p)
+  ;;       (progn
+  ;;         (evil-normal-state)
+  ;;         t))))
+
+  (defun >symex-activation-hook ()
+    (symex-mode-interface))
+
+  (defun >lispy-ace-symbol (arg)
+    "Jump to a symbol within the current sexp and mark it.
+Sexp is obtained by exiting the list ARG times."
+    (interactive "p")
+    (message "%s" arg)
+    (symex-go-down 1)
+    (let ((avy-keys lispy-avy-keys)
+          res)
+      (avy-with lispy-ace-symbol
+        (let ((avy--overlay-offset (if (eq lispy-avy-style-symbol 'at) -1 0)))
+          (setq res (lispy--avy-do
+                     "[([{ ]\\(?:\\sw\\|\\s_\\|[\"'`#~,@]\\)"
+                     (lispy--bounds-dwim)
+                     (lambda ()
+                       (not (save-excursion
+                              (forward-char -1)
+                              (lispy--in-string-or-comment-p))))
+                     lispy-avy-style-symbol))))))
+
+  (defun >symex-initialize ()
+    "Initialize symex mode.
+This registers symex mode for use in all recognized Lisp modes, and also
+advises functions to enable or disable features based on user configuration."
+    ;; enable the symex minor mode in all recognized lisp modes
+    (dolist (mode-name symex-lisp-modes)
+      (let ((mode-hook (intern (concat (symbol-name mode-name)
+                                       "-hook"))))
+        (add-hook mode-hook 'symex-mode)))
+    ;; advise functions to enable or disable configured features
+    (when symex-remember-branch-positions-p
+      (advice-add #'symex-go-down :around #'symex--remember-branch-position)
+      (advice-add #'symex-go-up :around #'symex--return-to-branch-position)
+      (advice-add #'symex-go-backward :around #'symex--forget-branch-positions)
+      (advice-add #'symex-go-forward :around #'symex--forget-branch-positions))
+    (symex--add-selection-advice))
+  (symex-initialize)
+  ;; (>symex-initialize)
+  )
+#+end_src
+
+** display-line-numbers
+
+#+begin_src elisp
+(use-package display-line-numbers
+  :config
+  (display-line-numbers-mode))
+#+end_src
+
+** rigpa
+
+#+begin_src elisp
+(message "rigpa")
+(use-package rigpa
+
+  :straight
+  (rigpa
+   :type git
+   :host github
+   :repo "countvajhula/rigpa")
+
+  :config
+  (setq rigpa-mode t)
+
+  ;; temporary workaround for https://github.com/countvajhula/rigpa/issues/9
+  (remove-hook 'evil-symex-state-exit-hook #'symex-disable-editing-minor-mode)
+
+  ;; custom config
+  (setq rigpa-show-menus nil)
+
+  ;; navigating meta modes
+  (global-unset-key (kbd "s-m"))
+  (global-set-key (kbd "s-m s-m") 'rigpa-flashback-to-last-tower)
+  (global-set-key (kbd "C-<escape>")
+                  (lambda ()
+                    (interactive)
+                    (when (eq rigpa--complex rigpa-meta-complex)
+                      (rigpa-exit-mode-mode))
+                    (rigpa-enter-tower-mode)))
+  (global-set-key (kbd "M-<escape>") 'rigpa-enter-mode-mode)
+  (global-set-key (kbd "s-<escape>") 'rigpa-enter-mode-mode)
+  ;; (global-set-key (kbd "C-<return>")
+  ;;                 (lambda ()
+  ;;                   (interactive)
+  ;;                   (when (eq rigpa--complex rigpa-meta-complex)
+  ;;                     (rigpa-enter-selected-level)
+  ;;                     (let ((ground (rigpa--get-ground-buffer)))
+  ;;                       (rigpa-exit-mode-mode)
+  ;;                       (switch-to-buffer ground)))))
+  (global-set-key (kbd "s-<return>")
+                  (lambda ()
+                    (interactive)
+                    (when (eq rigpa--complex rigpa-meta-complex)
+                      (rigpa-enter-selected-level)
+                      (let ((ground (rigpa--get-ground-buffer)))
+                        (rigpa-exit-mode-mode)
+                        (switch-to-buffer ground)))))
+  (global-set-key (kbd "C-<return>")
+                  (lambda ()
+                    (interactive)
+                    (when (eq rigpa--complex rigpa-meta-tower-complex)
+                      (rigpa-exit-tower-mode)
+                      (rigpa-enter-mode-mode))))
+
+  ;; indexed entry to various modes
+  (global-set-key (kbd "s-n") 'evil-normal-state)
+  (global-set-key (kbd "s-y")           ; symex mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "symex")))
+  (global-set-key (kbd "s-;") (kbd "s-y"))
+  (global-set-key (kbd "s-w")           ; window mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "window")))
+  (global-set-key (kbd "s-v")           ; view mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "view")))
+  (global-set-key (kbd "s-x")           ; char mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "char")))
+  (global-set-key (kbd "s-a")           ; activity mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "activity")))
+  (global-set-key (kbd "s-z")           ; text mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "text")))
+  (global-set-key (kbd "s-g")           ; history mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "history")))
+  (global-set-key (kbd "s-i")           ; system mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "system")))
+  (global-set-key (kbd "s-b")           ; buffer mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "buffer")))
+  (global-set-key (kbd "s-f")           ; file mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "file")))
+  (global-set-key (kbd "s-t")           ; tab mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "tab")))
+  (global-set-key (kbd "s-l")           ; line mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "line")))
+  (global-set-key (kbd "s-e")           ; application mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "application")))
+  (global-set-key (kbd "s-r")           ; word mode
+                  (lambda ()
+                    (interactive)
+                    (rigpa-enter-mode "word"))))
+#+end_src
+
+** vertico
+
+#+begin_src elisp
+(use-package vertico
+  :straight t
+  :config
+  (vertico-mode))
+#+end_src
+
+** ace-jump
+
+#+begin_src elisp
+(use-package ace-jump-mode
+  :straight t
+  :bind ("C-." . ace-jump-mode))
+#+end_src
+
 * Karabiner
+!  | means mandatory
+#  | means optional
+C  | left_command
+T  | left_control
+O  | left_option
+S  | left_shift
+F  | fn
+Q  | right_command
+W  | right_control
+E  | right_option
+R  | right_shift
+P  | caps_lock
+!! | mandatory command + control + optional + shift (hyper)
+## | optional any
 
 ** Functionality
 
@@ -5272,6 +5856,43 @@ try print(task.run())
  :rules [[:##right_shift :right_shift nil {:alone <<karabiner-e(cmd="(>org-capture-safari-tab-frame)")>>}]]}
 #+end_src
 
+** App launchers
+
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des "App launchers"
+ :rules [[:!EQu "open /Applications/Emacs.app"]
+         [:!EQi "open /Applications/Safari.app"]
+         [:!EQo "open /Applications/iTerm.app"]
+         [:!EQz "open /Applications/Slack.app"]
+         [:!EQx "open /Applications/Linear.app"]]}
+#+end_src
+
+** Safari
+
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des "Safari"
+ :rules [[:!Tj :down_arrow [:safari]]
+         [:!Tk :up_arrow [:safari]]
+         [[:left_option :l] :!CSclose_bracket [:safari]]
+         [[:left_option :h] :!CSopen_bracket [:safari]]]}
+#+end_src
+
+** iTerm
+
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des "iTerm"
+ :rules [[:!Tj :down_arrow [:iterm]]
+         [:!Tk :up_arrow [:iterm]]]}
+#+end_src
+
+** caps lock + control
+
+#+begin_src clojure :noweb-ref karabiner-rules
+{:des "caps_lock to esc when pressed alone, to ctrl as modifier"
+         :rules [[:##caps_lock :left_control [:mb] {:alone :escape}]
+                 [:##left_control :caps_lock [:mb]]]}
+#+end_src
+
 ** Config
 
 #+begin_src clojure :tangle ~/.config/karabiner.edn
@@ -5285,21 +5906,15 @@ try print(task.run())
 ;;          :rules [[:a :1] [:b :2] [:c [:1 :2 :3]]]}]}
 
 ;; or we can separate them into three manipulators
-{:main [;; {:des "a to 1 only in chrome and safari" :rules [[:a :1 [:chrome]]]}
+{:devices {:mb [{:vendor_id 1452 :product_id 834}]
+           :ml [{:vendor_id 12951 :product_id 6505}]}
 
-        {:des "caps_lock to esc when pressed alone, to ctrl as modifier"
-         :rules [[:##caps_lock :left_control nil {:alone :escape}]
-                 [:##left_control :caps_lock]]}
-
-        {:des "hyper 1 to cleanup personal folder"
-         :rules [[:!!1 "touch ~/Desktop/file.txt"]]}
-
-        ;; {:des "simultaneous j l press to F19"
-        ;;  :rules [[[:j :l] "e '(prn (+ 1 1))'"]]}
-
-        <<karabiner-rules>>]
+ :main [;; Newlines areneeded
+        <<karabiner-rules>>
+        ]
  :applications {:chrome ["^com\\.google\\.Chrome$"]
-                :safari ["^com\\.apple\\.Safari$"]}}
+                :safari ["^com\\.apple\\.Safari$"]
+                :iterm ["^com\\.googlecode\\.iterm2"]}}
 
 ;; in rules [:a :1] -- [<from> <to>]
 ;; it means from key a to key 1
@@ -5413,15 +6028,15 @@ try print(task.run())
 #+end_src
 
 #+begin_src clojure :noweb-ref karabiner-rules
-{:des "Move space left/right C-A-h/C-A-l "
- :rules [[:!OTh <<karabiner-shell(cmd="yabai -m space --move prev")>>]
-         [:!OTl <<karabiner-shell(cmd="yabai -m space --move next")>>]]}
+;; {:des "Move space left/right C-A-h/C-A-l "
+;;  :rules [[:!OTh <<karabiner-shell(cmd="yabai -m space --move prev")>>]
+;;          [:!OTl <<karabiner-shell(cmd="yabai -m space --move next")>>]]}
 #+end_src
 
 #+begin_src clojure :noweb-ref karabiner-rules
-{:des "Move spaces"
- :rules [[:!OTh <<karabiner-shell(cmd="yabai -m space --move prev")>>]
-         [:!OTl <<karabiner-shell(cmd="yabai -m space --move next")>>]]}
+;; {:des "Move spaces"
+;;  :rules [[:!OTh <<karabiner-shell(cmd="yabai -m space --move prev")>>]
+;;          [:!OTl <<karabiner-shell(cmd="yabai -m space --move next")>>]]}
 #+end_src
 
 ** goku
@@ -5456,17 +6071,34 @@ services.karabiner-elements = {
 #+end_src
 
 * Clojure environment
+** deps.edn
+
+#+begin_src clojure :tangle ~/.config/deps.edn
+;; {:override-deps {org.realifelearning/yggdrasil {:local/root "/Users/donavan/src/yggdrasil"}
+;;                  org.realifelearning/frame {:local/root "/Users/donavan/src/rl-frame"}
+;;                  org.realifelearning/belt {:local/root "/Users/donavan/src/rl-belt"}}}
+#+end_src
+
 ** bench
 
+takes 0.163 s
 #+begin_src clojure :shebang "#!/usr/bin/env bb" :tangle ~/bin/b
 (babashka.deps/add-deps
- '{:deps {org.realifelearning/bench {:local/root "/Users/donavan/src/bench"}}})
+ '{:deps {org.realifelearning/bench {:local/root "/Users/donavan/src/bench"}}
+   ;; :override-deps {org.realifelearning/yggdrasil {:local/root "/Users/donavan/src/yggdrasil"}
+   ;;                 org.realifelearning/frame {:local/root "/Users/donavan/src/rl-frame"}
+   ;;                 org.realifelearning/belt {:local/root "/Users/donavan/src/rl-belt"}}
+   })
 ((requiring-resolve 'org.realifelearning.bench/start))
 #+end_src
 
 #+begin_src  clojure :tangle ~/.config/bench.edn
 {:org.realifelearning.bench/tools
- {:active-tools #{:cider #_:reveal}}
+ {:active-tools #{:cider :reveal}}
+
+ :org.realifelearning.bench.deps/default-aliases
+ [:org.realifelearning.bench.tools/add-libs
+  :org.realifelearning.bench.tools/misc-tools]
 
  :org.realifelearning.bench.system/targets
  [:org.realifelearning.bench.cli/component
@@ -5475,13 +6107,76 @@ services.karabiner-elements = {
 
  :org.realifelearning.bench.deps/local-deps
  {org.realifelearning/belt {:local/root "/Users/donavan/src/rl-belt"}
+  org.realifelearning/frame {:local/root "/Users/donavan/src/rl-frame"}
+  org.realifelearning/yggdrasil {:local/root "/Users/donavan/src/yggdrasil"}
+  io.github.dcostaras/wax {:local/root "/Users/donavan/src/wax"}
+
+  thheller/shadow-cljs {:local/root "/Users/donavan/src/shadow-cljs"}
   com.bhauman/rebel-readline {:local/root "/Users/donavan/src/rebel-readline/rebel-readline"}
-  io.github.nivekuil/nexus {:local/root "/Users/donavan/src/nexus"}}}
- #+end_src
+  ;; com.owainlewis/salesforce {:local/root "/Users/donavan/src/salesforce"}
+  #_#_io.github.nivekuil/nexus {:local/root "/Users/donavan/src/nexus"}}}
+  #+end_src
 
 #+begin_src gitignore :tangle ~/.config/git/ignore
+# Bench
 .rebel_readline_history
 _bench.edn
+
+# Clojure/JVM
+jar-manifest/
+#+end_src
+
+*** bench-test
+
+#+begin_src clojure :tangle ~/src/bench-test/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:nrepl-port 7001
+  ;; :cljs-nrepl? true
+  }
+
+ :org.realifelearning.bench.deps/active-aliases
+ [:shadow-test :server-test
+  ]
+
+ :org.realifelearning.bench.monorepo/projects
+ ;; TODO include should add path to config
+ {:shadow-test #include "shadow-test/_bench.edn"
+  :server-test #merge [#include "server-test/bench.edn"
+                       #include "server-test/_bench.edn"]}
+ }
+#+end_src
+
+**** shadow-test
+
+#+begin_src clojure :tangle ~/src/bench-test/shadow-test/_bench.edn
+{:org.realifelearning.bench.monorepo/project-path "shadow-test"
+
+;; :org.realifelearning.bench.tools/cider
+;;  {:nrepl-port 7001
+;;   ;; :cljs-nrepl? true
+;;   }
+
+ :org.realifelearning.bench.system/targets
+ [:org.realifelearning.bench.shadow/watch]
+
+ :org.realifelearning.bench.shadow/config
+ {:org.realifelearning.bench.shadow.config/active-builds
+  [{:build-id :frontend
+    :build-type :release}
+   :worker]
+
+  :org.realifelearning.bench.shadow.config/build-type
+  :compile}}
+#+end_src
+
+**** server-test
+
+#+begin_src clojure :tangle ~/src/bench-test/server-test/bench.edn
+{:some-key ["bench.edn"]}
+#+end_src
+
+#+begin_src clojure :tangle ~/src/bench-test/server-test/_bench.edn
+{:some-other-key ["_bench.edn"]}
 #+end_src
 
 *** bench
@@ -5490,10 +6185,33 @@ _bench.edn
 {:org.realifelearning.bench.tools/cider
  {:nrepl-port 8001}}
 #+end_src
+*** earth
+
+#+begin_src clojure :tangle ~/src/earth/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:nrepl-port 6001}
+
+ :org.realifelearning.bench.deps/default-aliases
+ [:dev :test]}
+#+end_src
+
+*** Timesheets
+
+#+begin_src clojure :tangle ~/src/timesheets/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:nrepl-port 9001}}
+#+end_src
+
+*** realife website
+
+#+begin_src clojure :tangle ~/src/powerblog/_bench.edn
+{:org.realifelearning.bench.tools/cider
+ {:nrepl-port 8001}}
+#+end_src
 
 *** humble-app-script
 
-#+begin_src clojure :tangle ~/src/humble-app-script/_bench.edn
+#+begin_src clojure :tangle ~/src/hai/projects/apps-script/_bench.edn
 {:org.realifelearning.bench.tools/cider
  {:nrepl-port 9001}
 
@@ -5517,21 +6235,85 @@ _bench.edn
 
 *** hai
 
+**** Git hooks
+
+- :: :PROPERTIES:
+:ID:       a297c795-a21f-493f-b271-4693040557b3
+:END:
+ [[id:9fa2bec3-8c56-4931-ad79-17c7979086f5][Git hook management]]
+
+#+begin_src clojure :tangle ~/src/hai/.git/hooks/pre-commit :shebang #!/usr/bin/env bb
+(ns git-hook)
+
+(prn '--------------------------------------------------)
+(prn 'git-hook)
+#+end_src
+
+**** Global bench config
 #+begin_src clojure :tangle ~/src/hai/_bench.edn
 {:org.realifelearning.bench.tools/cider
  {:nrepl-port 9000
-  #_#_:cljs-nrepl? true}
+  :cljs-nrepl? true}
+
+ :org.realifelearning.bench.system/targets
+ [;; :org.realifelearning.bench.shadow/watch
+  :org.realifelearning.bench.shadow.tap-support/runtime-taps
+  ]
 
  :org.realifelearning.bench.deps/default-aliases
- [:local]}
+ [
+  :web-extension
+  :platform
+  ;; :transaction-classifier/main
+  ;; :transaction-classifier/local
+  ;; :apps-script
+  ;; :apps-script/firebase
+  ;; :sheets-addon
+  ]
+
+ :org.realifelearning.bench.deps/local-deps
+ {reagent/reagent {:git/url "https://github.com/GaiwanTeam/reagent"
+                   :git/sha "b87e3afe5e71bc5697e866f56488167da0c47d19"}
+  girouette/girouette {:git/url "https://github.com/GaiwanTeam/girouette"
+                       :git/sha "267a4517f02f8b305fee35dfb163cba169d7b7f8"
+                       :deps/root "lib/girouette"}
+  com.owainlewis/salesforce {:local/root "/Users/donavan/src/salesforce"}}
+
+ :org.realifelearning.bench.monorepo/projects
+ {:platform #include "projects/platform/_bench.edn"
+  :web-extension #include "projects/web-extension/_bench.edn"
+  }
+ }
 #+end_src
 
-#+begin_src clojure :tangle ~/src/hai/components/hai-ui/_bench.edn
-{:org.realifelearning.bench.tools/cider
- {:cljs-nrepl? true}
+**** platform
 
- :org.realifelearning.bench.deps/default-aliases
- [:profile/local :profile/test]}
+#+begin_src clojure :tangle ~/src/hai/projects/platform/_bench.edn
+{:org.realifelearning.bench.deps/local-deps
+ {com.owainlewis/salesforce {:local/root "/Users/donavan/src/salesforce"}}}
+#+end_src
+
+**** web-extension
+
+#+begin_src clojure :tangle ~/src/hai/projects/web-extension/_bench.edn
+{:org.realifelearning.bench.monorepo/project-path "projects/web-extension"
+
+:org.realifelearning.bench.tools/cider
+ {:nrepl-port 9001
+  ;; :cljs-nrepl? true
+  }
+
+
+ :org.realifelearning.bench.shadow/config
+ {:org.realifelearning.bench.shadow.config/active-builds
+  [:popup :service-worker :content-script :options :sidebar :devcomponents]
+  ;; [{:build-id :frontend
+  ;;   :build-type :release}
+  ;;  :worker]
+
+  :org.realifelearning.bench.shadow.config/build-type
+  :compile}}
+
 #+end_src
 
 ** Inject CIDER dependencies and middleware boot task
@@ -5854,7 +6636,9 @@ _bench.edn
 
 #+begin_src clojure :tangle ~/.config/clj-kondo/config.edn
 {:lint-as {com.fulcrologic.fulcro.components/defsc clojure.core/defn
-           com.fulcrologic.fulcro.mutations/defmutation clojure.core/defn}}
+           com.fulcrologic.fulcro.mutations/defmutation clojure.core/defn
+
+           reagent.core/with-let clojure.core/let}}
 #+end_src
 
 ** maven settings
@@ -5881,7 +6665,6 @@ cask "zulu"
 
 ** HumbleAI
 
-For firebase
 #+begin_src ruby :tangle ./Brewfile
 cask "google-cloud-sdk"
 #+end_src
@@ -6341,7 +7124,24 @@ ffmpeg -i "$1" -f segment -segment_time "$2" -c copy "$1"%03d.mp3
   }
   #+END_SRC
 
-* Yabai
+* AeroSpace
+
+#+begin_src toml :tangle ~/.config/aerospace.toml
+[mode.main.binding]        # Declare 'main' binding mode
+alt-r = 'mode resize'      # 1. Define a binding to switch to 'resize' mode
+
+[mode.resize.binding]      # 2. Declare 'resize' binding mode
+minus = 'resize smart -50'
+equal = 'resize smart +50'
+#+end_src
+
+** Install
+
+#+begin_src ruby :tangle ./Brewfile
+cask "nikitabobko/tap/aerospace"
+#+end_src
+
+* COMMENT Yabai
 
 #+begin_src nix :noweb-ref darwin-config
 services.yabai = {
@@ -6480,7 +7280,7 @@ sudo yabai --load-sa
 (>start-process "yabai --restart-service")
 #+end_src
 
-* AWS
+* COMMENT AWS
 
 #+begin_src conf :tangle ~/.aws/config
 [default]
@@ -6693,22 +7493,6 @@ export MANPATH="/opt/local/share/man:$MANPATH"
 
 * Nix
 To reenable nix things like karabiner run ~darwin-rebuild switch~
-** COMMENT Environment
-
-#+begin_src nix :tangle ~/.config/nix/env.nix
-with import <nixpkgs> {}; [
-  nix-prefetch-git
-
-  <<nix-env-packages>>
-]
-#+end_src
-
-Install the local Nix environment with ~nix-sync~
-
-#+begin_src sh :shebang #!/bin/zsh :tangle ~/bin/nix-sync
-nix-env -irf ~/.config/nix/env.nix
-#+end_src
-
 ** Shell setup
 
 #+begin_src sh :noweb-ref zprofile
@@ -6908,6 +7692,85 @@ system.activationScripts.postUserActivation.text = "/System/Library/PrivateFrame
 (>start-sudo-process "darwin-rebuild switch")
 #+end_src
 
+** nix.conf
+
+#+begin_src conf :tangle ~/.config/nix/nix.conf
+experimental-features = nix-command flakes
+#+end_src
+
+** Flakes
+
+#+begin_src nix :tangle ~/.config/nix/env/flake.nix
+# {
+#   description = "Environment";
+
+#   inputs = {
+#     stable.url = "github:nixos/nixpkgs/nixos-21.11";
+#     unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+
+#     nixpkgs.follows = "unstable";
+
+#     darwin = {
+#       url = "github:lnl7/nix-darwin";
+#       inputs.nixpkgs.follows = "nixpkgs";
+#     };
+
+#   };
+
+#   outputs = {nixpkgs, darwin, ...}: {
+#     darwinConfigurations = rec {
+#       "Donavans-Virtual-Machine" = darwin.lib.darwinSystem {
+#         system = "aarch64-darwin";
+#         modules = [ ./nix-darwin/configuration.nix ];
+#       };
+#     };
+#   };
+# }
+{
+  description = "Example Darwin system flake";
+
+  inputs = {
+    stable.url = "github:nixos/nixpkgs/nixos-21.11";
+    unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+
+    nixpkgs.follows = "unstable";
+
+    nix-darwin = {
+      url = "github:lnl7/nix-darwin";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+  };
+
+  outputs = { self, nix-darwin, nixpkgs, ...}:
+      {
+        darwinConfigurations."Donavans-Virtual-Machine" = nix-darwin.lib.darwinSystem {
+          modules = [ (import ./nix-darwin/configuration.nix {self = self;}) ];
+          # modules = [ configuration ];
+        };
+
+        # Expose the package set, including overlays, for convenience.
+        darwinPackages = self.darwinConfigurations."Donavans-Virtual-Machine".pkgs;
+      };
+}
+#+end_src
+
+** COMMENT Environment
+
+#+begin_src nix :tangle ~/.config/nix/env.nix
+with import <nixpkgs> {}; [
+  nix-prefetch-git
+
+  <<nix-env-packages>>
+]
+#+end_src
+
+Install the local Nix environment with ~nix-sync~
+
+#+begin_src sh :shebang #!/bin/zsh :tangle ~/bin/nix-sync
+nix-env -irf ~/.config/nix/env.nix
+#+end_src
+
 ** COMMENT Pinned defexpr
 
 See [[id:63f3bd33-8510-4810-9f5e-d7618bfba029][Using Nix on macOS]] for scripts that determine the revision to use
@@ -7034,69 +7897,6 @@ exit "${ret}"
 # vim: set sw=2 sts=2 ts=8 et ft=bash:
 #+end_src
 
-** nix.conf
-
-#+begin_src conf :tangle ~/.config/nix/nix.conf
-experimental-features = nix-command flakes
-#+end_src
-
-** Flakes
-
-#+begin_src nix :tangle ~/.config/nix/env/flake.nix
-# {
-#   description = "Environment";
-
-#   inputs = {
-#     stable.url = "github:nixos/nixpkgs/nixos-21.11";
-#     unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-
-#     nixpkgs.follows = "unstable";
-
-#     darwin = {
-#       url = "github:lnl7/nix-darwin";
-#       inputs.nixpkgs.follows = "nixpkgs";
-#     };
-
-#   };
-
-#   outputs = {nixpkgs, darwin, ...}: {
-#     darwinConfigurations = rec {
-#       "Donavans-Virtual-Machine" = darwin.lib.darwinSystem {
-#         system = "aarch64-darwin";
-#         modules = [ ./nix-darwin/configuration.nix ];
-#       };
-#     };
-#   };
-# }
-{
-  description = "Example Darwin system flake";
-
-  inputs = {
-    stable.url = "github:nixos/nixpkgs/nixos-21.11";
-    unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-
-    nixpkgs.follows = "unstable";
-
-    nix-darwin = {
-      url = "github:lnl7/nix-darwin";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-  };
-
-  outputs = { self, nix-darwin, nixpkgs, ...}:
-      {
-        darwinConfigurations."Donavans-Virtual-Machine" = nix-darwin.lib.darwinSystem {
-          modules = [ (import ./nix-darwin/configuration.nix {self = self;}) ];
-          # modules = [ configuration ];
-        };
-
-        # Expose the package set, including overlays, for convenience.
-        darwinPackages = self.darwinConfigurations."Donavans-Virtual-Machine".pkgs;
-      };
-}
-#+end_src
-
 * ssh
 
 #+BEGIN_SRC conf :tangle ~/.ssh/config :tangle-mode (identity #o600)
@@ -7188,8 +7988,8 @@ UseKeychain yes
 [github]
  user = dcostaras
 
-[url "ssh://git@github.com/"]
- insteadOf = https://github.com/
+# [url "ssh://git@github.com/"]
+#  insteadOf = https://github.com/
 #+end_src
 
 * UTM
