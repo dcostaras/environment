@@ -1,4 +1,4 @@
-personal_ws-1.1 en 276
+personal_ws-1.1 en 279
 APIs
 Babashka
 Costaras
@@ -87,6 +87,7 @@ descendents
 destructured
 destructuring
 dev
+devcomponents
 devtools
 docstring
 dotfiles
@@ -153,6 +154,7 @@ leiningen
 localhost
 lsp
 macbook
+macports
 macroexpansion
 magit
 makefile
@@ -204,6 +206,7 @@ pstate
 pstates
 readline
 readme
+realifelearning
 rebase
 rebases
 rebasing
